@@ -19,6 +19,7 @@ java {
 
 repositories {
     mavenCentral()
+    maven { url = uri("https://jitpack.io") }
 }
 
 configurations {
@@ -37,6 +38,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")
+    implementation("com.github.earlgrey02:JWT-Module:1.0.0")
     implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
     implementation("io.github.microutils:kotlin-logging:3.0.5")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
@@ -63,7 +65,7 @@ tasks {
     test {
         useJUnitPlatform()
 
-        finalizedBy(withType<OpenApi3Task>())
+        finalizedBy(jacocoTestReport, withType<OpenApi3Task>())
     }
 
     jacocoTestCoverageVerification {
@@ -95,6 +97,8 @@ tasks {
                     "**.*Response*",
                     "**.*Configuration*",
                     "**.*Exception*",
+                    "**.*LogUtil*",
+                    "**.*Client*"
                 )
             }
         }
