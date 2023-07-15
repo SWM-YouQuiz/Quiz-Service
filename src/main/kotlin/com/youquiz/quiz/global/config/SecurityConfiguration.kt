@@ -1,4 +1,4 @@
-package com.youquiz.template.global.config
+package com.youquiz.quiz.global.config
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
