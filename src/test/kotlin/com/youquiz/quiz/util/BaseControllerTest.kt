@@ -1,4 +1,4 @@
-package com.youquiz.template.util
+package com.youquiz.quiz.util
 
 import io.kotest.core.spec.Spec
 import io.kotest.core.spec.style.DescribeSpec
