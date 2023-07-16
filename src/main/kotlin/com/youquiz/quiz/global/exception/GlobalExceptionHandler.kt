@@ -1,8 +1,8 @@
-package com.youquiz.authentication.global.exception
+package com.youquiz.quiz.global.exception
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.youquiz.authentication.global.dto.ErrorResponse
-import com.youquiz.authentication.global.util.logger
+import com.youquiz.quiz.global.dto.ErrorResponse
+import com.youquiz.quiz.global.util.logger
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import kotlinx.coroutines.reactor.mono
 import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler

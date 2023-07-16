@@ -1,4 +1,4 @@
-package com.youquiz.authentication.global.util
+package com.youquiz.quiz.global.util
 
 import mu.KotlinLogging
 

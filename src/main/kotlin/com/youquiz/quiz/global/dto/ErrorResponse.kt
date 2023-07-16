@@ -1,4 +1,4 @@
-package com.youquiz.authentication.global.dto
+package com.youquiz.quiz.global.dto
 
 data class ErrorResponse(
     val code: Int,

@@ -1,4 +1,4 @@
-package com.youquiz.authentication.global.exception
+package com.youquiz.quiz.global.exception
 
 abstract class ServerException(
     val code: Int,
