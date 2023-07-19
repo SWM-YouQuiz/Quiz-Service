@@ -1,3 +1,7 @@
+spring:
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/quiz
 jwt:
   secretKey: dasdsaddsaldldasjdjdajkdjkdsakjldasjkldkjldas
   accessTokenExpire: 30
