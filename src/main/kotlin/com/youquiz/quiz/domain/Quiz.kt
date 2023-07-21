@@ -20,4 +20,8 @@ class Quiz(
 ) {
     @CreatedDate
     val createdDate: LocalDateTime = LocalDateTime.now()
+
+    fun changeAnswerRate() {
+        answerRate = (correctCount.toDouble() / (correctCount + incorrectCount).toDouble()) * 100
+    }
 }
