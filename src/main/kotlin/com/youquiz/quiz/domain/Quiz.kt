@@ -14,7 +14,9 @@ class Quiz(
     val solution: String,
     val writer: User,
     val chapterId: String,
-    val answerRate: Long,
+    var answerRate: Long,
+    var correctCount: Long,
+    var incorrectCount: Long,
 ) {
     @CreatedDate
     val createdDate: LocalDateTime = LocalDateTime.now()

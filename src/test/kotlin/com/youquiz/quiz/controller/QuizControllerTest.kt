@@ -45,6 +45,8 @@ class QuizControllerTest : BaseControllerTest() {
         "writer" desc "작성자",
         "chapterId" desc "챕터 식별자",
         "answerRate" desc "정답률",
+        "correctCount" desc "정답 횟수",
+        "incorrectCount" desc "오답 횟수",
         "createdDate" desc "생성 날짜"
     )
 

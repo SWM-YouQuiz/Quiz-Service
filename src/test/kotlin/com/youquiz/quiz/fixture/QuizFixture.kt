@@ -9,7 +9,8 @@ const val SOLUTION = "test"
 val WRITER = createUser()
 const val CHAPTER_ID = OBJECT_ID
 const val ANSWER_RATE = 80L
-val CREATED_DATE = LocalDateTime.now()!!
+const val CORRECT_COUNT = 10L
+const val INCORRECT_COUNT = 10L
 
 fun createQuiz(
     id: String = OBJECT_ID,
@@ -19,6 +20,8 @@ fun createQuiz(
     writer: User = WRITER,
     chapterId: String = CHAPTER_ID,
     answerRate: Long = ANSWER_RATE,
+    correctCount: Long = CORRECT_COUNT,
+    incorrectCount: Long = INCORRECT_COUNT
 ): Quiz = Quiz(
     id = id,
     question = question,
@@ -27,4 +30,6 @@ fun createQuiz(
     writer = writer,
     chapterId = chapterId,
     answerRate = answerRate,
+    correctCount = correctCount,
+    incorrectCount = incorrectCount
 )

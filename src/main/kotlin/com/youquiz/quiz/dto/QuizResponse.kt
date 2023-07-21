@@ -12,7 +12,9 @@ data class QuizResponse(
     val writer: User,
     val chapterId: String,
     val answerRate: Long,
-    val createdDate: LocalDateTime
+    val correctCount: Long,
+    val incorrectCount: Long,
+    val createdDate: LocalDateTime,
 ) {
     companion object {
         operator fun invoke(quiz: Quiz) =
@@ -25,6 +27,8 @@ data class QuizResponse(
                     writer = writer,
                     chapterId = chapterId,
                     answerRate = answerRate,
+                    correctCount = correctCount,
+                    incorrectCount = incorrectCount,
                     createdDate = createdDate
                 )
             }
