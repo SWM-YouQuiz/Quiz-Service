@@ -3,17 +3,19 @@ package com.youquiz.quiz.controller
 import com.epages.restdocs.apispec.WebTestClientRestDocumentationWrapper
 import com.ninjasquad.springmockk.MockkBean
 import com.youquiz.quiz.config.SecurityTestConfiguration
+import com.youquiz.quiz.dto.CheckAnswerRequest
+import com.youquiz.quiz.dto.CheckAnswerResponse
 import com.youquiz.quiz.dto.FindAllMarkedQuizRequest
 import com.youquiz.quiz.dto.QuizResponse
+import com.youquiz.quiz.exception.QuizNotFoundException
 import com.youquiz.quiz.fixture.ID
 import com.youquiz.quiz.fixture.OBJECT_ID
 import com.youquiz.quiz.fixture.createQuiz
+import com.youquiz.quiz.global.dto.ErrorResponse
 import com.youquiz.quiz.handler.QuizHandler
 import com.youquiz.quiz.router.QuizRouter
 import com.youquiz.quiz.service.QuizService
-import com.youquiz.quiz.util.BaseControllerTest
-import com.youquiz.quiz.util.desc
-import com.youquiz.quiz.util.paramDesc
+import com.youquiz.quiz.util.*
 import io.mockk.coEvery
 import kotlinx.coroutines.flow.asFlow
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
@@ -31,10 +33,22 @@ class QuizControllerTest : BaseControllerTest() {
 
     private val findAllMarkedQuizRequest = FindAllMarkedQuizRequest(quizIds = listOf(OBJECT_ID))
 
+    private val checkAnswerRequest = CheckAnswerRequest(
+        quizId = OBJECT_ID,
+        answer = 1
+    )
+
     private val quizResponse = QuizResponse(createQuiz())
+
+    private val checkAnswerResponse = CheckAnswerResponse(true)
 
     private val findAllMarkedQuizRequestFields = listOf(
         "quizIds" desc "퀴즈 식별자 목록"
+    )
+
+    private val checkAnswerRequestFields = listOf(
+        "quizId" desc "퀴즈 식별자",
+        "answer" desc "정답"
     )
 
     private val quizResponseFields = listOf(
@@ -55,6 +69,10 @@ class QuizControllerTest : BaseControllerTest() {
                 "[].writer.id" desc "유저 식별자",
                 "[].writer.nickname" desc "닉네임"
             )
+
+    private val checkAnswerResponseFields = listOf(
+        "isAnswer" desc "정답 여부"
+    )
 
     init {
         describe("findAllByChapterId()는") {
@@ -127,6 +145,58 @@ class QuizControllerTest : BaseControllerTest() {
                                 Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
                                 requestFields(findAllMarkedQuizRequestFields),
                                 responseFields(quizResponsesFields)
+                            )
+                        )
+                }
+            }
+        }
+
+        describe("checkQuiz()는") {
+            context("주어진 퀴즈 식별자에 대한 퀴즈가 존재하는 경우") {
+                coEvery { quizService.checkAnswer(any(), any()) } returns checkAnswerResponse
+                withMockUser()
+
+                it("상태 코드 200과 정답 여부가 담긴 checkAnswerResponse를 반환한다.") {
+                    webClient
+                        .post()
+                        .uri("/quiz/check")
+                        .bodyValue(checkAnswerRequest)
+                        .exchange()
+                        .expectStatus()
+                        .isOk
+                        .expectBody(CheckAnswerResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "정답 확인 성공(200)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                requestFields(checkAnswerRequestFields),
+                                responseFields(checkAnswerResponseFields)
+                            )
+                        )
+                }
+            }
+
+            context("주어진 퀴즈 식별자에 대한 퀴즈가 존재하지 않는 경우") {
+                coEvery { quizService.checkAnswer(any(), any()) } throws QuizNotFoundException()
+                withMockUser()
+
+                it("상태 코드 404과 에러를 반환한다.") {
+                    webClient
+                        .post()
+                        .uri("/quiz/check")
+                        .bodyValue(checkAnswerRequest)
+                        .exchange()
+                        .expectStatus()
+                        .isNotFound
+                        .expectBody(ErrorResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "정답 확인 실패(404)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                requestFields(checkAnswerRequestFields),
+                                responseFields(errorResponseFields)
                             )
                         )
                 }
