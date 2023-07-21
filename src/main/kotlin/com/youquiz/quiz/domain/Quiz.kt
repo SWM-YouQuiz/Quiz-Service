@@ -14,7 +14,7 @@ class Quiz(
     val solution: String,
     val writer: User,
     val chapterId: String,
-    var answerRate: Long,
+    var answerRate: Double,
     var correctCount: Long,
     var incorrectCount: Long,
 ) {
