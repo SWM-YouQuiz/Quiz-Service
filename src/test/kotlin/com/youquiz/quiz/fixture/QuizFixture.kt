@@ -2,7 +2,6 @@ package com.youquiz.quiz.fixture
 
 import com.youquiz.quiz.domain.Quiz
 import com.youquiz.quiz.domain.User
-import java.time.LocalDateTime
 
 const val QUESTION = "test"
 const val ANSWER = 1
@@ -20,7 +19,6 @@ fun createQuiz(
     writer: User = WRITER,
     chapterId: String = CHAPTER_ID,
     answerRate: Long = ANSWER_RATE,
-    createDate: LocalDateTime = CREATED_DATE
 ): Quiz = Quiz(
     id = id,
     question = question,
@@ -29,5 +27,4 @@ fun createQuiz(
     writer = writer,
     chapterId = chapterId,
     answerRate = answerRate,
-    createdDate = createDate
 )
