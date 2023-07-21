@@ -99,7 +99,9 @@ tasks {
                     "**.*Configuration*",
                     "**.*Exception*",
                     "**.*LogUtil*",
-                    "**.*Client*"
+                    "**.*Client*",
+                    "**.*Producer*",
+                    "**.*Consumer*"
                 )
             }
         }
