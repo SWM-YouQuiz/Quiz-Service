@@ -17,6 +17,7 @@ class QuizRouter {
                 GET("/writer/{id}", handler::findAllByWriterId)
                 POST("/mark", handler::findAllMarkedQuiz)
                 POST("/check", handler::checkAnswer)
+                POST("", handler::createQuiz)
             }
         }
 }

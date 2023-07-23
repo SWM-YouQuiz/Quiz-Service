@@ -2,6 +2,7 @@ package com.youquiz.quiz.handler
 
 import com.github.jwt.authentication.JwtAuthentication
 import com.youquiz.quiz.dto.CheckAnswerRequest
+import com.youquiz.quiz.dto.CreateQuizRequest
 import com.youquiz.quiz.dto.FindAllMarkedQuizRequest
 import com.youquiz.quiz.service.QuizService
 import org.springframework.stereotype.Component
@@ -26,6 +27,14 @@ class QuizHandler(
             ServerResponse.ok().bodyAndAwait(quizService.findAllMarkedQuiz(it))
         }
 
+    suspend fun createQuiz(request: ServerRequest): ServerResponse =
+        with(request) {
+            val userId = (awaitPrincipal() as JwtAuthentication).id
+            val createQuizRequest = awaitBody<CreateQuizRequest>()
+
+            ServerResponse.ok().bodyValueAndAwait(quizService.createQuiz(userId, createQuizRequest))
+        }
+
     suspend fun checkAnswer(request: ServerRequest): ServerResponse =
         with(request) {
             val userId = (awaitPrincipal() as JwtAuthentication).id
@@ -33,4 +42,5 @@ class QuizHandler(
 
             ServerResponse.ok().bodyValueAndAwait(quizService.checkAnswer(userId, checkAnswerRequest))
         }
+
 }
