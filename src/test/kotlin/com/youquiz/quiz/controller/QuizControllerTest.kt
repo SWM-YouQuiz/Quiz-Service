@@ -3,14 +3,9 @@ package com.youquiz.quiz.controller
 import com.epages.restdocs.apispec.WebTestClientRestDocumentationWrapper
 import com.ninjasquad.springmockk.MockkBean
 import com.youquiz.quiz.config.SecurityTestConfiguration
-import com.youquiz.quiz.dto.CheckAnswerRequest
-import com.youquiz.quiz.dto.CheckAnswerResponse
-import com.youquiz.quiz.dto.FindAllMarkedQuizRequest
-import com.youquiz.quiz.dto.QuizResponse
+import com.youquiz.quiz.dto.*
 import com.youquiz.quiz.exception.QuizNotFoundException
-import com.youquiz.quiz.fixture.ID
-import com.youquiz.quiz.fixture.OBJECT_ID
-import com.youquiz.quiz.fixture.createQuiz
+import com.youquiz.quiz.fixture.*
 import com.youquiz.quiz.global.dto.ErrorResponse
 import com.youquiz.quiz.handler.QuizHandler
 import com.youquiz.quiz.router.QuizRouter
@@ -33,6 +28,14 @@ class QuizControllerTest : BaseControllerTest() {
 
     private val findAllMarkedQuizRequest = FindAllMarkedQuizRequest(quizIds = listOf(OBJECT_ID))
 
+    private val createQuizRequest = CreateQuizRequest(
+        question = QUESTION,
+        answer = ANSWER,
+        solution = SOLUTION,
+        writerId = ID,
+        chapterId = CHAPTER_ID,
+    )
+
     private val checkAnswerRequest = CheckAnswerRequest(
         quizId = OBJECT_ID,
         answer = 1
@@ -46,6 +49,14 @@ class QuizControllerTest : BaseControllerTest() {
         "quizIds" desc "퀴즈 식별자 목록"
     )
 
+    private val createQuizRequestFields = listOf(
+        "question" desc "지문",
+        "answer" desc "정답",
+        "solution" desc "풀이",
+        "writerId" desc "유저 식별자",
+        "chapterId" desc "챕터 식별자",
+    )
+
     private val checkAnswerRequestFields = listOf(
         "quizId" desc "퀴즈 식별자",
         "answer" desc "정답"
@@ -57,18 +68,16 @@ class QuizControllerTest : BaseControllerTest() {
         "answer" desc "정답",
         "solution" desc "풀이",
         "writer" desc "작성자",
+        "writer.id" desc "유저 식별자",
+        "writer.nickname" desc "닉네임",
         "chapterId" desc "챕터 식별자",
         "answerRate" desc "정답률",
         "correctCount" desc "정답 횟수",
         "incorrectCount" desc "오답 횟수",
-        "createdDate" desc "생성 날짜"
+        "createdDate" desc "생성 날짜",
     )
 
-    private val quizResponsesFields = quizResponseFields.map { "[].${it.path}" desc it.description as String } +
-            listOf(
-                "[].writer.id" desc "유저 식별자",
-                "[].writer.nickname" desc "닉네임"
-            )
+    private val quizResponsesFields = quizResponseFields.map { "[].${it.path}" desc it.description as String }
 
     private val checkAnswerResponseFields = listOf(
         "isAnswer" desc "정답 여부"
@@ -145,6 +154,33 @@ class QuizControllerTest : BaseControllerTest() {
                                 Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
                                 requestFields(findAllMarkedQuizRequestFields),
                                 responseFields(quizResponsesFields)
+                            )
+                        )
+                }
+            }
+        }
+
+        describe("createQuiz()는") {
+            context("유저가 퀴즈를 작성해서 제출하는 경우") {
+                coEvery { quizService.createQuiz(any(), any()) } returns quizResponse
+                withMockUser()
+
+                it("상태 코드 200과 quizResponse를 반환한다.") {
+                    webClient
+                        .post()
+                        .uri("/quiz")
+                        .bodyValue(createQuizRequest)
+                        .exchange()
+                        .expectStatus()
+                        .isOk
+                        .expectBody(QuizResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "퀴즈 생성 성공(200)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                requestFields(createQuizRequestFields),
+                                responseFields(quizResponseFields)
                             )
                         )
                 }
