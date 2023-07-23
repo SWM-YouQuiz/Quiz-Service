@@ -1,16 +1,13 @@
 package com.youquiz.quiz.service
 
+import com.youquiz.quiz.adapter.client.UserClient
 import com.youquiz.quiz.adapter.producer.UserProducer
-import com.youquiz.quiz.dto.CheckAnswerRequest
-import com.youquiz.quiz.dto.FindAllMarkedQuizRequest
-import com.youquiz.quiz.dto.QuizResponse
-import com.youquiz.quiz.fixture.CHAPTER_ID
-import com.youquiz.quiz.fixture.ID
-import com.youquiz.quiz.fixture.OBJECT_ID
-import com.youquiz.quiz.fixture.createQuiz
+import com.youquiz.quiz.dto.*
+import com.youquiz.quiz.fixture.*
 import com.youquiz.quiz.repository.QuizRepository
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.equality.shouldBeEqualToComparingFields
 import io.kotest.matchers.shouldBe
 import io.mockk.Runs
 import io.mockk.coEvery
@@ -22,6 +19,8 @@ import kotlinx.coroutines.flow.toList
 class QuizServiceTest : BehaviorSpec() {
     private val quizRepository = mockk<QuizRepository>()
 
+    private val userClient = mockk<UserClient>()
+
     private val userProducer = mockk<UserProducer>().apply {
         coEvery { correctAnswer(any()) } just Runs
         coEvery { incorrectAnswer(any()) } just Runs
@@ -29,6 +28,7 @@ class QuizServiceTest : BehaviorSpec() {
 
     private val quizService = QuizService(
         quizRepository = quizRepository,
+        userClient = userClient,
         userProducer = userProducer
     )
 
@@ -114,7 +114,36 @@ class QuizServiceTest : BehaviorSpec() {
                     checkAnswerResponse.isAnswer shouldBe false
                 }
             }
+        }
 
+        Given("유저가 퀴즈를 작성하는 중인 경우") {
+            val quiz = createQuiz().also {
+                coEvery { quizRepository.save(any()) } returns it
+                coEvery { userClient.findById(any()) } returns FindUserByIdResponse(
+                    id = ID,
+                    nickname = NICKNAME
+                )
+
+            }
+
+            When("유저가 퀴즈를 제출하면") {
+                val quizResponse = quizService.createQuiz(
+                    userId = ID,
+                    request = quiz.run {
+                        CreateQuizRequest(
+                            question = question,
+                            answer = answer,
+                            solution = solution,
+                            writerId = ID,
+                            chapterId = chapterId
+                        )
+                    }
+                )
+
+                Then("퀴즈가 생성된다.") {
+                    quizResponse shouldBeEqualToComparingFields QuizResponse(quiz)
+                }
+            }
         }
     }
 }
