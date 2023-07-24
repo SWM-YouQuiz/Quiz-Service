@@ -33,14 +33,13 @@ class QuizService(
         return quiz.let {
             if (request.answer == it.answer) {
                 userProducer.correctAnswer(userId)
-                it.correctCount += 1
+                it.correctAnswer()
                 CheckAnswerResponse(true)
             } else {
                 userProducer.incorrectAnswer(userId)
-                it.incorrectCount += 1
+                it.incorrectAnswer()
                 CheckAnswerResponse(false)
             }.apply {
-                it.changeAnswerRate()
                 quizRepository.save(it)
             }
         }
