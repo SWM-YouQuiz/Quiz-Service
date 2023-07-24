@@ -23,6 +23,12 @@ class SecurityConfiguration {
             logout { it.disable() }
             httpBasic { it.authenticationEntryPoint(HttpStatusServerEntryPoint(HttpStatus.UNAUTHORIZED)) }
             securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
+            authorizeExchange {
+                it.pathMatchers("/quiz/check")
+                    .authenticated()
+                    .anyExchange()
+                    .permitAll()
+            }
             addFilterAt(JwtAuthenticationFilter(jwtProvider), SecurityWebFiltersOrder.AUTHORIZATION)
             build()
         }

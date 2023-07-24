@@ -14,7 +14,24 @@ class Quiz(
     val solution: String,
     val writer: User,
     val chapterId: String,
-    val answerRate: Long,
+    var answerRate: Double,
+    var correctCount: Long,
+    var incorrectCount: Long,
+) {
     @CreatedDate
-    val createdDate: LocalDateTime
-)
+    val createdDate: LocalDateTime = LocalDateTime.now()
+
+    fun correctAnswer() {
+        correctCount += 1
+        changeAnswerRate()
+    }
+
+    fun incorrectAnswer() {
+        incorrectCount += 1
+        changeAnswerRate()
+    }
+
+    private fun changeAnswerRate() {
+        answerRate = (correctCount.toDouble() / (correctCount + incorrectCount).toDouble()) * 100
+    }
+}

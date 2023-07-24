@@ -1,5 +1,8 @@
 package com.youquiz.quiz.service
 
+import com.youquiz.quiz.adapter.producer.UserProducer
+import com.youquiz.quiz.dto.CheckAnswerRequest
+import com.youquiz.quiz.dto.CheckAnswerResponse
 import com.youquiz.quiz.dto.FindAllMarkedQuizRequest
 import com.youquiz.quiz.dto.QuizResponse
 import com.youquiz.quiz.repository.QuizRepository
@@ -9,7 +12,8 @@ import org.springframework.stereotype.Service
 
 @Service
 class QuizService(
-    private val quizRepository: QuizRepository
+    private val quizRepository: QuizRepository,
+    private val userProducer: UserProducer
 ) {
     fun findAllByChapterId(chapterId: String): Flow<QuizResponse> =
         quizRepository.findAllByChapterId(chapterId)
@@ -22,4 +26,22 @@ class QuizService(
     fun findAllMarkedQuiz(request: FindAllMarkedQuizRequest): Flow<QuizResponse> =
         quizRepository.findAllByIdIn(request.quizIds)
             .map { QuizResponse(it) }
+
+    suspend fun checkAnswer(userId: Long, request: CheckAnswerRequest): CheckAnswerResponse {
+        val quiz = quizRepository.findById(request.quizId)!!
+
+        return quiz.let {
+            if (request.answer == it.answer) {
+                userProducer.correctAnswer(userId)
+                it.correctAnswer()
+                CheckAnswerResponse(true)
+            } else {
+                userProducer.incorrectAnswer(userId)
+                it.incorrectAnswer()
+                CheckAnswerResponse(false)
+            }.apply {
+                quizRepository.save(it)
+            }
+        }
+    }
 }
