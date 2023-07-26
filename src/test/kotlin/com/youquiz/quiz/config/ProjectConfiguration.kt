@@ -6,6 +6,6 @@ import io.kotest.extensions.spring.SpringExtension
 import org.springframework.context.annotation.Configuration
 
 @Configuration
-class TestConfiguration : AbstractProjectConfig() {
+class ProjectConfiguration : AbstractProjectConfig() {
     override fun extensions(): List<Extension> = listOf(SpringExtension)
 }
