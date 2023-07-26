@@ -19,7 +19,7 @@ class Quiz(
     var incorrectCount: Long,
 ) {
     @CreatedDate
-    val createdDate: LocalDateTime = LocalDateTime.now()
+    var createdDate: LocalDateTime = LocalDateTime.now()
 
     fun correctAnswer() {
         correctCount += 1
