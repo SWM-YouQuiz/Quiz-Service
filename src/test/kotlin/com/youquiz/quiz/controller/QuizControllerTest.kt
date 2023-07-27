@@ -33,6 +33,7 @@ class QuizControllerTest : BaseControllerTest() {
         answer = ANSWER,
         solution = SOLUTION,
         chapterId = CHAPTER_ID,
+        options = OPTIONS
     )
 
     private val checkAnswerRequest = CheckAnswerRequest(
@@ -53,6 +54,7 @@ class QuizControllerTest : BaseControllerTest() {
         "answer" desc "정답",
         "solution" desc "풀이",
         "chapterId" desc "챕터 식별자",
+        "options" desc "선지"
     )
 
     private val checkAnswerRequestFields = listOf(
@@ -70,6 +72,7 @@ class QuizControllerTest : BaseControllerTest() {
         "writer.nickname" desc "닉네임",
         "chapterId" desc "챕터 식별자",
         "answerRate" desc "정답률",
+        "options" desc "선지",
         "correctCount" desc "정답 횟수",
         "incorrectCount" desc "오답 횟수",
         "createdDate" desc "생성 날짜",

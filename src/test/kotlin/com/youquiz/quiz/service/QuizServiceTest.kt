@@ -134,6 +134,7 @@ class QuizServiceTest : BehaviorSpec() {
                             question = question,
                             answer = answer,
                             solution = solution,
+                            options = options,
                             chapterId = chapterId
                         )
                     }

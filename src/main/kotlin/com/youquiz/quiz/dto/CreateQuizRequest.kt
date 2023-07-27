@@ -5,4 +5,5 @@ data class CreateQuizRequest(
     val answer: Int,
     val solution: String,
     val chapterId: String,
+    val options: List<String>
 )

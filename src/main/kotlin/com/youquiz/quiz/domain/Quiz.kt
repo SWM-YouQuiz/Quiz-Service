@@ -14,6 +14,7 @@ class Quiz(
     val solution: String,
     val writer: User,
     val chapterId: String,
+    val options: List<String>,
     var answerRate: Double,
     var correctCount: Long,
     var incorrectCount: Long,

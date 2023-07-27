@@ -44,9 +44,10 @@ class QuizService(
                     solution = solution,
                     writer = user,
                     chapterId = chapterId,
+                    options = options,
                     answerRate = 0.0,
                     correctCount = 0,
-                    incorrectCount = 0
+                    incorrectCount = 0,
                 )
             ).let {
                 QuizResponse(it)
