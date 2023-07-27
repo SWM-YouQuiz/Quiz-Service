@@ -134,7 +134,6 @@ class QuizServiceTest : BehaviorSpec() {
                             question = question,
                             answer = answer,
                             solution = solution,
-                            writerId = ID,
                             chapterId = chapterId
                         )
                     }

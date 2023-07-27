@@ -32,7 +32,6 @@ class QuizControllerTest : BaseControllerTest() {
         question = QUESTION,
         answer = ANSWER,
         solution = SOLUTION,
-        writerId = ID,
         chapterId = CHAPTER_ID,
     )
 
@@ -53,7 +52,6 @@ class QuizControllerTest : BaseControllerTest() {
         "question" desc "지문",
         "answer" desc "정답",
         "solution" desc "풀이",
-        "writerId" desc "유저 식별자",
         "chapterId" desc "챕터 식별자",
     )
 
