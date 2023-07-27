@@ -1,8 +1,8 @@
 spring:
   data:
     mongodb:
-      uri: mongodb://localhost:27017/quiz
+      uri: mongodb://${DB_HOST}
 jwt:
-  secretKey: dasdsaddsaldldasjdjdajkdjkdsakjldasjkldkjldas
-  accessTokenExpire: 30
-  refreshTokenExpire: 120
+  secretKey: ${JWT_SECRET}
+  accessTokenExpire: ${JWT_ACCESS_EXPIRE}
+  refreshTokenExpire: ${JWT_REFRESH_EXPIRE}
