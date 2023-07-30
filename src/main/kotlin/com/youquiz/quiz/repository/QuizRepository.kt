@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository
 interface QuizRepository : CoroutineCrudRepository<Quiz, String> {
     fun findAllByChapterId(chapterId: String): Flow<Quiz>
 
-    fun findAllByWriterId(writerId: Long): Flow<Quiz>
+    fun findAllByWriterId(writerId: String): Flow<Quiz>
 
     fun findAllByIdIn(ids: List<String>): Flow<Quiz>
 }
