@@ -28,21 +28,14 @@ class QuizService(
         quizRepository.findAllByIdIn(userClient.findById(userId).likedQuizIds.toList())
             .map { QuizResponse(it) }
 
-    suspend fun createQuiz(userId: Long, request: CreateQuizRequest): QuizResponse =
+    suspend fun createQuiz(userId: String, request: CreateQuizRequest): QuizResponse =
         with(request) {
-            val user = userClient.findById(userId).run {
-                User(
-                    id = id,
-                    nickname = nickname
-                )
-            }
-
             quizRepository.save(
                 Quiz(
                     question = question,
                     answer = answer,
                     solution = solution,
-                    writer = user,
+                    writerId = userId,
                     chapterId = chapterId,
                     options = options,
                     answerRate = 0.0,
