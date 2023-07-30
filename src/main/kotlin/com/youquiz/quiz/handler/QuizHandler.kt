@@ -3,7 +3,6 @@ package com.youquiz.quiz.handler
 import com.github.jwt.authentication.JwtAuthentication
 import com.youquiz.quiz.dto.CheckAnswerRequest
 import com.youquiz.quiz.dto.CreateQuizRequest
-import com.youquiz.quiz.dto.FindAllMarkedQuizRequest
 import com.youquiz.quiz.service.QuizService
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
