@@ -22,9 +22,10 @@ class QuizHandler(
             ServerResponse.ok().bodyAndAwait(quizService.findAllByWriterId(it))
         }
 
-    suspend fun findAllMarkedQuiz(request: ServerRequest): ServerResponse =
-        request.awaitBody<FindAllMarkedQuizRequest>().let {
-            ServerResponse.ok().bodyAndAwait(quizService.findAllMarkedQuiz(it))
+    suspend fun findAllLikedQuiz(request: ServerRequest): ServerResponse =
+        with(request.awaitPrincipal() as JwtAuthentication) {
+            ServerResponse.ok()
+                .bodyAndAwait(quizService.findAllLikedQuiz(id))
         }
 
     suspend fun createQuiz(request: ServerRequest): ServerResponse =

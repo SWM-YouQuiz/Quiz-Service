@@ -15,7 +15,7 @@ class QuizRouter {
             "/quiz".nest {
                 GET("/chapter/{id}", handler::findAllByChapterId)
                 GET("/writer/{id}", handler::findAllByWriterId)
-                POST("/mark", handler::findAllMarkedQuiz)
+                GET("/liked", handler::findAllLikedQuiz)
                 POST("/check", handler::checkAnswer)
                 POST("", handler::createQuiz)
             }

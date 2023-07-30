@@ -24,8 +24,8 @@ class QuizService(
         quizRepository.findAllByWriterId(writerId)
             .map { QuizResponse(it) }
 
-    fun findAllMarkedQuiz(request: FindAllMarkedQuizRequest): Flow<QuizResponse> =
-        quizRepository.findAllByIdIn(request.quizIds)
+    suspend fun findAllLikedQuiz(userId: String): Flow<QuizResponse> =
+        quizRepository.findAllByIdIn(userClient.findById(userId).likedQuizIds.toList())
             .map { QuizResponse(it) }
 
     suspend fun createQuiz(userId: Long, request: CreateQuizRequest): QuizResponse =
