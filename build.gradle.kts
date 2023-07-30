@@ -101,7 +101,8 @@ tasks {
                     "**.*LogUtil*",
                     "**.*Client*",
                     "**.*Producer*",
-                    "**.*Consumer*"
+                    "**.*Consumer*",
+                    "**.*Event*"
                 )
             }
         }
