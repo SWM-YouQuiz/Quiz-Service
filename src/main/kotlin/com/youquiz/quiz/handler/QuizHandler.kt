@@ -43,5 +43,4 @@ class QuizHandler(
 
             ServerResponse.ok().bodyValueAndAwait(quizService.checkAnswer(userId, checkAnswerRequest))
         }
-
 }
