@@ -1,0 +1,16 @@
+spring:
+  data:
+    mongodb:
+      uri: ${QUIZ_DB_URL}
+  kafka:
+    bootstrap-servers: ${KAFKA_URL}
+jwt:
+  secretKey: ${JWT_SECRET}
+  accessTokenExpire: ${JWT_ACCESS_EXPIRE}
+  refreshTokenExpire: ${JWT_REFRESH_EXPIRE}
+url:
+  frontend: ${FRONTEND_URL}
+  service:
+    auth: auth-service
+    user: user-service
+    quiz: quiz-service

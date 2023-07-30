@@ -1,0 +1,18 @@
+server:
+  port: 8083
+spring:
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/quiz
+  kafka:
+    bootstrap-servers: localhost:9092
+jwt:
+  secretKey: dsaijodajadsjdsalkjadslkjadsljlajkdslkjadslkjadsjlklsad
+  accessTokenExpire: 30
+  refreshTokenExpire: 60
+url:
+  frontend: http://localhost:3000
+  service:
+    auth: http://localhost:8081
+    user: http://localhost:8082
+    quiz: http://localhost:8083

@@ -1,8 +1,0 @@
-spring:
-  data:
-    mongodb:
-      uri: mongodb://${DB_HOST}
-jwt:
-  secretKey: ${JWT_SECRET}
-  accessTokenExpire: ${JWT_ACCESS_EXPIRE}
-  refreshTokenExpire: ${JWT_REFRESH_EXPIRE}
