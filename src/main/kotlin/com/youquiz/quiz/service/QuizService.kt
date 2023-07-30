@@ -3,8 +3,12 @@ package com.youquiz.quiz.service
 import com.youquiz.quiz.adapter.client.UserClient
 import com.youquiz.quiz.adapter.producer.UserProducer
 import com.youquiz.quiz.domain.Quiz
-import com.youquiz.quiz.domain.User
-import com.youquiz.quiz.dto.*
+import com.youquiz.quiz.dto.CheckAnswerRequest
+import com.youquiz.quiz.dto.CheckAnswerResponse
+import com.youquiz.quiz.dto.CreateQuizRequest
+import com.youquiz.quiz.dto.QuizResponse
+import com.youquiz.quiz.event.CorrectAnswerEvent
+import com.youquiz.quiz.event.IncorrectAnswerEvent
 import com.youquiz.quiz.repository.QuizRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -47,17 +51,34 @@ class QuizService(
             }
         }
 
-    suspend fun checkAnswer(userId: Long, request: CheckAnswerRequest): CheckAnswerResponse {
+    suspend fun checkAnswer(userId: String, request: CheckAnswerRequest): CheckAnswerResponse {
         val quiz = quizRepository.findById(request.quizId)!!
+        val findUserByIdResponse = userClient.findById(userId)
+        val correctQuizIds = findUserByIdResponse.correctQuizIds
+        val incorrectQuizIds = findUserByIdResponse.incorrectQuizIds
 
         return quiz.let {
             if (request.answer == it.answer) {
-                userProducer.correctAnswer(userId)
-                it.correctAnswer()
+                if ((it.id!! !in correctQuizIds) and (it.id!! !in incorrectQuizIds)) {
+                    userProducer.correctAnswer(
+                        CorrectAnswerEvent(
+                            userId = userId,
+                            quizId = it.id!!
+                        )
+                    )
+                    it.correctAnswer()
+                }
                 CheckAnswerResponse(true)
             } else {
-                userProducer.incorrectAnswer(userId)
-                it.incorrectAnswer()
+                if ((it.id!! !in correctQuizIds) and (it.id!! !in incorrectQuizIds)) {
+                    userProducer.incorrectAnswer(
+                        IncorrectAnswerEvent(
+                            userId = userId,
+                            quizId = it.id!!
+                        )
+                    )
+                    it.incorrectAnswer()
+                }
                 CheckAnswerResponse(false)
             }.apply {
                 quizRepository.save(it)
