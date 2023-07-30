@@ -3,7 +3,8 @@ package com.youquiz.quiz.controller
 import com.epages.restdocs.apispec.WebTestClientRestDocumentationWrapper
 import com.ninjasquad.springmockk.MockkBean
 import com.youquiz.quiz.config.SecurityTestConfiguration
-import com.youquiz.quiz.dto.*
+import com.youquiz.quiz.dto.CheckAnswerResponse
+import com.youquiz.quiz.dto.QuizResponse
 import com.youquiz.quiz.exception.QuizNotFoundException
 import com.youquiz.quiz.fixture.*
 import com.youquiz.quiz.global.dto.ErrorResponse
@@ -26,29 +27,6 @@ class QuizControllerTest : BaseControllerTest() {
     @MockkBean
     private lateinit var quizService: QuizService
 
-    private val findAllMarkedQuizRequest = FindAllMarkedQuizRequest(quizIds = listOf(OBJECT_ID))
-
-    private val createQuizRequest = CreateQuizRequest(
-        question = QUESTION,
-        answer = ANSWER,
-        solution = SOLUTION,
-        chapterId = CHAPTER_ID,
-        options = OPTIONS
-    )
-
-    private val checkAnswerRequest = CheckAnswerRequest(
-        quizId = OBJECT_ID,
-        answer = 1
-    )
-
-    private val quizResponse = QuizResponse(createQuiz())
-
-    private val checkAnswerResponse = CheckAnswerResponse(true)
-
-    private val findAllMarkedQuizRequestFields = listOf(
-        "quizIds" desc "퀴즈 식별자 목록"
-    )
-
     private val createQuizRequestFields = listOf(
         "question" desc "지문",
         "answer" desc "정답",
@@ -67,9 +45,7 @@ class QuizControllerTest : BaseControllerTest() {
         "question" desc "지문",
         "answer" desc "정답",
         "solution" desc "풀이",
-        "writer" desc "작성자",
-        "writer.id" desc "유저 식별자",
-        "writer.nickname" desc "닉네임",
+        "writerId" desc "작성자 식별자",
         "chapterId" desc "챕터 식별자",
         "answerRate" desc "정답률",
         "options" desc "선지",
@@ -87,12 +63,13 @@ class QuizControllerTest : BaseControllerTest() {
     init {
         describe("findAllByChapterId()는") {
             context("챕터와 각각의 챕터에 속하는 퀴즈들이 존재하는 경우") {
-                coEvery { quizService.findAllByChapterId(any()) } returns List(3) { quizResponse }.asFlow()
+                coEvery { quizService.findAllByChapterId(any()) } returns List(3) { createQuizResponse() }.asFlow()
+                withMockUser()
 
                 it("상태 코드 200과 quizResponse들을 반환한다.") {
                     webClient
                         .get()
-                        .uri("/quiz/chapter/{id}", OBJECT_ID)
+                        .uri("/quiz/chapter/{id}", ID)
                         .exchange()
                         .expectStatus()
                         .isOk
@@ -112,7 +89,8 @@ class QuizControllerTest : BaseControllerTest() {
 
         describe("findAllByWriterId()는") {
             context("유저가 작성한 퀴즈가 존재하는 경우") {
-                coEvery { quizService.findAllByWriterId(any()) } returns List(3) { quizResponse }.asFlow()
+                coEvery { quizService.findAllByWriterId(any()) } returns List(3) { createQuizResponse() }.asFlow()
+                withMockUser()
 
                 it("상태 코드 200과 quizResponse들을 반환한다.") {
                     webClient
@@ -135,25 +113,24 @@ class QuizControllerTest : BaseControllerTest() {
             }
         }
 
-        describe("findAllMarkedQuiz()는") {
-            context("유저가 저장한 퀴즈가 존재하는 경우") {
-                coEvery { quizService.findAllMarkedQuiz(any()) } returns List(3) { quizResponse }.asFlow()
+        describe("findAllLikedQuiz()는") {
+            context("유저가 좋아요한 퀴즈가 존재하는 경우") {
+                coEvery { quizService.findAllLikedQuiz(any()) } returns List(3) { createQuizResponse() }.asFlow()
+                withMockUser()
 
                 it("상태 코드 200과 quizResponse들을 반환한다.") {
                     webClient
-                        .post()
-                        .uri("/quiz/mark")
-                        .bodyValue(findAllMarkedQuizRequest)
+                        .get()
+                        .uri("/quiz/liked")
                         .exchange()
                         .expectStatus()
                         .isOk
                         .expectBody(List::class.java)
                         .consumeWith(
                             WebTestClientRestDocumentationWrapper.document(
-                                "유저가 저장한 퀴즈 조회 성공(200)",
+                                "유저가 좋아요한 퀴즈 조회 성공(200)",
                                 Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
                                 Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                requestFields(findAllMarkedQuizRequestFields),
                                 responseFields(quizResponsesFields)
                             )
                         )
@@ -163,14 +140,14 @@ class QuizControllerTest : BaseControllerTest() {
 
         describe("createQuiz()는") {
             context("유저가 퀴즈를 작성해서 제출하는 경우") {
-                coEvery { quizService.createQuiz(any(), any()) } returns quizResponse
+                coEvery { quizService.createQuiz(any(), any()) } returns createQuizResponse()
                 withMockUser()
 
                 it("상태 코드 200과 quizResponse를 반환한다.") {
                     webClient
                         .post()
                         .uri("/quiz")
-                        .bodyValue(createQuizRequest)
+                        .bodyValue(createCreateQuizRequest())
                         .exchange()
                         .expectStatus()
                         .isOk
@@ -190,14 +167,14 @@ class QuizControllerTest : BaseControllerTest() {
 
         describe("checkQuiz()는") {
             context("주어진 퀴즈 식별자에 대한 퀴즈가 존재하는 경우") {
-                coEvery { quizService.checkAnswer(any(), any()) } returns checkAnswerResponse
+                coEvery { quizService.checkAnswer(any(), any()) } returns createCheckAnswerResponse()
                 withMockUser()
 
                 it("상태 코드 200과 정답 여부가 담긴 checkAnswerResponse를 반환한다.") {
                     webClient
                         .post()
                         .uri("/quiz/check")
-                        .bodyValue(checkAnswerRequest)
+                        .bodyValue(createCheckAnswerRequest())
                         .exchange()
                         .expectStatus()
                         .isOk
@@ -222,7 +199,7 @@ class QuizControllerTest : BaseControllerTest() {
                     webClient
                         .post()
                         .uri("/quiz/check")
-                        .bodyValue(checkAnswerRequest)
+                        .bodyValue(createCheckAnswerRequest())
                         .exchange()
                         .expectStatus()
                         .isNotFound
