@@ -1,7 +1,6 @@
 package com.youquiz.quiz.dto
 
 import com.youquiz.quiz.domain.Quiz
-import com.youquiz.quiz.domain.User
 import java.time.LocalDateTime
 
 data class QuizResponse(
@@ -9,7 +8,7 @@ data class QuizResponse(
     val question: String,
     val answer: Int,
     val solution: String,
-    val writer: User,
+    val writerId: String,
     val chapterId: String,
     val answerRate: Double,
     val options: List<String>,
@@ -25,7 +24,7 @@ data class QuizResponse(
                     question = question,
                     answer = answer,
                     solution = solution,
-                    writer = writer,
+                    writerId = writerId,
                     chapterId = chapterId,
                     options = options,
                     answerRate = answerRate,
