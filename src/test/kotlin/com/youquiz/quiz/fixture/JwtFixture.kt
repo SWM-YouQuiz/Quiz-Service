@@ -14,7 +14,7 @@ val jwtProvider = JwtConfiguration().jwtProvider(
 )
 
 fun createJwtAuthentication(
-    id: Long = ID,
+    id: String = ID,
     authorities: List<GrantedAuthority> = AUTHORITIES
 ): DefaultJwtAuthentication =
     DefaultJwtAuthentication(

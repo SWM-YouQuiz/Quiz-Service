@@ -1,24 +1,85 @@
 package com.youquiz.quiz.fixture
 
 import com.youquiz.quiz.domain.Quiz
-import com.youquiz.quiz.domain.User
+import com.youquiz.quiz.dto.CheckAnswerRequest
+import com.youquiz.quiz.dto.CheckAnswerResponse
+import com.youquiz.quiz.dto.CreateQuizRequest
+import com.youquiz.quiz.dto.QuizResponse
+import java.time.LocalDateTime
 
 const val QUESTION = "test"
 const val ANSWER = 1
 const val SOLUTION = "test"
-val WRITER = createUser()
-const val CHAPTER_ID = OBJECT_ID
-val OPTIONS = (1..5).map { "test_$it" }
+const val WRITER_ID = ID
+const val CHAPTER_ID = ID
+val OPTIONS = (0..4).map { "test_$it" }
 const val ANSWER_RATE = 50.0
 const val CORRECT_COUNT = 10L
 const val INCORRECT_COUNT = 10L
+const val IS_ANSWER = true
 
-fun createQuiz(
-    id: String = OBJECT_ID,
+fun createCreateQuizRequest(
     question: String = QUESTION,
     answer: Int = ANSWER,
     solution: String = SOLUTION,
-    writer: User = WRITER,
+    chapterId: String = CHAPTER_ID,
+    options: List<String> = OPTIONS,
+): CreateQuizRequest =
+    CreateQuizRequest(
+        question = question,
+        answer = answer,
+        solution = solution,
+        chapterId = chapterId,
+        options = options
+    )
+
+fun createCheckAnswerRequest(
+    quizId: String = ID,
+    answer: Int = ANSWER
+): CheckAnswerRequest =
+    CheckAnswerRequest(
+        quizId = quizId,
+        answer = answer
+    )
+
+fun createCheckAnswerResponse(
+    isAnswer: Boolean = IS_ANSWER
+): CheckAnswerResponse =
+    CheckAnswerResponse(isAnswer)
+
+fun createQuizResponse(
+    id: String = ID,
+    question: String = QUESTION,
+    answer: Int = ANSWER,
+    solution: String = SOLUTION,
+    writerId: String = WRITER_ID,
+    chapterId: String = CHAPTER_ID,
+    options: List<String> = OPTIONS,
+    answerRate: Double = ANSWER_RATE,
+    correctCount: Long = CORRECT_COUNT,
+    incorrectCount: Long = INCORRECT_COUNT,
+    createdDate: LocalDateTime = LocalDateTime.now()
+): QuizResponse =
+    QuizResponse(
+        id = id,
+        question = question,
+        answer = answer,
+        solution = solution,
+        writerId = writerId,
+        chapterId = chapterId,
+        options = options,
+        answerRate = answerRate,
+        correctCount = correctCount,
+        incorrectCount = incorrectCount,
+        createdDate = createdDate
+    )
+
+fun createQuiz(
+    id: String = ID,
+    question: String = QUESTION,
+    answer: Int = ANSWER,
+    solution: String = SOLUTION,
+    writerId: String = WRITER_ID,
     chapterId: String = CHAPTER_ID,
     options: List<String> = OPTIONS,
     answerRate: Double = ANSWER_RATE,
@@ -29,7 +90,7 @@ fun createQuiz(
     question = question,
     answer = answer,
     solution = solution,
-    writer = writer,
+    writerId = writerId,
     chapterId = chapterId,
     options = options,
     answerRate = answerRate,
