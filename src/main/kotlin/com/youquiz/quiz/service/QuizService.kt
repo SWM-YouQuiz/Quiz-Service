@@ -20,7 +20,7 @@ class QuizService(
         quizRepository.findAllByChapterId(chapterId)
             .map { QuizResponse(it) }
 
-    fun findAllByWriterId(writerId: Long): Flow<QuizResponse> =
+    fun findAllByWriterId(writerId: String): Flow<QuizResponse> =
         quizRepository.findAllByWriterId(writerId)
             .map { QuizResponse(it) }
 

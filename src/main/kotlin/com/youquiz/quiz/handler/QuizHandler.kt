@@ -19,7 +19,7 @@ class QuizHandler(
 
     suspend fun findAllByWriterId(request: ServerRequest): ServerResponse =
         request.pathVariable("id").let {
-            ServerResponse.ok().bodyAndAwait(quizService.findAllByWriterId(it.toLong()))
+            ServerResponse.ok().bodyAndAwait(quizService.findAllByWriterId(it))
         }
 
     suspend fun findAllMarkedQuiz(request: ServerRequest): ServerResponse =
