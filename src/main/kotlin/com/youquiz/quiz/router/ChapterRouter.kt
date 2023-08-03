@@ -14,6 +14,8 @@ class ChapterRouter {
         coRouter {
             "/api/chapter".nest {
                 GET("/course/{id}", handler::findAllByCourseId)
+            }
+            "/api/admin/chapter".nest {
                 POST("", handler::createChapter)
                 PUT("/{id}", handler::updateChapter)
                 DELETE("/{id}", handler::deleteChapter)
