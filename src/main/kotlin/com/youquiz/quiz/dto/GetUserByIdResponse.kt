@@ -2,7 +2,7 @@ package com.youquiz.quiz.dto
 
 import java.time.LocalDateTime
 
-data class FindUserByIdResponse(
+data class GetUserByIdResponse(
     val id: String,
     val username: String,
     val nickname: String,

@@ -13,12 +13,12 @@ class ChapterRouter {
     fun chapterRoutes(handler: ChapterHandler): RouterFunction<ServerResponse> =
         coRouter {
             "/api/chapter".nest {
-                GET("/course/{id}", handler::findAllByCourseId)
+                GET("/course/{id}", handler::getChaptersByCourseId)
             }
             "/api/admin/chapter".nest {
                 POST("", handler::createChapter)
-                PUT("/{id}", handler::updateChapter)
-                DELETE("/{id}", handler::deleteChapter)
+                PUT("/{id}", handler::updateChapterById)
+                DELETE("/{id}", handler::deleteChapterById)
             }
         }
 }

@@ -1,7 +1,7 @@
 package com.youquiz.quiz.handler
 
 import com.youquiz.quiz.dto.CreateChapterRequest
-import com.youquiz.quiz.dto.UpdateChapterRequest
+import com.youquiz.quiz.dto.UpdateChapterByIdRequest
 import com.youquiz.quiz.service.ChapterService
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
@@ -10,9 +10,9 @@ import org.springframework.web.reactive.function.server.*
 class ChapterHandler(
     private val chapterService: ChapterService
 ) {
-    suspend fun findAllByCourseId(request: ServerRequest): ServerResponse =
+    suspend fun getChaptersByCourseId(request: ServerRequest): ServerResponse =
         request.pathVariable("id").let {
-            ServerResponse.ok().bodyAndAwait(chapterService.findAllByCourseId(it))
+            ServerResponse.ok().bodyAndAwait(chapterService.getChaptersByCourseId(it))
         }
 
     suspend fun createChapter(request: ServerRequest): ServerResponse =
@@ -20,17 +20,17 @@ class ChapterHandler(
             ServerResponse.ok().bodyValueAndAwait(chapterService.createChapter(it))
         }
 
-    suspend fun updateChapter(request: ServerRequest): ServerResponse =
+    suspend fun updateChapterById(request: ServerRequest): ServerResponse =
         with(request) {
             val id = pathVariable("id")
-            val updateChapterRequest = awaitBody<UpdateChapterRequest>()
+            val updateChapterByIdRequest = awaitBody<UpdateChapterByIdRequest>()
 
-            ServerResponse.ok().bodyValueAndAwait(chapterService.updateChapter(id, updateChapterRequest))
+            ServerResponse.ok().bodyValueAndAwait(chapterService.updateChapterById(id, updateChapterByIdRequest))
         }
 
-    suspend fun deleteChapter(request: ServerRequest): ServerResponse =
+    suspend fun deleteChapterById(request: ServerRequest): ServerResponse =
         request.pathVariable("id").let {
-            chapterService.deleteChapter(it)
+            chapterService.deleteChapterById(it)
 
             ServerResponse.ok().buildAndAwait()
         }

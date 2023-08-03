@@ -3,7 +3,7 @@ package com.youquiz.quiz.fixture
 import com.youquiz.quiz.domain.Chapter
 import com.youquiz.quiz.dto.ChapterResponse
 import com.youquiz.quiz.dto.CreateChapterRequest
-import com.youquiz.quiz.dto.UpdateChapterRequest
+import com.youquiz.quiz.dto.UpdateChapterByIdRequest
 
 const val DESCRIPTION = "test"
 const val COURSE_ID = "test"
@@ -17,10 +17,10 @@ fun createCreateChapterRequest(
         courseId = courseId
     )
 
-fun createUpdateChapterRequest(
+fun createUpdateChapterByIdRequest(
     description: String = DESCRIPTION,
-): UpdateChapterRequest =
-    UpdateChapterRequest(
+): UpdateChapterByIdRequest =
+    UpdateChapterByIdRequest(
         description = description,
     )
 

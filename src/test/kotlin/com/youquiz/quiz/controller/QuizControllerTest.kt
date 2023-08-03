@@ -2,7 +2,6 @@ package com.youquiz.quiz.controller
 
 import com.epages.restdocs.apispec.WebTestClientRestDocumentationWrapper
 import com.ninjasquad.springmockk.MockkBean
-import com.youquiz.quiz.config.SecurityTestConfiguration
 import com.youquiz.quiz.dto.CheckAnswerResponse
 import com.youquiz.quiz.dto.QuizResponse
 import com.youquiz.quiz.exception.QuizNotFoundException
@@ -13,15 +12,13 @@ import com.youquiz.quiz.router.QuizRouter
 import com.youquiz.quiz.service.QuizService
 import com.youquiz.quiz.util.*
 import io.mockk.coEvery
-import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.flowOf
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.restdocs.operation.preprocess.Preprocessors
 import org.springframework.restdocs.payload.PayloadDocumentation.requestFields
 import org.springframework.restdocs.payload.PayloadDocumentation.responseFields
 import org.springframework.restdocs.request.RequestDocumentation.pathParameters
-import org.springframework.test.context.ContextConfiguration
 
-@ContextConfiguration(classes = [SecurityTestConfiguration::class])
 @WebFluxTest(QuizRouter::class, QuizHandler::class)
 class QuizControllerTest : BaseControllerTest() {
     @MockkBean
@@ -41,7 +38,7 @@ class QuizControllerTest : BaseControllerTest() {
     )
 
     private val quizResponseFields = listOf(
-        "id" desc "퀴즈 식별자",
+        "id" desc "식별자",
         "question" desc "지문",
         "answer" desc "정답",
         "solution" desc "풀이",
@@ -61,10 +58,9 @@ class QuizControllerTest : BaseControllerTest() {
     )
 
     init {
-        describe("findAllByChapterId()는") {
+        describe("getQuizzesByChapterId()는") {
             context("챕터와 각각의 챕터에 속하는 퀴즈들이 존재하는 경우") {
-                coEvery { quizService.findAllByChapterId(any()) } returns List(3) { createQuizResponse() }.asFlow()
-                withMockUser()
+                coEvery { quizService.getQuizzesByChapterId(any()) } returns flowOf(createQuizResponse())
 
                 it("상태 코드 200과 quizResponse들을 반환한다.") {
                     webClient
@@ -76,10 +72,10 @@ class QuizControllerTest : BaseControllerTest() {
                         .expectBody(List::class.java)
                         .consumeWith(
                             WebTestClientRestDocumentationWrapper.document(
-                                "챕터 내 퀴즈 조회 성공(200)",
+                                "챕터 식별자를 통한 퀴즈 전체 조회 성공(200)",
                                 Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
                                 Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                pathParameters("id" paramDesc "챕터 식별자"),
+                                pathParameters("id" paramDesc "식별자"),
                                 responseFields(quizResponsesFields)
                             )
                         )
@@ -87,10 +83,9 @@ class QuizControllerTest : BaseControllerTest() {
             }
         }
 
-        describe("findAllByWriterId()는") {
+        describe("getQuizzesByWriterId()는") {
             context("유저가 작성한 퀴즈가 존재하는 경우") {
-                coEvery { quizService.findAllByWriterId(any()) } returns List(3) { createQuizResponse() }.asFlow()
-                withMockUser()
+                coEvery { quizService.getQuizzesByWriterId(any()) } returns flowOf(createQuizResponse())
 
                 it("상태 코드 200과 quizResponse들을 반환한다.") {
                     webClient
@@ -102,7 +97,7 @@ class QuizControllerTest : BaseControllerTest() {
                         .expectBody(List::class.java)
                         .consumeWith(
                             WebTestClientRestDocumentationWrapper.document(
-                                "유저가 작성한 퀴즈 조회 성공(200)",
+                                "유저가 작성한 퀴즈 전체 조회 성공(200)",
                                 Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
                                 Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
                                 pathParameters("id" paramDesc "유저 식별자"),
@@ -113,9 +108,9 @@ class QuizControllerTest : BaseControllerTest() {
             }
         }
 
-        describe("findAllLikedQuiz()는") {
+        describe("getQuizzesLikedQuiz()는") {
             context("유저가 좋아요한 퀴즈가 존재하는 경우") {
-                coEvery { quizService.findAllLikedQuiz(any()) } returns List(3) { createQuizResponse() }.asFlow()
+                coEvery { quizService.getQuizzesLikedQuiz(any()) } returns flowOf(createQuizResponse())
                 withMockUser()
 
                 it("상태 코드 200과 quizResponse들을 반환한다.") {
@@ -128,7 +123,7 @@ class QuizControllerTest : BaseControllerTest() {
                         .expectBody(List::class.java)
                         .consumeWith(
                             WebTestClientRestDocumentationWrapper.document(
-                                "유저가 좋아요한 퀴즈 조회 성공(200)",
+                                "유저가 좋아요한 퀴즈 전체 조회 성공(200)",
                                 Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
                                 Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
                                 responseFields(quizResponsesFields)

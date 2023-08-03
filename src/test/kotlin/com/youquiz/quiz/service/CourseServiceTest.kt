@@ -28,7 +28,7 @@ class CourseServiceTest : BehaviorSpec() {
                 coEvery { courseRepository.findById(any()) } returns it
                 coEvery { courseRepository.deleteById(any()) } just runs
             }
-            val courses = List(3) { course }.apply {
+            val courses = listOf(course).apply {
                 asFlow().let {
                     coEvery { courseRepository.findAll() } returns it
                 }
@@ -46,10 +46,7 @@ class CourseServiceTest : BehaviorSpec() {
             }
 
             When("어드민이 특정 코스를 수정하면") {
-                val courseResponse = courseService.updateCourseById(
-                    id = ID,
-                    request = updateCourseRequest
-                )
+                val courseResponse = courseService.updateCourseById(ID, updateCourseRequest)
 
                 Then("해당 코스가 수정된다.") {
                     courseResponse.title shouldNotBeEqual course.title

@@ -3,7 +3,7 @@ package com.youquiz.quiz.service
 import com.youquiz.quiz.domain.Chapter
 import com.youquiz.quiz.dto.ChapterResponse
 import com.youquiz.quiz.dto.CreateChapterRequest
-import com.youquiz.quiz.dto.UpdateChapterRequest
+import com.youquiz.quiz.dto.UpdateChapterByIdRequest
 import com.youquiz.quiz.exception.ChapterNotFoundException
 import com.youquiz.quiz.repository.ChapterRepository
 import kotlinx.coroutines.flow.Flow
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service
 class ChapterService(
     private val chapterRepository: ChapterRepository
 ) {
-    fun findAllByCourseId(courseId: String): Flow<ChapterResponse> =
+    fun getChaptersByCourseId(courseId: String): Flow<ChapterResponse> =
         chapterRepository.findAllByCourseId(courseId)
             .map { ChapterResponse(it) }
 
@@ -25,12 +25,10 @@ class ChapterService(
                     description = description,
                     courseId = courseId
                 )
-            ).let {
-                ChapterResponse(it)
-            }
+            ).let { ChapterResponse(it) }
         }
 
-    suspend fun updateChapter(id: String, request: UpdateChapterRequest): ChapterResponse =
+    suspend fun updateChapterById(id: String, request: UpdateChapterByIdRequest): ChapterResponse =
         with(request) {
             chapterRepository.findById(id)?.let {
                 chapterRepository.save(
@@ -45,7 +43,7 @@ class ChapterService(
             } ?: throw ChapterNotFoundException()
         }
 
-    suspend fun deleteChapter(id: String) {
+    suspend fun deleteChapterById(id: String) {
         chapterRepository.deleteById(id)
     }
 }

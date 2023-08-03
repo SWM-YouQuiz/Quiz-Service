@@ -1,5 +1,6 @@
 package com.youquiz.quiz.service
 
+import com.youquiz.quiz.domain.Course
 import com.youquiz.quiz.dto.CourseResponse
 import com.youquiz.quiz.dto.CreateCourseRequest
 import com.youquiz.quiz.dto.UpdateCourseByIdRequest
@@ -19,13 +20,24 @@ class CourseService(
 
     suspend fun createCourse(request: CreateCourseRequest): CourseResponse =
         with(request) {
-            CourseResponse(courseRepository.save(toEntity()))
+            courseRepository.save(
+                Course(
+                    title = title,
+                    image = image
+                )
+            ).let { CourseResponse(it) }
         }
 
     suspend fun updateCourseById(id: String, request: UpdateCourseByIdRequest): CourseResponse =
         with(request) {
             courseRepository.findById(id) ?: throw CourseNotFoundException()
-            CourseResponse(courseRepository.save(toEntity(id)))
+            courseRepository.save(
+                Course(
+                    id = id,
+                    title = title,
+                    image = image
+                )
+            ).let { CourseResponse(it) }
         }
 
     suspend fun deleteCourseById(id: String) {

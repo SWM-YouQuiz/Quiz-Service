@@ -2,7 +2,6 @@ package com.youquiz.quiz.controller
 
 import com.epages.restdocs.apispec.WebTestClientRestDocumentationWrapper
 import com.ninjasquad.springmockk.MockkBean
-import com.youquiz.quiz.config.SecurityTestConfiguration
 import com.youquiz.quiz.dto.CourseResponse
 import com.youquiz.quiz.fixture.ID
 import com.youquiz.quiz.fixture.createCourseResponse
@@ -11,19 +10,20 @@ import com.youquiz.quiz.fixture.createUpdateCourseByIdRequest
 import com.youquiz.quiz.handler.CourseHandler
 import com.youquiz.quiz.router.CourseRouter
 import com.youquiz.quiz.service.CourseService
-import com.youquiz.quiz.util.*
+import com.youquiz.quiz.util.BaseControllerTest
+import com.youquiz.quiz.util.desc
+import com.youquiz.quiz.util.paramDesc
+import com.youquiz.quiz.util.withMockAdmin
 import io.mockk.coEvery
 import io.mockk.just
 import io.mockk.runs
-import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.flowOf
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.restdocs.operation.preprocess.Preprocessors
 import org.springframework.restdocs.payload.PayloadDocumentation.requestFields
 import org.springframework.restdocs.payload.PayloadDocumentation.responseFields
 import org.springframework.restdocs.request.RequestDocumentation.pathParameters
-import org.springframework.test.context.ContextConfiguration
 
-@ContextConfiguration(classes = [SecurityTestConfiguration::class])
 @WebFluxTest(CourseRouter::class, CourseHandler::class)
 class CourseControllerTest : BaseControllerTest() {
     @MockkBean
@@ -50,8 +50,7 @@ class CourseControllerTest : BaseControllerTest() {
     init {
         describe("getCourses()는") {
             context("코스들이 존재하는 경우") {
-                coEvery { courseService.getCourses() } returns List(3) { createCourseResponse() }.asFlow()
-                withMockUser()
+                coEvery { courseService.getCourses() } returns flowOf(createCourseResponse())
 
                 it("상태 코드 200과 courseResponse들을 반환한다.") {
                     webClient
@@ -63,7 +62,7 @@ class CourseControllerTest : BaseControllerTest() {
                         .expectBody(List::class.java)
                         .consumeWith(
                             WebTestClientRestDocumentationWrapper.document(
-                                "코스 조회 성공(200)",
+                                "코스 전체 조회 성공(200)",
                                 Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
                                 Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
                                 responseFields(courseResponsesFields)

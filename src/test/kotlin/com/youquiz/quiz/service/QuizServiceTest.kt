@@ -20,8 +20,8 @@ class QuizServiceTest : BehaviorSpec() {
     private val userClient = mockk<UserClient>()
 
     private val userProducer = mockk<UserProducer>().apply {
-        coEvery { correctAnswer(any()) } just Runs
-        coEvery { incorrectAnswer(any()) } just Runs
+        coEvery { correctAnswer(any()) } just runs
+        coEvery { incorrectAnswer(any()) } just runs
     }
 
     private val quizService = QuizService(
@@ -34,7 +34,7 @@ class QuizServiceTest : BehaviorSpec() {
 
     init {
         Given("챕터와 각각의 챕터에 속하는 퀴즈들이 존재하는 경우") {
-            val quizzes = List(3) { createQuiz() }.apply {
+            val quizzes = listOf(createQuiz()).apply {
                 asFlow().let {
                     coEvery { quizRepository.findAllByChapterId(any()) } returns it
                     coEvery { quizRepository.findAllByIdIn(any()) } returns it
@@ -42,7 +42,7 @@ class QuizServiceTest : BehaviorSpec() {
             }
 
             When("유저가 챕터를 들어가면") {
-                val quizResponses = quizService.findAllByChapterId(CHAPTER_ID).toList()
+                val quizResponses = quizService.getQuizzesByChapterId(CHAPTER_ID).toList()
 
                 Then("해당 챕터에 속하는 퀴즈들이 주어진다.") {
                     quizResponses shouldContainExactly quizzes.map { QuizResponse(it) }
@@ -51,31 +51,35 @@ class QuizServiceTest : BehaviorSpec() {
         }
 
         Given("유저가 좋아요한 퀴즈가 존재하는 경우") {
-            val markedQuizzes = List(3) { createQuiz() }.apply {
-                coEvery { quizRepository.findAllByIdIn(any()) } returns asFlow()
+            val quizzes = listOf(createQuiz()).apply {
+                asFlow().let {
+                    coEvery { quizRepository.findAllByIdIn(any()) } returns it
+                }
             }
 
-            coEvery { userClient.findById(any()) } returns createFindUserByIdResponse()
+            coEvery { userClient.getUserById(any()) } returns createGetUserByIdResponse()
 
             When("유저가 본인이 좋아요한 퀴즈 보관함에 들어가면") {
-                val quizResponses = quizService.findAllLikedQuiz(userId = ID).toList()
+                val quizResponses = quizService.getQuizzesLikedQuiz(ID).toList()
 
                 Then("유저가 좋아요한 퀴즈들이 주어진다.") {
-                    quizResponses shouldContainExactly markedQuizzes.map { QuizResponse(it) }
+                    quizResponses shouldContainExactly quizzes.map { QuizResponse(it) }
                 }
             }
         }
 
         Given("유저가 작성한 퀴즈가 존재하는 경우") {
-            val writtenQuizzes = List(3) { createQuiz() }.apply {
-                coEvery { quizRepository.findAllByWriterId(any()) } returns asFlow()
+            val quizzes = listOf(createQuiz()).apply {
+                asFlow().let {
+                    coEvery { quizRepository.findAllByWriterId(any()) } returns it
+                }
             }
 
             When("유저가 본인이 작성한 퀴즈 보관함에 들어가면") {
-                val quizResponses = quizService.findAllByWriterId(ID).toList()
+                val quizResponses = quizService.getQuizzesByWriterId(ID).toList()
 
                 Then("본인이 작성한 퀴즈들이 주어진다.") {
-                    quizResponses shouldContainExactly writtenQuizzes.map { QuizResponse(it) }
+                    quizResponses shouldContainExactly quizzes.map { QuizResponse(it) }
                 }
             }
         }
@@ -86,13 +90,10 @@ class QuizServiceTest : BehaviorSpec() {
                 coEvery { quizRepository.save(any()) } returns it
             }
 
-            coEvery { userClient.findById(any()) } returns createFindUserByIdResponse()
+            coEvery { userClient.getUserById(any()) } returns createGetUserByIdResponse()
 
             When("옳은 답을 제출하면") {
-                val checkAnswerResponse = quizService.checkAnswer(
-                    userId = ID,
-                    request = createCheckAnswerRequest()
-                )
+                val checkAnswerResponse = quizService.checkAnswer(ID, createCheckAnswerRequest())
 
                 Then("정답으로 처리되어 정답률이 변경된다.") {
                     checkAnswerResponse.isAnswer shouldBe true
@@ -101,10 +102,7 @@ class QuizServiceTest : BehaviorSpec() {
             }
 
             When("틀린 답을 제출하면") {
-                val checkAnswerResponse = quizService.checkAnswer(
-                    userId = ID,
-                    request = createCheckAnswerRequest(answer = -1)
-                )
+                val checkAnswerResponse = quizService.checkAnswer(ID, createCheckAnswerRequest(answer = -1))
 
                 Then("오답으로 처리되어 정답률이 변경된다.") {
                     checkAnswerResponse.isAnswer shouldBe false
@@ -114,18 +112,15 @@ class QuizServiceTest : BehaviorSpec() {
         }
 
         Given("유저가 이미 푼 퀴즈가 존재하는 경우") {
-            val quiz = createQuiz(id = "quiz_1").also {
+            val quiz = createQuiz(id = "quiz").also {
                 coEvery { quizRepository.findById(any()) } returns it
                 coEvery { quizRepository.save(any()) } returns it
             }
 
-            coEvery { userClient.findById(any()) } returns createFindUserByIdResponse()
+            coEvery { userClient.getUserById(any()) } returns createGetUserByIdResponse()
 
             When("해당 퀴즈를 풀고 정답을 제출하면") {
-                val checkAnswerResponse = quizService.checkAnswer(
-                    userId = ID,
-                    request = createCheckAnswerRequest()
-                )
+                val checkAnswerResponse = quizService.checkAnswer(ID, createCheckAnswerRequest())
 
 
                 Then("채점만 되고 정답률은 변경되지 않는다.") {
@@ -135,10 +130,7 @@ class QuizServiceTest : BehaviorSpec() {
             }
 
             When("해당 퀴즈를 풀고 오답을 제출하면") {
-                val checkAnswerResponse = quizService.checkAnswer(
-                    userId = ID,
-                    request = createCheckAnswerRequest(answer = -1)
-                )
+                val checkAnswerResponse = quizService.checkAnswer(ID, createCheckAnswerRequest(answer = -1))
 
                 Then("채점만 되고 정답률은 변경되지 않는다.") {
                     checkAnswerResponse.isAnswer shouldBe false
@@ -152,13 +144,8 @@ class QuizServiceTest : BehaviorSpec() {
                 coEvery { quizRepository.save(any()) } returns it
             }
 
-            coEvery { userClient.findById(any()) } returns createFindUserByIdResponse()
-
             When("유저가 퀴즈를 제출하면") {
-                val quizResponse = quizService.createQuiz(
-                    userId = ID,
-                    request = createCreateQuizRequest()
-                )
+                val quizResponse = quizService.createQuiz(ID, createCreateQuizRequest())
 
                 Then("퀴즈가 생성된다.") {
                     quizResponse shouldBeEqualToComparingFields QuizResponse(quiz)

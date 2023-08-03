@@ -7,12 +7,12 @@ import com.youquiz.quiz.dto.CreateQuizRequest
 import com.youquiz.quiz.dto.QuizResponse
 import java.time.LocalDateTime
 
-const val QUESTION = "test"
+const val QUESTION = "question"
 const val ANSWER = 1
-const val SOLUTION = "test"
+const val SOLUTION = "solution"
 const val WRITER_ID = ID
 const val CHAPTER_ID = ID
-val OPTIONS = (0..4).map { "test_$it" }
+val OPTIONS = (0..4).map { "option_$it" }
 const val ANSWER_RATE = 50.0
 const val CORRECT_COUNT = 10L
 const val INCORRECT_COUNT = 10L

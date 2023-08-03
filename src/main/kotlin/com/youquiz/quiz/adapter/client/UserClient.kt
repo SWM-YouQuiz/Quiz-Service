@@ -1,6 +1,6 @@
 package com.youquiz.quiz.adapter.client
 
-import com.youquiz.quiz.dto.FindUserByIdResponse
+import com.youquiz.quiz.dto.GetUserByIdResponse
 import com.youquiz.quiz.exception.UserNotFoundException
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
@@ -14,10 +14,10 @@ class UserClient(
     @Value("\${url.service.user}")
     private val url: String
 ) {
-    suspend fun findById(userId: String) =
+    suspend fun getUserById(userId: String) =
         webClient.get()
             .uri("$url/api/user/{id}", userId)
             .retrieve()
             .onStatus(HttpStatus.NOT_FOUND::equals) { throw UserNotFoundException() }
-            .awaitBody<FindUserByIdResponse>()
+            .awaitBody<GetUserByIdResponse>()
 }

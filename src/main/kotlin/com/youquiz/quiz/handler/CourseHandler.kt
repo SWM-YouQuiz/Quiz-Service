@@ -29,6 +29,7 @@ class CourseHandler(
     suspend fun deleteCourseById(request: ServerRequest): ServerResponse =
         request.pathVariable("id").let {
             courseService.deleteCourseById(it)
+
             ServerResponse.ok().buildAndAwait()
         }
 }

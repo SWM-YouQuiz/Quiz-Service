@@ -10,6 +10,8 @@ import com.youquiz.quiz.dto.QuizResponse
 import com.youquiz.quiz.event.CorrectAnswerEvent
 import com.youquiz.quiz.event.IncorrectAnswerEvent
 import com.youquiz.quiz.repository.QuizRepository
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import org.springframework.stereotype.Service
@@ -20,16 +22,16 @@ class QuizService(
     private val userClient: UserClient,
     private val userProducer: UserProducer
 ) {
-    fun findAllByChapterId(chapterId: String): Flow<QuizResponse> =
+    fun getQuizzesByChapterId(chapterId: String): Flow<QuizResponse> =
         quizRepository.findAllByChapterId(chapterId)
             .map { QuizResponse(it) }
 
-    fun findAllByWriterId(writerId: String): Flow<QuizResponse> =
+    fun getQuizzesByWriterId(writerId: String): Flow<QuizResponse> =
         quizRepository.findAllByWriterId(writerId)
             .map { QuizResponse(it) }
 
-    suspend fun findAllLikedQuiz(userId: String): Flow<QuizResponse> =
-        quizRepository.findAllByIdIn(userClient.findById(userId).likedQuizIds.toList())
+    suspend fun getQuizzesLikedQuiz(userId: String): Flow<QuizResponse> =
+        quizRepository.findAllByIdIn(userClient.getUserById(userId).likedQuizIds.toList())
             .map { QuizResponse(it) }
 
     suspend fun createQuiz(userId: String, request: CreateQuizRequest): QuizResponse =
@@ -46,18 +48,18 @@ class QuizService(
                     correctCount = 0,
                     incorrectCount = 0,
                 )
-            ).let {
-                QuizResponse(it)
-            }
+            ).let { QuizResponse(it) }
         }
 
-    suspend fun checkAnswer(userId: String, request: CheckAnswerRequest): CheckAnswerResponse {
-        val quiz = quizRepository.findById(request.quizId)!!
-        val findUserByIdResponse = userClient.findById(userId)
+    suspend fun checkAnswer(userId: String, request: CheckAnswerRequest): CheckAnswerResponse = coroutineScope {
+        val quizDeferred = async { quizRepository.findById(request.quizId)!! }
+        val findUserByIdResponseDeferred = async { userClient.getUserById(userId) }
+        val quiz = quizDeferred.await()
+        val findUserByIdResponse = findUserByIdResponseDeferred.await()
         val correctQuizIds = findUserByIdResponse.correctQuizIds
         val incorrectQuizIds = findUserByIdResponse.incorrectQuizIds
 
-        return quiz.let {
+        quiz.let {
             if (request.answer == it.answer) {
                 if ((it.id!! !in correctQuizIds) and (it.id!! !in incorrectQuizIds)) {
                     userProducer.correctAnswer(
@@ -80,9 +82,7 @@ class QuizService(
                     it.incorrectAnswer()
                 }
                 CheckAnswerResponse(false)
-            }.apply {
-                quizRepository.save(it)
-            }
+            }.apply { quizRepository.save(it) }
         }
     }
 }
