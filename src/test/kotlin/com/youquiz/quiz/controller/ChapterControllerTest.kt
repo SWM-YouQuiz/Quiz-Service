@@ -81,7 +81,7 @@ class ChapterControllerTest : BaseControllerTest() {
                 it("상태 코드 200과 chapterResponse를 반환한다.") {
                     webClient
                         .post()
-                        .uri("/chapter")
+                        .uri("/admin/chapter")
                         .bodyValue(createCreateChapterRequest())
                         .exchange()
                         .expectStatus()
@@ -108,7 +108,7 @@ class ChapterControllerTest : BaseControllerTest() {
                 it("상태 코드 200과 chapterResponse를 반환한다.") {
                     webClient
                         .put()
-                        .uri("/chapter/{id}", ID)
+                        .uri("/admin/chapter/{id}", ID)
                         .bodyValue(createUpdateChapterRequest())
                         .exchange()
                         .expectStatus()
@@ -135,7 +135,7 @@ class ChapterControllerTest : BaseControllerTest() {
                 it("상태 코드 200을 반환한다.") {
                     webClient
                         .delete()
-                        .uri("/chapter/{id}", ID)
+                        .uri("/admin/chapter/{id}", ID)
                         .exchange()
                         .expectStatus()
                         .isOk
