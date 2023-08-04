@@ -61,4 +61,14 @@ class QuizHandler(
 
             ServerResponse.ok().bodyValueAndAwait(quizService.checkAnswer(userId, checkAnswerRequest))
         }
+
+    suspend fun likeQuiz(request: ServerRequest): ServerResponse =
+        with(request) {
+            val id = pathVariable("id")
+            val userId = awaitAuthentication().id
+
+            quizService.likeQuiz(id, userId)
+
+            ServerResponse.ok().buildAndAwait()
+        }
 }

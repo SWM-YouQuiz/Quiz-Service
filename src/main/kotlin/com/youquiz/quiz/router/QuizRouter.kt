@@ -15,6 +15,7 @@ class QuizRouter {
             "/api/quiz".nest {
                 GET("/chapter/{id}", handler::getQuizzesByChapterId)
                 GET("/writer/{id}", handler::getQuizzesByWriterId)
+                GET("/{id}/like", handler::likeQuiz)
                 GET("/liked", handler::getQuizzesLikedQuiz)
                 POST("/check", handler::checkAnswer)
                 POST("", handler::createQuiz)
