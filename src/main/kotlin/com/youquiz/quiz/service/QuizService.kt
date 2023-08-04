@@ -138,6 +138,7 @@ class QuizService(
                     isLike = true
                 )
             }.let {
+                quizRepository.save(this)
                 userProducer.likeQuiz(it)
             }
         } ?: throw QuizNotFoundException()
