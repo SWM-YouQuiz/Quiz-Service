@@ -9,6 +9,7 @@ import io.kotest.core.spec.IsolationMode
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.equality.shouldBeEqualToComparingFields
+import io.kotest.matchers.equals.shouldNotBeEqual
 import io.kotest.matchers.shouldBe
 import io.mockk.*
 import kotlinx.coroutines.flow.asFlow
@@ -34,11 +35,18 @@ class QuizServiceTest : BehaviorSpec() {
 
     init {
         Given("챕터와 각각의 챕터에 속하는 퀴즈들이 존재하는 경우") {
-            val quizzes = listOf(createQuiz()).apply {
+            val quiz = createQuiz().also {
+                coEvery { quizRepository.findById(any()) } returns it
+                coEvery { quizRepository.deleteById(any()) } just runs
+            }
+            val quizzes = listOf(quiz).apply {
                 asFlow().let {
                     coEvery { quizRepository.findAllByChapterId(any()) } returns it
                     coEvery { quizRepository.findAllByIdIn(any()) } returns it
                 }
+            }
+            val updateQuizByIdRequest = createUpdateQuizByIdRequest(question = "update").also {
+                coEvery { quizRepository.save(any()) } returns createQuiz(question = it.question)
             }
 
             When("유저가 챕터를 들어가면") {
@@ -46,6 +54,22 @@ class QuizServiceTest : BehaviorSpec() {
 
                 Then("해당 챕터에 속하는 퀴즈들이 주어진다.") {
                     quizResponses shouldContainExactly quizzes.map { QuizResponse(it) }
+                }
+            }
+
+            When("유저가 특정 퀴즈를 수정하면") {
+                val quizResponse = quizService.updateQuizById(ID, createJwtAuthentication(), updateQuizByIdRequest)
+
+                Then("해당 퀴즈가 수정된다.") {
+                    quizResponse.question shouldNotBeEqual quiz.question
+                }
+            }
+
+            When("유저가 특정 퀴즈를 삭제하면") {
+                quizService.deleteQuizById(ID, createJwtAuthentication())
+
+                Then("해당 퀴즈가 삭제된다.") {
+                    coVerify { quizRepository.deleteById(any()) }
                 }
             }
         }
