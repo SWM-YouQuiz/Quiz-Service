@@ -2,6 +2,7 @@ package com.youquiz.quiz.handler
 
 import com.youquiz.quiz.dto.CheckAnswerRequest
 import com.youquiz.quiz.dto.CreateQuizRequest
+import com.youquiz.quiz.dto.UpdateQuizByIdRequest
 import com.youquiz.quiz.global.config.awaitAuthentication
 import com.youquiz.quiz.service.QuizService
 import org.springframework.stereotype.Component
@@ -32,6 +33,25 @@ class QuizHandler(
             val createQuizRequest = awaitBody<CreateQuizRequest>()
 
             ServerResponse.ok().bodyValueAndAwait(quizService.createQuiz(userId, createQuizRequest))
+        }
+
+    suspend fun updateQuizById(request: ServerRequest): ServerResponse =
+        with(request) {
+            val id = pathVariable("id")
+            val authentication = awaitAuthentication()
+            val updateQuizByIdRequest = awaitBody<UpdateQuizByIdRequest>()
+
+            ServerResponse.ok().bodyValueAndAwait(quizService.updateQuizById(id, authentication, updateQuizByIdRequest))
+        }
+
+    suspend fun deleteQuizById(request: ServerRequest): ServerResponse =
+        with(request) {
+            val id = pathVariable("id")
+            val authentication = awaitAuthentication()
+
+            quizService.deleteQuizById(id, authentication)
+
+            ServerResponse.ok().buildAndAwait()
         }
 
     suspend fun checkAnswer(request: ServerRequest): ServerResponse =

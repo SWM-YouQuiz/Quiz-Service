@@ -18,6 +18,8 @@ class QuizRouter {
                 GET("/liked", handler::getQuizzesLikedQuiz)
                 POST("/check", handler::checkAnswer)
                 POST("", handler::createQuiz)
+                PUT("/{id}", handler::updateQuizById)
+                DELETE("/{id}", handler::deleteQuizById)
             }
         }
 }
