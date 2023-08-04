@@ -13,6 +13,7 @@ val OPTIONS = (0..4).map { "option_$it" }
 const val ANSWER_RATE = 50.0
 const val CORRECT_COUNT = 10L
 const val INCORRECT_COUNT = 10L
+val LIKED_USER_IDS = mutableSetOf("user_1")
 const val IS_ANSWER = true
 
 fun createCreateQuizRequest(
@@ -70,7 +71,8 @@ fun createQuizResponse(
     answerRate: Double = ANSWER_RATE,
     correctCount: Long = CORRECT_COUNT,
     incorrectCount: Long = INCORRECT_COUNT,
-    createdDate: LocalDateTime = LocalDateTime.now()
+    likedUserIds: Set<String> = LIKED_USER_IDS,
+    createdDate: LocalDateTime = CREATED_DATE
 ): QuizResponse =
     QuizResponse(
         id = id,
@@ -83,6 +85,7 @@ fun createQuizResponse(
         answerRate = answerRate,
         correctCount = correctCount,
         incorrectCount = incorrectCount,
+        likedUserIds = likedUserIds,
         createdDate = createdDate
     )
 
@@ -96,7 +99,9 @@ fun createQuiz(
     options: List<String> = OPTIONS,
     answerRate: Double = ANSWER_RATE,
     correctCount: Long = CORRECT_COUNT,
-    incorrectCount: Long = INCORRECT_COUNT
+    incorrectCount: Long = INCORRECT_COUNT,
+    likedUserIds: MutableSet<String> = LIKED_USER_IDS.toMutableSet(),
+    createdDate: LocalDateTime = CREATED_DATE
 ): Quiz = Quiz(
     id = id,
     question = question,
@@ -107,5 +112,7 @@ fun createQuiz(
     options = options,
     answerRate = answerRate,
     correctCount = correctCount,
+    likedUserIds = likedUserIds,
     incorrectCount = incorrectCount,
+    createdDate = createdDate
 )
