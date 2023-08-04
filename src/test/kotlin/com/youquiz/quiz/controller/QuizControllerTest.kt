@@ -58,6 +58,7 @@ class QuizControllerTest : BaseControllerTest() {
         "options" desc "선지",
         "correctCount" desc "정답 횟수",
         "incorrectCount" desc "오답 횟수",
+        "likedUserIds" desc "좋아요한 유저 리스트",
         "createdDate" desc "생성 날짜",
     )
 
@@ -267,6 +268,55 @@ class QuizControllerTest : BaseControllerTest() {
                                 Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
                                 Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
                                 requestFields(checkAnswerRequestFields),
+                                responseFields(errorResponseFields)
+                            )
+                        )
+                }
+            }
+        }
+
+        describe("likeQuiz()는") {
+            context("주어진 퀴즈 식별자에 대한 퀴즈가 존재하는 경우") {
+                coEvery { quizService.likeQuiz(any(), any()) } just runs
+                withMockUser()
+
+                it("상태 코드 200과 정답 여부가 담긴 checkAnswerResponse를 반환한다.") {
+                    webClient
+                        .get()
+                        .uri("/quiz/{id}/like", ID)
+                        .exchange()
+                        .expectStatus()
+                        .isOk
+                        .expectBody(CheckAnswerResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "퀴즈 좋아요 성공(200)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                pathParameters("id" paramDesc "식별자")
+                            )
+                        )
+                }
+            }
+
+            context("주어진 퀴즈 식별자에 대한 퀴즈가 존재하지 않는 경우") {
+                coEvery { quizService.likeQuiz(any(), any()) } throws QuizNotFoundException()
+                withMockUser()
+
+                it("상태 코드 404과 에러를 반환한다.") {
+                    webClient
+                        .get()
+                        .uri("/quiz/{id}/like", ID)
+                        .exchange()
+                        .expectStatus()
+                        .isNotFound
+                        .expectBody(ErrorResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "퀴즈 좋아요 실패(404)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                pathParameters("id" paramDesc "식별자"),
                                 responseFields(errorResponseFields)
                             )
                         )
