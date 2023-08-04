@@ -1,9 +1,12 @@
 package com.youquiz.quiz.domain
 
+import com.youquiz.quiz.fixture.ID
 import com.youquiz.quiz.fixture.createQuiz
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.doubles.shouldBeGreaterThan
 import io.kotest.matchers.doubles.shouldBeLessThan
+import io.kotest.matchers.ints.shouldBeGreaterThan
+import io.kotest.matchers.ints.shouldBeLessThan
 
 class QuizTest : BehaviorSpec() {
     init {
@@ -26,6 +29,22 @@ class QuizTest : BehaviorSpec() {
 
                 Then("해당 퀴즈의 정답률이 감소한다.") {
                     decreasedQuiz.answerRate shouldBeLessThan quiz.answerRate
+                }
+            }
+
+            When("유저가 해당 퀴즈에 좋아요를 했다면") {
+                val likedQuiz = createQuiz().apply { like(ID) }
+
+                Then("해당 퀴즈에 좋아요한 유저가 추가된다.") {
+                    likedQuiz.likedUserIds.size shouldBeGreaterThan quiz.likedUserIds.size
+                }
+            }
+
+            When("유저가 해당 퀴즈에 좋아요 취소를 했다면") {
+                val unlikedQuiz = createQuiz().apply { unlike(likedUserIds.random()) }
+
+                Then("해당 퀴즈에 좋아요한 유저가 삭제된다.") {
+                    unlikedQuiz.likedUserIds.size shouldBeLessThan quiz.likedUserIds.size
                 }
             }
         }
