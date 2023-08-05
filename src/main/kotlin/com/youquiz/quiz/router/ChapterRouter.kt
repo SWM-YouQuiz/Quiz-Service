@@ -2,12 +2,12 @@ package com.youquiz.quiz.router
 
 import com.youquiz.quiz.handler.ChapterHandler
 import org.springframework.context.annotation.Bean
-import org.springframework.stereotype.Component
+import org.springframework.context.annotation.Configuration
 import org.springframework.web.reactive.function.server.RouterFunction
 import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.coRouter
 
-@Component
+@Configuration
 class ChapterRouter {
     @Bean
     fun chapterRoutes(handler: ChapterHandler): RouterFunction<ServerResponse> =
