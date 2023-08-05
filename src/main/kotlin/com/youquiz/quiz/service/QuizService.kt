@@ -7,6 +7,7 @@ import com.youquiz.quiz.domain.Quiz
 import com.youquiz.quiz.dto.*
 import com.youquiz.quiz.event.CorrectAnswerEvent
 import com.youquiz.quiz.event.IncorrectAnswerEvent
+import com.youquiz.quiz.event.LikeEvent
 import com.youquiz.quiz.exception.PermissionDeniedException
 import com.youquiz.quiz.exception.QuizNotFoundException
 import com.youquiz.quiz.global.config.isAdmin
@@ -48,6 +49,7 @@ class QuizService(
                     answerRate = 0.0,
                     correctCount = 0,
                     incorrectCount = 0,
+                    likedUserIds = mutableSetOf()
                 )
             ).let { QuizResponse(it) }
         }
@@ -68,7 +70,8 @@ class QuizService(
                             options = options,
                             answerRate = it.answerRate,
                             correctCount = it.correctCount,
-                            incorrectCount = it.incorrectCount
+                            incorrectCount = it.incorrectCount,
+                            likedUserIds = mutableSetOf()
                         )
                     )
                 } else throw PermissionDeniedException()
@@ -84,7 +87,7 @@ class QuizService(
     }
 
     suspend fun checkAnswer(userId: String, request: CheckAnswerRequest): CheckAnswerResponse = coroutineScope {
-        val quizDeferred = async { quizRepository.findById(request.quizId)!! }
+        val quizDeferred = async { quizRepository.findById(request.quizId) ?: throw QuizNotFoundException() }
         val findUserByIdResponseDeferred = async { userClient.getUserById(userId) }
         val quiz = quizDeferred.await()
         val findUserByIdResponse = findUserByIdResponseDeferred.await()
@@ -116,5 +119,29 @@ class QuizService(
                 CheckAnswerResponse(false)
             }.apply { quizRepository.save(it) }
         }
+    }
+
+    suspend fun likeQuiz(id: String, userId: String) {
+        quizRepository.findById(id)?.run {
+            if (userId in likedUserIds) {
+                unlike(userId)
+                LikeEvent(
+                    userId = userId,
+                    quizId = id,
+                    isLike = false
+                )
+            } else {
+                like(userId)
+                LikeEvent(
+                    userId = userId,
+                    quizId = id,
+                    isLike = true
+                )
+            }.let {
+                quizRepository.save(this)
+                userProducer.likeQuiz(it)
+            }
+        } ?: throw QuizNotFoundException()
+
     }
 }

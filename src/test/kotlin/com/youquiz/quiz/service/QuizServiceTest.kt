@@ -10,6 +10,8 @@ import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.equality.shouldBeEqualToComparingFields
 import io.kotest.matchers.equals.shouldNotBeEqual
+import io.kotest.matchers.ints.shouldBeGreaterThan
+import io.kotest.matchers.ints.shouldBeLessThan
 import io.kotest.matchers.shouldBe
 import io.mockk.*
 import kotlinx.coroutines.flow.asFlow
@@ -23,6 +25,7 @@ class QuizServiceTest : BehaviorSpec() {
     private val userProducer = mockk<UserProducer>().apply {
         coEvery { correctAnswer(any()) } just runs
         coEvery { incorrectAnswer(any()) } just runs
+        coEvery { likeQuiz(any()) } just runs
     }
 
     private val quizService = QuizService(
@@ -173,6 +176,28 @@ class QuizServiceTest : BehaviorSpec() {
 
                 Then("퀴즈가 생성된다.") {
                     quizResponse shouldBeEqualToComparingFields QuizResponse(quiz)
+                }
+            }
+        }
+
+        Given("유저가 퀴즈에 좋아요를 하는 경우") {
+            val quiz = createQuiz().also {
+                coEvery { quizRepository.findById(any()) } returns it
+            }
+
+            When("유저가 해당 퀴즈에 처음으로 좋아요를 한다면") {
+                quizService.likeQuiz(ID, ID)
+
+                Then("퀴즈에 좋아요가 된다.") {
+                    quiz.likedUserIds.size shouldBeGreaterThan createQuiz().likedUserIds.size
+                }
+            }
+
+            When("이미 유저가 해당 퀴즈에 좋아요를 한 상태라면") {
+                quizService.likeQuiz(ID, quiz.likedUserIds.random())
+
+                Then("퀴즈에 좋아요가 취소된다.") {
+                    quiz.likedUserIds.size shouldBeLessThan createQuiz().likedUserIds.size
                 }
             }
         }
