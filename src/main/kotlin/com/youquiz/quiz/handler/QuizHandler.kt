@@ -28,8 +28,8 @@ class QuizHandler(
         }
 
     suspend fun getQuizzesLikedQuiz(request: ServerRequest): ServerResponse =
-        request.awaitAuthentication().run {
-            ServerResponse.ok().bodyAndAwait(quizService.getQuizzesLikedQuiz(id))
+        request.pathVariable("id").let {
+            ServerResponse.ok().bodyAndAwait(quizService.getQuizzesLikedQuiz(it))
         }
 
     suspend fun createQuiz(request: ServerRequest): ServerResponse =
