@@ -12,6 +12,11 @@ import org.springframework.web.reactive.function.server.*
 class QuizHandler(
     private val quizService: QuizService
 ) {
+    suspend fun getQuizById(request: ServerRequest): ServerResponse =
+        request.pathVariable("id").let {
+            ServerResponse.ok().bodyValueAndAwait(quizService.getQuizById(it))
+        }
+
     suspend fun getQuizzesByChapterId(request: ServerRequest): ServerResponse =
         request.pathVariable("id").let {
             ServerResponse.ok().bodyAndAwait(quizService.getQuizzesByChapterId(it))
@@ -23,8 +28,8 @@ class QuizHandler(
         }
 
     suspend fun getQuizzesLikedQuiz(request: ServerRequest): ServerResponse =
-        request.awaitAuthentication().run {
-            ServerResponse.ok().bodyAndAwait(quizService.getQuizzesLikedQuiz(id))
+        request.pathVariable("id").let {
+            ServerResponse.ok().bodyAndAwait(quizService.getQuizzesLikedQuiz(it))
         }
 
     suspend fun createQuiz(request: ServerRequest): ServerResponse =

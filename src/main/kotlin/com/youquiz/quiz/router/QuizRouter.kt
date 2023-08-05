@@ -13,10 +13,11 @@ class QuizRouter {
     fun quizRoutes(handler: QuizHandler): RouterFunction<ServerResponse> =
         coRouter {
             "/api/quiz".nest {
+                GET("/{id}", handler::getQuizById)
                 GET("/chapter/{id}", handler::getQuizzesByChapterId)
                 GET("/writer/{id}", handler::getQuizzesByWriterId)
                 GET("/{id}/like", handler::likeQuiz)
-                GET("/liked", handler::getQuizzesLikedQuiz)
+                GET("/liked-user/{id}", handler::getQuizzesLikedQuiz)
                 POST("", handler::createQuiz)
                 POST("/{id}/check", handler::checkAnswer)
                 PUT("/{id}", handler::updateQuizById)

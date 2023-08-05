@@ -50,6 +50,14 @@ class QuizServiceTest : BehaviorSpec() {
                 coEvery { quizRepository.save(any()) } returns createQuiz(question = it.question)
             }
 
+            When("유저가 특정 퀴즈를 조회하면") {
+                val quizResponse = quizService.getQuizById(ID)
+
+                Then("해당 퀴즈가 조회된다.") {
+                    quizResponse shouldBeEqualToComparingFields QuizResponse(quiz)
+                }
+            }
+
             When("유저가 챕터를 들어가면") {
                 val quizResponses = quizService.getQuizzesByChapterId(CHAPTER_ID).toList()
 
@@ -73,6 +81,7 @@ class QuizServiceTest : BehaviorSpec() {
                     coVerify { quizRepository.deleteById(any()) }
                 }
             }
+
         }
 
         Given("유저가 좋아요한 퀴즈가 존재하는 경우") {
