@@ -5,6 +5,7 @@ import com.youquiz.quiz.dto.request.CreateQuizRequest
 import com.youquiz.quiz.dto.request.UpdateQuizByIdRequest
 import com.youquiz.quiz.global.config.awaitAuthentication
 import com.youquiz.quiz.service.QuizService
+import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
 
@@ -18,8 +19,19 @@ class QuizHandler(
         }
 
     suspend fun getQuizzesByChapterId(request: ServerRequest): ServerResponse =
-        request.pathVariable("id").let {
-            ServerResponse.ok().bodyAndAwait(quizService.getQuizzesByChapterId(it))
+        with(request) {
+            val chapterId = pathVariable("id")
+            val page = queryParamOrNull("page")?.toInt()
+            val size = queryParamOrNull("size")?.toInt()
+
+            ServerResponse.ok().bodyAndAwait(
+                if ((page != null) && (size != null)) {
+                    quizService.getQuizzesByChapterId(chapterId, PageRequest.of(page, size))
+                } else {
+                    quizService.getQuizzesByChapterId(chapterId)
+                }
+            )
+
         }
 
     suspend fun getQuizzesByWriterId(request: ServerRequest): ServerResponse =
