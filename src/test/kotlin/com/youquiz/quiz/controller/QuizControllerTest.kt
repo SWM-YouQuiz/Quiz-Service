@@ -67,6 +67,31 @@ class QuizControllerTest : BaseControllerTest() {
     )
 
     init {
+        describe("getQuizById()는") {
+            context("퀴즈가 존재하는 경우") {
+                coEvery { quizService.getQuizById(any()) } returns createQuizResponse()
+
+                it("상태 코드 200과 quizResponse를 반환한다.") {
+                    webClient
+                        .get()
+                        .uri("/quiz/{id}", ID)
+                        .exchange()
+                        .expectStatus()
+                        .isOk
+                        .expectBody(QuizResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "식별자를 통한 퀴즈 단일 조회 성공(200)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                pathParameters("id" paramDesc "식별자"),
+                                responseFields(quizResponseFields)
+                            )
+                        )
+                }
+            }
+        }
+
         describe("getQuizzesByChapterId()는") {
             context("챕터와 각각의 챕터에 속하는 퀴즈들이 존재하는 경우") {
                 coEvery { quizService.getQuizzesByChapterId(any()) } returns flowOf(createQuizResponse())
@@ -125,7 +150,7 @@ class QuizControllerTest : BaseControllerTest() {
                 it("상태 코드 200과 quizResponse들을 반환한다.") {
                     webClient
                         .get()
-                        .uri("/quiz/liked")
+                        .uri("/quiz/liked-user/{id}", ID)
                         .exchange()
                         .expectStatus()
                         .isOk
