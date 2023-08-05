@@ -65,6 +65,7 @@ class QuizService(
                 if ((authentication.id == it.writerId) or authentication.isAdmin()) {
                     quizRepository.save(
                         Quiz(
+                            id = id,
                             question = question,
                             answer = answer,
                             solution = solution,
@@ -74,7 +75,7 @@ class QuizService(
                             answerRate = it.answerRate,
                             correctCount = it.correctCount,
                             incorrectCount = it.incorrectCount,
-                            likedUserIds = mutableSetOf()
+                            likedUserIds = it.likedUserIds
                         )
                     )
                 } else throw PermissionDeniedException()
@@ -89,61 +90,56 @@ class QuizService(
         } ?: throw QuizNotFoundException()
     }
 
-    suspend fun checkAnswer(userId: String, request: CheckAnswerRequest): CheckAnswerResponse = coroutineScope {
-        val quizDeferred = async { quizRepository.findById(request.quizId) ?: throw QuizNotFoundException() }
-        val findUserByIdResponseDeferred = async { userClient.getUserById(userId) }
-        val quiz = quizDeferred.await()
-        val findUserByIdResponse = findUserByIdResponseDeferred.await()
-        val correctQuizIds = findUserByIdResponse.correctQuizIds
-        val incorrectQuizIds = findUserByIdResponse.incorrectQuizIds
+    suspend fun checkAnswer(id: String, userId: String, request: CheckAnswerRequest): CheckAnswerResponse =
+        coroutineScope {
+            val quizDeferred = async { quizRepository.findById(id) ?: throw QuizNotFoundException() }
+            val findUserByIdResponseDeferred = async { userClient.getUserById(userId) }
+            val quiz = quizDeferred.await()
+            val findUserByIdResponse = findUserByIdResponseDeferred.await()
+            val correctQuizIds = findUserByIdResponse.correctQuizIds
+            val incorrectQuizIds = findUserByIdResponse.incorrectQuizIds
 
-        quiz.let {
-            if (request.answer == it.answer) {
-                if ((it.id!! !in correctQuizIds) and (it.id!! !in incorrectQuizIds)) {
-                    userProducer.correctAnswer(
-                        CorrectAnswerEvent(
+            quiz.apply {
+                if ((id !in correctQuizIds) and (id !in incorrectQuizIds)) {
+                    userProducer.checkAnswer(
+                        CheckAnswerEvent(
                             userId = userId,
-                            quizId = it.id!!
-                        )
+                            quizId = id,
+                            isAnswer = (request.answer == answer)
+                        ).apply {
+                            if (isAnswer) {
+                                correctAnswer()
+                            } else {
+                                incorrectAnswer()
+                            }
+                        }
                     )
-                    it.correctAnswer()
+                    quizRepository.save(this)
                 }
-                CheckAnswerResponse(true)
-            } else {
-                if ((it.id!! !in correctQuizIds) and (it.id!! !in incorrectQuizIds)) {
-                    userProducer.incorrectAnswer(
-                        IncorrectAnswerEvent(
-                            userId = userId,
-                            quizId = it.id!!
-                        )
-                    )
-                    it.incorrectAnswer()
-                }
-                CheckAnswerResponse(false)
-            }.apply { quizRepository.save(it) }
+            }.run {
+                CheckAnswerResponse(
+                    answer = answer,
+                    solution = solution
+                )
+            }
         }
-    }
 
     suspend fun likeQuiz(id: String, userId: String) {
         quizRepository.findById(id)?.run {
-            if (userId in likedUserIds) {
-                unlike(userId)
-                LikeEvent(
+            userProducer.likeQuiz(
+                LikeQuizEvent(
                     userId = userId,
                     quizId = id,
-                    isLike = false
-                )
-            } else {
-                like(userId)
-                LikeEvent(
-                    userId = userId,
-                    quizId = id,
-                    isLike = true
-                )
-            }.let {
-                quizRepository.save(this)
-                userProducer.likeQuiz(it)
-            }
+                    isLike = (userId !in likedUserIds)
+                ).apply {
+                    if (isLike) {
+                        like(userId)
+                    } else {
+                        unlike(userId)
+                    }
+                }
+            )
+            quizRepository.save(this)
         } ?: throw QuizNotFoundException()
 
     }

@@ -51,24 +51,22 @@ fun createUpdateQuizByIdRequest(
     )
 
 fun createCheckAnswerRequest(
-    quizId: String = ID,
     answer: Int = ANSWER
 ): CheckAnswerRequest =
-    CheckAnswerRequest(
-        quizId = quizId,
-        answer = answer
-    )
+    CheckAnswerRequest(answer)
 
 fun createCheckAnswerResponse(
-    isAnswer: Boolean = IS_ANSWER
+    answer: Int = ANSWER,
+    solution: String = SOLUTION
 ): CheckAnswerResponse =
-    CheckAnswerResponse(isAnswer)
+    CheckAnswerResponse(
+        answer = answer,
+        solution = solution
+    )
 
 fun createQuizResponse(
     id: String = ID,
     question: String = QUESTION,
-    answer: Int = ANSWER,
-    solution: String = SOLUTION,
     writerId: String = WRITER_ID,
     chapterId: String = CHAPTER_ID,
     options: List<String> = OPTIONS,
@@ -81,8 +79,6 @@ fun createQuizResponse(
     QuizResponse(
         id = id,
         question = question,
-        answer = answer,
-        solution = solution,
         writerId = writerId,
         chapterId = chapterId,
         options = options,

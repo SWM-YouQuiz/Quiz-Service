@@ -56,10 +56,11 @@ class QuizHandler(
 
     suspend fun checkAnswer(request: ServerRequest): ServerResponse =
         with(request) {
+            val id = pathVariable("id")
             val userId = awaitAuthentication().id
             val checkAnswerRequest = awaitBody<CheckAnswerRequest>()
 
-            ServerResponse.ok().bodyValueAndAwait(quizService.checkAnswer(userId, checkAnswerRequest))
+            ServerResponse.ok().bodyValueAndAwait(quizService.checkAnswer(id, userId, checkAnswerRequest))
         }
 
     suspend fun likeQuiz(request: ServerRequest): ServerResponse =

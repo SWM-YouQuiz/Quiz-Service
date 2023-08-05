@@ -12,7 +12,6 @@ import io.kotest.matchers.equality.shouldBeEqualToComparingFields
 import io.kotest.matchers.equals.shouldNotBeEqual
 import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.ints.shouldBeLessThan
-import io.kotest.matchers.shouldBe
 import io.mockk.*
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.toList
@@ -119,20 +118,18 @@ class QuizServiceTest : BehaviorSpec() {
             coEvery { userClient.getUserById(any()) } returns createGetUserByIdResponse()
 
             When("옳은 답을 제출하면") {
-                val checkAnswerResponse = quizService.checkAnswer(ID, createCheckAnswerRequest())
+                val checkAnswerResponse = quizService.checkAnswer(ID, ID, createCheckAnswerRequest())
 
                 Then("정답으로 처리되어 정답률이 변경된다.") {
-                    checkAnswerResponse.isAnswer shouldBe true
-                    verify { userProducer.correctAnswer(any()) }
+                    verify { userProducer.checkAnswer(any()) }
                 }
             }
 
             When("틀린 답을 제출하면") {
-                val checkAnswerResponse = quizService.checkAnswer(ID, createCheckAnswerRequest(answer = -1))
+                val checkAnswerResponse = quizService.checkAnswer(ID, ID, createCheckAnswerRequest(answer = -1))
 
                 Then("오답으로 처리되어 정답률이 변경된다.") {
-                    checkAnswerResponse.isAnswer shouldBe false
-                    verify { userProducer.incorrectAnswer(any()) }
+                    verify { userProducer.checkAnswer(any()) }
                 }
             }
         }
@@ -146,21 +143,18 @@ class QuizServiceTest : BehaviorSpec() {
             coEvery { userClient.getUserById(any()) } returns createGetUserByIdResponse()
 
             When("해당 퀴즈를 풀고 정답을 제출하면") {
-                val checkAnswerResponse = quizService.checkAnswer(ID, createCheckAnswerRequest())
-
+                val checkAnswerResponse = quizService.checkAnswer(quiz.id!!, ID, createCheckAnswerRequest())
 
                 Then("채점만 되고 정답률은 변경되지 않는다.") {
-                    checkAnswerResponse.isAnswer shouldBe true
-                    verify(exactly = 0) { userProducer.correctAnswer(any()) }
+                    verify(exactly = 0) { userProducer.checkAnswer(any()) }
                 }
             }
 
             When("해당 퀴즈를 풀고 오답을 제출하면") {
-                val checkAnswerResponse = quizService.checkAnswer(ID, createCheckAnswerRequest(answer = -1))
+                val checkAnswerResponse = quizService.checkAnswer(quiz.id!!, ID, createCheckAnswerRequest(answer = -1))
 
                 Then("채점만 되고 정답률은 변경되지 않는다.") {
-                    checkAnswerResponse.isAnswer shouldBe false
-                    verify(exactly = 0) { userProducer.incorrectAnswer(any()) }
+                    verify(exactly = 0) { userProducer.checkAnswer(any()) }
                 }
             }
         }
@@ -181,6 +175,7 @@ class QuizServiceTest : BehaviorSpec() {
 
         Given("유저가 퀴즈에 좋아요를 하는 경우") {
             val quiz = createQuiz().also {
+                coEvery { quizRepository.save(any()) } returns it
                 coEvery { quizRepository.findById(any()) } returns it
             }
 

@@ -223,13 +223,13 @@ class QuizControllerTest : BaseControllerTest() {
 
         describe("checkQuiz()는") {
             context("주어진 퀴즈 식별자에 대한 퀴즈가 존재하는 경우") {
-                coEvery { quizService.checkAnswer(any(), any()) } returns createCheckAnswerResponse()
+                coEvery { quizService.checkAnswer(any(), any(), any()) } returns createCheckAnswerResponse()
                 withMockUser()
 
                 it("상태 코드 200과 정답 여부가 담긴 checkAnswerResponse를 반환한다.") {
                     webClient
                         .post()
-                        .uri("/quiz/check")
+                        .uri("/quiz/{id}/check", ID)
                         .bodyValue(createCheckAnswerRequest())
                         .exchange()
                         .expectStatus()
@@ -248,13 +248,13 @@ class QuizControllerTest : BaseControllerTest() {
             }
 
             context("주어진 퀴즈 식별자에 대한 퀴즈가 존재하지 않는 경우") {
-                coEvery { quizService.checkAnswer(any(), any()) } throws QuizNotFoundException()
+                coEvery { quizService.checkAnswer(any(), any(), any()) } throws QuizNotFoundException()
                 withMockUser()
 
                 it("상태 코드 404과 에러를 반환한다.") {
                     webClient
                         .post()
-                        .uri("/quiz/check")
+                        .uri("/quiz/{id}/check", ID)
                         .bodyValue(createCheckAnswerRequest())
                         .exchange()
                         .expectStatus()
