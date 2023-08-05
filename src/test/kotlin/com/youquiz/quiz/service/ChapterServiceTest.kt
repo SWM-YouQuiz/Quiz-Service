@@ -30,7 +30,7 @@ class ChapterServiceTest : BehaviorSpec() {
                     coEvery { chapterRepository.findAllByCourseId(any()) } returns it
                 }
             }
-            val updateChapterRequest = createUpdateChapterByIdRequest("update").also {
+            val updateChapterByIdRequest = createUpdateChapterByIdRequest(description = "update").also {
                 coEvery { chapterRepository.save(any()) } returns createChapter(description = it.description)
             }
 
@@ -43,7 +43,7 @@ class ChapterServiceTest : BehaviorSpec() {
             }
 
             When("어드민이 특정 챕터를 수정하면") {
-                val chapterResponse = chapterService.updateChapterById(ID, updateChapterRequest)
+                val chapterResponse = chapterService.updateChapterById(ID, updateChapterByIdRequest)
 
                 Then("해당 챕터가 수정된다.") {
                     chapterResponse.description shouldNotBeEqual chapter.description

@@ -1,10 +1,7 @@
 package com.youquiz.quiz.fixture
 
 import com.youquiz.quiz.domain.Quiz
-import com.youquiz.quiz.dto.CheckAnswerRequest
-import com.youquiz.quiz.dto.CheckAnswerResponse
-import com.youquiz.quiz.dto.CreateQuizRequest
-import com.youquiz.quiz.dto.QuizResponse
+import com.youquiz.quiz.dto.*
 import java.time.LocalDateTime
 
 const val QUESTION = "question"
@@ -26,6 +23,21 @@ fun createCreateQuizRequest(
     options: List<String> = OPTIONS,
 ): CreateQuizRequest =
     CreateQuizRequest(
+        question = question,
+        answer = answer,
+        solution = solution,
+        chapterId = chapterId,
+        options = options
+    )
+
+fun createUpdateQuizByIdRequest(
+    question: String = QUESTION,
+    answer: Int = ANSWER,
+    solution: String = SOLUTION,
+    chapterId: String = CHAPTER_ID,
+    options: List<String> = OPTIONS,
+): UpdateQuizByIdRequest =
+    UpdateQuizByIdRequest(
         question = question,
         answer = answer,
         solution = solution,

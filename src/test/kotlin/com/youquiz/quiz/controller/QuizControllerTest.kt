@@ -12,6 +12,8 @@ import com.youquiz.quiz.router.QuizRouter
 import com.youquiz.quiz.service.QuizService
 import com.youquiz.quiz.util.*
 import io.mockk.coEvery
+import io.mockk.just
+import io.mockk.runs
 import kotlinx.coroutines.flow.flowOf
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.restdocs.operation.preprocess.Preprocessors
@@ -30,6 +32,14 @@ class QuizControllerTest : BaseControllerTest() {
         "solution" desc "풀이",
         "chapterId" desc "챕터 식별자",
         "options" desc "선지"
+    )
+
+    private val updateQuizByIdRequestFields = listOf(
+        "question" desc "지문",
+        "answer" desc "정답",
+        "solution" desc "풀이",
+        "chapterId" desc "챕터 식별자",
+        "options" desc "선지",
     )
 
     private val checkAnswerRequestFields = listOf(
@@ -154,6 +164,58 @@ class QuizControllerTest : BaseControllerTest() {
                                 Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
                                 requestFields(createQuizRequestFields),
                                 responseFields(quizResponseFields)
+                            )
+                        )
+                }
+            }
+        }
+
+        describe("updateQuizById()는") {
+            context("유저가 퀴즈를 수정해서 제출하는 경우") {
+                coEvery { quizService.updateQuizById(any(), any(), any()) } returns createQuizResponse()
+                withMockUser()
+
+                it("상태 코드 200과 quizResponse를 반환한다.") {
+                    webClient
+                        .put()
+                        .uri("/quiz/{id}", ID)
+                        .bodyValue(createUpdateQuizByIdRequest())
+                        .exchange()
+                        .expectStatus()
+                        .isOk
+                        .expectBody(QuizResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "퀴즈 수정 성공(200)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                requestFields(updateQuizByIdRequestFields),
+                                responseFields(quizResponseFields)
+                            )
+                        )
+                }
+            }
+        }
+
+        describe("deleteQuizById()는") {
+            context("유저가 퀴즈를 삭제하는 경우") {
+                coEvery { quizService.deleteQuizById(any(), any()) } just runs
+                withMockUser()
+
+                it("상태 코드 200을 반환한다.") {
+                    webClient
+                        .delete()
+                        .uri("/quiz/{id}", ID)
+                        .exchange()
+                        .expectStatus()
+                        .isOk
+                        .expectBody()
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "퀴즈 삭제 성공(200)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                pathParameters("id" paramDesc "식별자"),
                             )
                         )
                 }

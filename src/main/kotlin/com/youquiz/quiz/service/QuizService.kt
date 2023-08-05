@@ -1,14 +1,15 @@
 package com.youquiz.quiz.service
 
+import com.github.jwt.authentication.DefaultJwtAuthentication
 import com.youquiz.quiz.adapter.client.UserClient
 import com.youquiz.quiz.adapter.producer.UserProducer
 import com.youquiz.quiz.domain.Quiz
-import com.youquiz.quiz.dto.CheckAnswerRequest
-import com.youquiz.quiz.dto.CheckAnswerResponse
-import com.youquiz.quiz.dto.CreateQuizRequest
-import com.youquiz.quiz.dto.QuizResponse
+import com.youquiz.quiz.dto.*
 import com.youquiz.quiz.event.CorrectAnswerEvent
 import com.youquiz.quiz.event.IncorrectAnswerEvent
+import com.youquiz.quiz.exception.PermissionDeniedException
+import com.youquiz.quiz.exception.QuizNotFoundException
+import com.youquiz.quiz.global.config.isAdmin
 import com.youquiz.quiz.repository.QuizRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -50,6 +51,37 @@ class QuizService(
                 )
             ).let { QuizResponse(it) }
         }
+
+    suspend fun updateQuizById(
+        id: String, authentication: DefaultJwtAuthentication, request: UpdateQuizByIdRequest
+    ): QuizResponse =
+        with(request) {
+            quizRepository.findById(id)?.let {
+                if ((authentication.id == it.writerId) or authentication.isAdmin()) {
+                    quizRepository.save(
+                        Quiz(
+                            question = question,
+                            answer = answer,
+                            solution = solution,
+                            writerId = it.writerId,
+                            chapterId = chapterId,
+                            options = options,
+                            answerRate = it.answerRate,
+                            correctCount = it.correctCount,
+                            incorrectCount = it.incorrectCount
+                        )
+                    )
+                } else throw PermissionDeniedException()
+            }?.let { QuizResponse(it) } ?: throw QuizNotFoundException()
+        }
+
+    suspend fun deleteQuizById(id: String, authentication: DefaultJwtAuthentication) {
+        quizRepository.findById(id)?.let {
+            if ((authentication.id == it.writerId) or authentication.isAdmin()) {
+                quizRepository.deleteById(id)
+            } else throw PermissionDeniedException()
+        } ?: throw QuizNotFoundException()
+    }
 
     suspend fun checkAnswer(userId: String, request: CheckAnswerRequest): CheckAnswerResponse = coroutineScope {
         val quizDeferred = async { quizRepository.findById(request.quizId)!! }

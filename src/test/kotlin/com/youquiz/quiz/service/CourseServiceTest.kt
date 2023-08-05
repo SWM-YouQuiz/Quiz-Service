@@ -33,7 +33,7 @@ class CourseServiceTest : BehaviorSpec() {
                     coEvery { courseRepository.findAll() } returns it
                 }
             }
-            val updateCourseRequest = createUpdateCourseByIdRequest("update").also {
+            val updateCourseByIdRequest = createUpdateCourseByIdRequest(title = "update").also {
                 coEvery { courseRepository.save(any()) } returns createCourse(title = it.title)
             }
 
@@ -46,7 +46,7 @@ class CourseServiceTest : BehaviorSpec() {
             }
 
             When("어드민이 특정 코스를 수정하면") {
-                val courseResponse = courseService.updateCourseById(ID, updateCourseRequest)
+                val courseResponse = courseService.updateCourseById(ID, updateCourseByIdRequest)
 
                 Then("해당 코스가 수정된다.") {
                     courseResponse.title shouldNotBeEqual course.title
