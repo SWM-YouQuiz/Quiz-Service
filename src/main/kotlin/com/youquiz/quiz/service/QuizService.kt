@@ -27,6 +27,9 @@ class QuizService(
     private val userClient: UserClient,
     private val userProducer: UserProducer
 ) {
+    suspend fun getQuizById(id: String): QuizResponse =
+        quizRepository.findById(id)?.let { QuizResponse(it) } ?: throw QuizNotFoundException()
+
     fun getQuizzesByChapterId(chapterId: String): Flow<QuizResponse> =
         quizRepository.findAllByChapterId(chapterId)
             .map { QuizResponse(it) }
