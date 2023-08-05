@@ -12,6 +12,11 @@ import org.springframework.web.reactive.function.server.*
 class QuizHandler(
     private val quizService: QuizService
 ) {
+    suspend fun getQuizById(request: ServerRequest): ServerResponse =
+        request.pathVariable("id").let {
+            ServerResponse.ok().bodyValueAndAwait(quizService.getQuizById(it))
+        }
+
     suspend fun getQuizzesByChapterId(request: ServerRequest): ServerResponse =
         request.pathVariable("id").let {
             ServerResponse.ok().bodyAndAwait(quizService.getQuizzesByChapterId(it))
