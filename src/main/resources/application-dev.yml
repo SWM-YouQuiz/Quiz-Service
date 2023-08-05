@@ -4,6 +4,12 @@ spring:
       uri: ${QUIZ_DB_URL}
   kafka:
     bootstrap-servers: ${KAFKA_URL}
+logging:
+  level:
+    web: debug
+    org:
+      springframework:
+        data.mongodb: debug
 jwt:
   secretKey: ${JWT_SECRET}
   accessTokenExpire: ${JWT_ACCESS_EXPIRE}

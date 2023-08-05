@@ -6,6 +6,12 @@ spring:
       uri: mongodb://localhost:27017/quiz
   kafka:
     bootstrap-servers: localhost:9092
+logging:
+  level:
+    web: debug
+    org:
+      springframework:
+        data.mongodb: debug
 jwt:
   secretKey: dsaijodajadsjdsalkjadslkjadsljlajkdslkjadslkjadsjlklsad
   accessTokenExpire: 30
