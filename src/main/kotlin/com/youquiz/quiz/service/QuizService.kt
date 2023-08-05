@@ -4,10 +4,13 @@ import com.github.jwt.authentication.DefaultJwtAuthentication
 import com.youquiz.quiz.adapter.client.UserClient
 import com.youquiz.quiz.adapter.producer.UserProducer
 import com.youquiz.quiz.domain.Quiz
-import com.youquiz.quiz.dto.*
-import com.youquiz.quiz.event.CorrectAnswerEvent
-import com.youquiz.quiz.event.IncorrectAnswerEvent
-import com.youquiz.quiz.event.LikeEvent
+import com.youquiz.quiz.dto.event.CheckAnswerEvent
+import com.youquiz.quiz.dto.event.LikeQuizEvent
+import com.youquiz.quiz.dto.request.CheckAnswerRequest
+import com.youquiz.quiz.dto.request.CreateQuizRequest
+import com.youquiz.quiz.dto.request.UpdateQuizByIdRequest
+import com.youquiz.quiz.dto.response.CheckAnswerResponse
+import com.youquiz.quiz.dto.response.QuizResponse
 import com.youquiz.quiz.exception.PermissionDeniedException
 import com.youquiz.quiz.exception.QuizNotFoundException
 import com.youquiz.quiz.global.config.isAdmin

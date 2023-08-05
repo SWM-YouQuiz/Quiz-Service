@@ -1,7 +1,11 @@
 package com.youquiz.quiz.fixture
 
 import com.youquiz.quiz.domain.Quiz
-import com.youquiz.quiz.dto.*
+import com.youquiz.quiz.dto.request.CheckAnswerRequest
+import com.youquiz.quiz.dto.request.CreateQuizRequest
+import com.youquiz.quiz.dto.request.UpdateQuizByIdRequest
+import com.youquiz.quiz.dto.response.CheckAnswerResponse
+import com.youquiz.quiz.dto.response.QuizResponse
 import java.time.LocalDateTime
 
 const val QUESTION = "question"

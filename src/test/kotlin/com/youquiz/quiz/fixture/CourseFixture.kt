@@ -1,9 +1,9 @@
 package com.youquiz.quiz.fixture
 
 import com.youquiz.quiz.domain.Course
-import com.youquiz.quiz.dto.CourseResponse
-import com.youquiz.quiz.dto.CreateCourseRequest
-import com.youquiz.quiz.dto.UpdateCourseByIdRequest
+import com.youquiz.quiz.dto.request.CreateCourseRequest
+import com.youquiz.quiz.dto.request.UpdateCourseByIdRequest
+import com.youquiz.quiz.dto.response.CourseResponse
 
 const val TITLE = "test"
 const val IMAGE = "test"

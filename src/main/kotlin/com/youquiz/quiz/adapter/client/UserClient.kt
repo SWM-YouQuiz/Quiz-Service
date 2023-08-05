@@ -1,6 +1,6 @@
 package com.youquiz.quiz.adapter.client
 
-import com.youquiz.quiz.dto.GetUserByIdResponse
+import com.youquiz.quiz.dto.response.GetUserByIdResponse
 import com.youquiz.quiz.exception.UserNotFoundException
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus

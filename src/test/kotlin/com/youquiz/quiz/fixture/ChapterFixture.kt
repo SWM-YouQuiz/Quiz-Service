@@ -1,9 +1,9 @@
 package com.youquiz.quiz.fixture
 
 import com.youquiz.quiz.domain.Chapter
-import com.youquiz.quiz.dto.ChapterResponse
-import com.youquiz.quiz.dto.CreateChapterRequest
-import com.youquiz.quiz.dto.UpdateChapterByIdRequest
+import com.youquiz.quiz.dto.request.CreateChapterRequest
+import com.youquiz.quiz.dto.request.UpdateChapterByIdRequest
+import com.youquiz.quiz.dto.response.ChapterResponse
 
 const val DESCRIPTION = "test"
 const val COURSE_ID = "test"

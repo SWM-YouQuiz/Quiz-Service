@@ -1,4 +1,4 @@
-package com.youquiz.quiz.dto
+package com.youquiz.quiz.dto.request
 
 data class UpdateQuizByIdRequest(
     val question: String,

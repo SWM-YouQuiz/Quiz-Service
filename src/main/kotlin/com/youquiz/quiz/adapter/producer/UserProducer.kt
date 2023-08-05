@@ -1,9 +1,8 @@
 package com.youquiz.quiz.adapter.producer
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.youquiz.quiz.event.CorrectAnswerEvent
-import com.youquiz.quiz.event.IncorrectAnswerEvent
-import com.youquiz.quiz.event.LikeEvent
+import com.youquiz.quiz.dto.event.CheckAnswerEvent
+import com.youquiz.quiz.dto.event.LikeQuizEvent
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Component
 
@@ -12,15 +11,11 @@ class UserProducer(
     private val kafkaTemplate: KafkaTemplate<String, String>,
     private val objectMapper: ObjectMapper
 ) {
-    fun correctAnswer(correctAnswerEvent: CorrectAnswerEvent) {
-        kafkaTemplate.send("correct-answer", objectMapper.writeValueAsString(correctAnswerEvent))
+    fun checkAnswer(event: CheckAnswerEvent) {
+        kafkaTemplate.send("check-answer", objectMapper.writeValueAsString(event))
     }
 
-    fun incorrectAnswer(incorrectAnswerEvent: IncorrectAnswerEvent) {
-        kafkaTemplate.send("incorrect-answer", objectMapper.writeValueAsString(incorrectAnswerEvent))
-    }
-
-    fun likeQuiz(event: LikeEvent) {
+    fun likeQuiz(event: LikeQuizEvent) {
         kafkaTemplate.send("like-quiz", objectMapper.writeValueAsString(event))
     }
 }

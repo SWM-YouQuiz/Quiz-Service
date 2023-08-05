@@ -1,6 +1,6 @@
-package com.youquiz.quiz.event
+package com.youquiz.quiz.dto.event
 
-data class LikeEvent(
+data class LikeQuizEvent(
     val userId: String,
     val quizId: String,
     val isLike: Boolean

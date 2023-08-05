@@ -2,8 +2,8 @@ package com.youquiz.quiz.controller
 
 import com.epages.restdocs.apispec.WebTestClientRestDocumentationWrapper
 import com.ninjasquad.springmockk.MockkBean
-import com.youquiz.quiz.dto.CheckAnswerResponse
-import com.youquiz.quiz.dto.QuizResponse
+import com.youquiz.quiz.dto.response.CheckAnswerResponse
+import com.youquiz.quiz.dto.response.QuizResponse
 import com.youquiz.quiz.exception.QuizNotFoundException
 import com.youquiz.quiz.fixture.*
 import com.youquiz.quiz.global.dto.ErrorResponse
@@ -43,15 +43,12 @@ class QuizControllerTest : BaseControllerTest() {
     )
 
     private val checkAnswerRequestFields = listOf(
-        "quizId" desc "퀴즈 식별자",
         "answer" desc "정답"
     )
 
     private val quizResponseFields = listOf(
         "id" desc "식별자",
         "question" desc "지문",
-        "answer" desc "정답",
-        "solution" desc "풀이",
         "writerId" desc "작성자 식별자",
         "chapterId" desc "챕터 식별자",
         "answerRate" desc "정답률",
@@ -65,7 +62,8 @@ class QuizControllerTest : BaseControllerTest() {
     private val quizResponsesFields = quizResponseFields.map { "[].${it.path}" desc it.description as String }
 
     private val checkAnswerResponseFields = listOf(
-        "isAnswer" desc "정답 여부"
+        "answer" desc "정답",
+        "solution" desc "해설"
     )
 
     init {

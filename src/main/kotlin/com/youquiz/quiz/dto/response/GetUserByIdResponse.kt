@@ -1,4 +1,4 @@
-package com.youquiz.quiz.dto
+package com.youquiz.quiz.dto.response
 
 import java.time.LocalDateTime
 

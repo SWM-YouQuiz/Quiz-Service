@@ -1,9 +1,9 @@
 package com.youquiz.quiz.service
 
 import com.youquiz.quiz.domain.Chapter
-import com.youquiz.quiz.dto.ChapterResponse
-import com.youquiz.quiz.dto.CreateChapterRequest
-import com.youquiz.quiz.dto.UpdateChapterByIdRequest
+import com.youquiz.quiz.dto.request.CreateChapterRequest
+import com.youquiz.quiz.dto.request.UpdateChapterByIdRequest
+import com.youquiz.quiz.dto.response.ChapterResponse
 import com.youquiz.quiz.exception.ChapterNotFoundException
 import com.youquiz.quiz.repository.ChapterRepository
 import kotlinx.coroutines.flow.Flow

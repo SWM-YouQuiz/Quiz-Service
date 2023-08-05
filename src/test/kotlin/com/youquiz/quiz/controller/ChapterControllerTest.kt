@@ -2,7 +2,7 @@ package com.youquiz.quiz.controller
 
 import com.epages.restdocs.apispec.WebTestClientRestDocumentationWrapper
 import com.ninjasquad.springmockk.MockkBean
-import com.youquiz.quiz.dto.ChapterResponse
+import com.youquiz.quiz.dto.response.ChapterResponse
 import com.youquiz.quiz.fixture.ID
 import com.youquiz.quiz.fixture.createChapterResponse
 import com.youquiz.quiz.fixture.createCreateChapterRequest

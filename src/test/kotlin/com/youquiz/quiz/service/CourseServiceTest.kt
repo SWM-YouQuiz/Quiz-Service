@@ -1,6 +1,6 @@
 package com.youquiz.quiz.service
 
-import com.youquiz.quiz.dto.CourseResponse
+import com.youquiz.quiz.dto.response.CourseResponse
 import com.youquiz.quiz.fixture.ID
 import com.youquiz.quiz.fixture.createCourse
 import com.youquiz.quiz.fixture.createCreateCourseRequest

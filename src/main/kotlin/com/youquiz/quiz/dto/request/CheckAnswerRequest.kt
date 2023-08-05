@@ -1,6 +1,5 @@
-package com.youquiz.quiz.dto
+package com.youquiz.quiz.dto.request
 
 data class CheckAnswerRequest(
-    val quizId: String,
     val answer: Int
 )

@@ -2,7 +2,7 @@ package com.youquiz.quiz.service
 
 import com.youquiz.quiz.adapter.client.UserClient
 import com.youquiz.quiz.adapter.producer.UserProducer
-import com.youquiz.quiz.dto.QuizResponse
+import com.youquiz.quiz.dto.response.QuizResponse
 import com.youquiz.quiz.fixture.*
 import com.youquiz.quiz.repository.QuizRepository
 import io.kotest.core.spec.IsolationMode
@@ -23,8 +23,7 @@ class QuizServiceTest : BehaviorSpec() {
     private val userClient = mockk<UserClient>()
 
     private val userProducer = mockk<UserProducer>().apply {
-        coEvery { correctAnswer(any()) } just runs
-        coEvery { incorrectAnswer(any()) } just runs
+        coEvery { checkAnswer(any()) } just runs
         coEvery { likeQuiz(any()) } just runs
     }
 

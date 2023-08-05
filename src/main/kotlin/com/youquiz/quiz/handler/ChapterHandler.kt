@@ -1,7 +1,7 @@
 package com.youquiz.quiz.handler
 
-import com.youquiz.quiz.dto.CreateChapterRequest
-import com.youquiz.quiz.dto.UpdateChapterByIdRequest
+import com.youquiz.quiz.dto.request.CreateChapterRequest
+import com.youquiz.quiz.dto.request.UpdateChapterByIdRequest
 import com.youquiz.quiz.service.ChapterService
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*

@@ -1,6 +1,6 @@
 package com.youquiz.quiz.fixture
 
-import com.youquiz.quiz.dto.GetUserByIdResponse
+import com.youquiz.quiz.dto.response.GetUserByIdResponse
 import java.time.LocalDateTime
 
 const val USERNAME = "test"

@@ -1,6 +1,6 @@
 package com.youquiz.quiz.service
 
-import com.youquiz.quiz.dto.ChapterResponse
+import com.youquiz.quiz.dto.response.ChapterResponse
 import com.youquiz.quiz.fixture.*
 import com.youquiz.quiz.repository.ChapterRepository
 import io.kotest.core.spec.IsolationMode

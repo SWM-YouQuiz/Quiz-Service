@@ -1,8 +1,8 @@
 package com.youquiz.quiz.handler
 
-import com.youquiz.quiz.dto.CheckAnswerRequest
-import com.youquiz.quiz.dto.CreateQuizRequest
-import com.youquiz.quiz.dto.UpdateQuizByIdRequest
+import com.youquiz.quiz.dto.request.CheckAnswerRequest
+import com.youquiz.quiz.dto.request.CreateQuizRequest
+import com.youquiz.quiz.dto.request.UpdateQuizByIdRequest
 import com.youquiz.quiz.global.config.awaitAuthentication
 import com.youquiz.quiz.service.QuizService
 import org.springframework.stereotype.Component

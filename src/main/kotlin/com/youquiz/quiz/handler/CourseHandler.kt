@@ -1,7 +1,7 @@
 package com.youquiz.quiz.handler
 
-import com.youquiz.quiz.dto.CreateCourseRequest
-import com.youquiz.quiz.dto.UpdateCourseByIdRequest
+import com.youquiz.quiz.dto.request.CreateCourseRequest
+import com.youquiz.quiz.dto.request.UpdateCourseByIdRequest
 import com.youquiz.quiz.service.CourseService
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*

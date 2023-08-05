@@ -1,9 +1,9 @@
 package com.youquiz.quiz.service
 
 import com.youquiz.quiz.domain.Course
-import com.youquiz.quiz.dto.CourseResponse
-import com.youquiz.quiz.dto.CreateCourseRequest
-import com.youquiz.quiz.dto.UpdateCourseByIdRequest
+import com.youquiz.quiz.dto.request.CreateCourseRequest
+import com.youquiz.quiz.dto.request.UpdateCourseByIdRequest
+import com.youquiz.quiz.dto.response.CourseResponse
 import com.youquiz.quiz.exception.CourseNotFoundException
 import com.youquiz.quiz.repository.CourseRepository
 import kotlinx.coroutines.flow.Flow
