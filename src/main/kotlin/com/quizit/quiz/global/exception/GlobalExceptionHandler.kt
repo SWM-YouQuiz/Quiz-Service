@@ -12,13 +12,15 @@ import org.springframework.http.MediaType
 import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
+import java.io.PrintWriter
+import java.io.StringWriter
 
 @Configuration
 class GlobalExceptionHandler(
     private val objectMapper: ObjectMapper
 ) : ErrorWebExceptionHandler {
     override fun handle(exchange: ServerWebExchange, ex: Throwable): Mono<Void> = mono {
-        logger.error { ex.printStackTrace() }
+        logger.error { "${ex.message} at ${ex.stackTrace[0]}" }
 
         val errorResponse = if (ex is ServerException) {
             ErrorResponse(code = ex.code, message = ex.message)
