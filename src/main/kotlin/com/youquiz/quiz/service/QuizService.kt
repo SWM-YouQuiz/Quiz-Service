@@ -19,6 +19,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 
 @Service
@@ -32,6 +33,10 @@ class QuizService(
 
     fun getQuizzesByChapterId(chapterId: String): Flow<QuizResponse> =
         quizRepository.findAllByChapterId(chapterId)
+            .map { QuizResponse(it) }
+
+    fun getQuizzesByChapterId(chapterId: String, pageable: Pageable): Flow<QuizResponse> =
+        quizRepository.findAllByChapterId(chapterId, pageable)
             .map { QuizResponse(it) }
 
     fun getQuizzesByWriterId(writerId: String): Flow<QuizResponse> =
@@ -65,7 +70,7 @@ class QuizService(
     ): QuizResponse =
         with(request) {
             quizRepository.findById(id)?.let {
-                if ((authentication.id == it.writerId) or authentication.isAdmin()) {
+                if ((authentication.id == it.writerId) || authentication.isAdmin()) {
                     quizRepository.save(
                         Quiz(
                             id = id,
@@ -87,7 +92,7 @@ class QuizService(
 
     suspend fun deleteQuizById(id: String, authentication: DefaultJwtAuthentication) {
         quizRepository.findById(id)?.let {
-            if ((authentication.id == it.writerId) or authentication.isAdmin()) {
+            if ((authentication.id == it.writerId) || authentication.isAdmin()) {
                 quizRepository.deleteById(id)
             } else throw PermissionDeniedException()
         } ?: throw QuizNotFoundException()
@@ -103,7 +108,7 @@ class QuizService(
             val incorrectQuizIds = findUserByIdResponse.incorrectQuizIds
 
             quiz.apply {
-                if ((id !in correctQuizIds) and (id !in incorrectQuizIds)) {
+                if ((id !in correctQuizIds) && (id !in incorrectQuizIds)) {
                     userProducer.checkAnswer(
                         CheckAnswerEvent(
                             userId = userId,
