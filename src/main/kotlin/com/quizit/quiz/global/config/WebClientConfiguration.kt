@@ -1,4 +1,4 @@
-package com.quizit.quiz.global
+package com.quizit.quiz.global.config
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
