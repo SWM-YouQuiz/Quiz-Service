@@ -93,16 +93,16 @@ class QuizControllerTest : BaseControllerTest() {
             }
         }
 
-        describe("getQuizzesByChapterId()는") {
+        describe("getQuizzesByChapterIdAndAnswerRateRange()는") {
             context("챕터와 각각의 챕터에 속하는 퀴즈들이 존재하는 경우") {
                 flowOf(createQuizResponse()).let {
-                    coEvery { quizService.getQuizzesByChapterId(any()) } returns it
+                    coEvery { quizService.getQuizzesByChapterIdAndAnswerRateRange(any(), any(), any()) } returns it
                 }
 
                 it("상태 코드 200과 quizResponse들을 반환한다.") {
                     webClient
                         .get()
-                        .uri("/quiz/chapter/{id}", ID)
+                        .uri("/quiz/chapter/{id}?page={page}&size={size}&range={range}", ID, 0, 1, "0,1")
                         .exchange()
                         .expectStatus()
                         .isOk
@@ -113,36 +113,10 @@ class QuizControllerTest : BaseControllerTest() {
                                 Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
                                 Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
                                 pathParameters("id" paramDesc "식별자"),
-                                responseFields(quizResponsesFields)
-                            )
-                        )
-                }
-            }
-
-            context("챕터와 각각의 챕터에 속하는 퀴즈들이 페이지 형태로 존재하는 경우") {
-                flowOf(createQuizResponse()).let {
-                    coEvery { quizService.getQuizzesByChapterId(any(), any()) } returns it
-                }
-
-                it("상태 코드 200과 quizResponse들을 페이징으로 반환한다.") {
-                    webClient
-                        .get()
-                        .uri("/quiz/chapter/{id}?page={page}&size={size}", ID, 0, 1)
-                        .exchange()
-                        .expectStatus()
-                        .isOk
-                        .expectBody(List::class.java)
-                        .consumeWith(
-                            WebTestClientRestDocumentationWrapper.document(
-                                "챕터 식별자를 통한 퀴즈 페이징 조회 성공(200)",
-                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                pathParameters("id" paramDesc "식별자"),
                                 queryParameters(
-                                    listOf(
-                                        ("page" paramDesc "페이지 번호").optional(),
-                                        ("size" paramDesc "페이지 크기").optional()
-                                    )
+                                    "page" paramDesc "페이지 번호",
+                                    "size" paramDesc "페이지 크기",
+                                    "range" paramDesc "정답률 범위"
                                 ),
                                 responseFields(quizResponsesFields)
                             )
