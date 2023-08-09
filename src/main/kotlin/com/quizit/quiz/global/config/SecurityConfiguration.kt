@@ -28,7 +28,7 @@ class SecurityConfiguration {
             httpBasic { it.authenticationEntryPoint(HttpStatusServerEntryPoint(HttpStatus.UNAUTHORIZED)) }
             securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
             authorizeExchange {
-                it.pathMatchers("/api/admin/**")
+                it.pathMatchers("/api/quiz/admin/**")
                     .hasAuthority("ADMIN")
                     .anyExchange()
                     .permitAll()

@@ -12,7 +12,7 @@ class QuizRouter {
     @Bean
     fun quizRoutes(handler: QuizHandler): RouterFunction<ServerResponse> =
         coRouter {
-            "/api/quiz".nest {
+            "/quiz".nest {
                 GET("/{id}", handler::getQuizById)
                 GET(
                     "/chapter/{id}",
