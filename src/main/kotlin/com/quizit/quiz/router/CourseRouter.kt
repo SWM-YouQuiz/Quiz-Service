@@ -10,10 +10,10 @@ class CourseRouter {
     @Bean
     fun courseRoutes(handler: CourseHandler) =
         coRouter {
-            "/api/course".nest {
+            "/course".nest {
                 GET("", handler::getCourses)
             }
-            "/api/admin/course".nest {
+            "/admin/course".nest {
                 POST("", handler::createCourse)
                 PUT("/{id}", handler::updateCourseById)
                 DELETE("/{id}", handler::deleteCourseById)
