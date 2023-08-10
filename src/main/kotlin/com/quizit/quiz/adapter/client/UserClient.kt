@@ -16,7 +16,7 @@ class UserClient(
 ) {
     suspend fun getUserById(userId: String) =
         webClient.get()
-            .uri("$url/api/user/{id}", userId)
+            .uri("$url/api/user/user/{id}", userId)
             .retrieve()
             .onStatus(HttpStatus.NOT_FOUND::equals) { throw UserNotFoundException() }
             .awaitBody<GetUserByIdResponse>()
