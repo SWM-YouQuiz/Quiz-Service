@@ -31,12 +31,16 @@ class QuizHandler(
                     quizService.getQuizzesByChapterId(chapterId)
                 }
             )
-
         }
 
     suspend fun getQuizzesByWriterId(request: ServerRequest): ServerResponse =
         request.pathVariable("id").let {
             ServerResponse.ok().bodyAndAwait(quizService.getQuizzesByWriterId(it))
+        }
+
+    suspend fun getQuizzesByQuestionContains(request: ServerRequest): ServerResponse =
+        request.queryParamOrNull("question")!!.let {
+            ServerResponse.ok().bodyAndAwait(quizService.getQuizzesByQuestionContains(it))
         }
 
     suspend fun getQuizzesLikedQuiz(request: ServerRequest): ServerResponse =
