@@ -176,6 +176,31 @@ class QuizControllerTest : BaseControllerTest() {
             }
         }
 
+        describe("getQuizzesByQuestionContains()는") {
+            context("주어진 키워드를 문제 지문에 포함하는 퀴즈가 존재하는 경우") {
+                coEvery { quizService.getQuizzesByQuestionContains(any()) } returns flowOf(createQuizResponse())
+
+                it("상태 코드 200과 quizResponse들을 반환한다.") {
+                    webClient
+                        .get()
+                        .uri("/quiz/search?question={question}", QUESTION)
+                        .exchange()
+                        .expectStatus()
+                        .isOk
+                        .expectBody(List::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "키워드를 문제 지문에 포함하는 퀴즈 전체 조회 성공(200)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                queryParameters("question" paramDesc "지문"),
+                                responseFields(quizResponsesFields)
+                            )
+                        )
+                }
+            }
+        }
+
         describe("getQuizzesLikedQuiz()는") {
             context("유저가 좋아요한 퀴즈가 존재하는 경우") {
                 coEvery { quizService.getQuizzesLikedQuiz(any()) } returns flowOf(createQuizResponse())
