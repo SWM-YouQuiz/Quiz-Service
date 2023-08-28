@@ -2,7 +2,7 @@ package com.quizit.quiz.service
 
 import com.github.jwt.authentication.DefaultJwtAuthentication
 import com.quizit.quiz.adapter.client.UserClient
-import com.quizit.quiz.adapter.producer.UserProducer
+import com.quizit.quiz.adapter.producer.QuizProducer
 import com.quizit.quiz.domain.Quiz
 import com.quizit.quiz.dto.event.CheckAnswerEvent
 import com.quizit.quiz.dto.event.LikeQuizEvent
@@ -26,7 +26,7 @@ import org.springframework.stereotype.Service
 class QuizService(
     private val quizRepository: QuizRepository,
     private val userClient: UserClient,
-    private val userProducer: UserProducer
+    private val quizProducer: QuizProducer
 ) {
     suspend fun getQuizById(id: String): QuizResponse =
         quizRepository.findById(id)?.let { QuizResponse(it) } ?: throw QuizNotFoundException()
@@ -113,7 +113,7 @@ class QuizService(
 
             quiz.apply {
                 if ((id !in correctQuizIds) && (id !in incorrectQuizIds)) {
-                    userProducer.checkAnswer(
+                    quizProducer.checkAnswer(
                         CheckAnswerEvent(
                             userId = userId,
                             quizId = id,
@@ -138,7 +138,7 @@ class QuizService(
 
     suspend fun likeQuiz(id: String, userId: String) {
         quizRepository.findById(id)?.run {
-            userProducer.likeQuiz(
+            quizProducer.likeQuiz(
                 LikeQuizEvent(
                     userId = userId,
                     quizId = id,

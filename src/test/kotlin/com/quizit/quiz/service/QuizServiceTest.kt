@@ -1,7 +1,7 @@
 package com.quizit.quiz.service
 
 import com.quizit.quiz.adapter.client.UserClient
-import com.quizit.quiz.adapter.producer.UserProducer
+import com.quizit.quiz.adapter.producer.QuizProducer
 import com.quizit.quiz.dto.response.QuizResponse
 import com.quizit.quiz.fixture.*
 import com.quizit.quiz.repository.QuizRepository
@@ -21,7 +21,7 @@ class QuizServiceTest : BehaviorSpec() {
 
     private val userClient = mockk<UserClient>()
 
-    private val userProducer = mockk<UserProducer>().apply {
+    private val quizProducer = mockk<QuizProducer>().apply {
         coEvery { checkAnswer(any()) } just runs
         coEvery { likeQuiz(any()) } just runs
     }
@@ -29,7 +29,7 @@ class QuizServiceTest : BehaviorSpec() {
     private val quizService = QuizService(
         quizRepository = quizRepository,
         userClient = userClient,
-        userProducer = userProducer
+        quizProducer = quizProducer
     )
 
     override fun isolationMode(): IsolationMode = IsolationMode.InstancePerTest
@@ -146,7 +146,7 @@ class QuizServiceTest : BehaviorSpec() {
                 quizService.checkAnswer(ID, ID, createCheckAnswerRequest())
 
                 Then("정답으로 처리되어 정답률이 변경된다.") {
-                    verify { userProducer.checkAnswer(any()) }
+                    verify { quizProducer.checkAnswer(any()) }
                 }
             }
 
@@ -154,7 +154,7 @@ class QuizServiceTest : BehaviorSpec() {
                 quizService.checkAnswer(ID, ID, createCheckAnswerRequest(answer = -1))
 
                 Then("오답으로 처리되어 정답률이 변경된다.") {
-                    verify { userProducer.checkAnswer(any()) }
+                    verify { quizProducer.checkAnswer(any()) }
                 }
             }
         }
@@ -171,7 +171,7 @@ class QuizServiceTest : BehaviorSpec() {
                 quizService.checkAnswer(quiz.id!!, ID, createCheckAnswerRequest())
 
                 Then("채점만 되고 정답률은 변경되지 않는다.") {
-                    verify(exactly = 0) { userProducer.checkAnswer(any()) }
+                    verify(exactly = 0) { quizProducer.checkAnswer(any()) }
                 }
             }
 
@@ -179,7 +179,7 @@ class QuizServiceTest : BehaviorSpec() {
                 quizService.checkAnswer(quiz.id!!, ID, createCheckAnswerRequest(answer = -1))
 
                 Then("채점만 되고 정답률은 변경되지 않는다.") {
-                    verify(exactly = 0) { userProducer.checkAnswer(any()) }
+                    verify(exactly = 0) { quizProducer.checkAnswer(any()) }
                 }
             }
         }
