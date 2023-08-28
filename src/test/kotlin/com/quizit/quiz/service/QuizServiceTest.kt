@@ -48,6 +48,7 @@ class QuizServiceTest : BehaviorSpec() {
                         )
                     } returns it
                     coEvery { quizRepository.findAllByIdIn(any()) } returns it
+                    coEvery { quizRepository.findAllByQuestionContains(any()) } returns it
                 }
             }
             val updateQuizByIdRequest = createUpdateQuizByIdRequest(question = "update").also {
@@ -59,6 +60,14 @@ class QuizServiceTest : BehaviorSpec() {
 
                 Then("해당 퀴즈가 조회된다.") {
                     quizResponse shouldBeEqualToComparingFields QuizResponse(quiz)
+                }
+            }
+
+            When("유저가 특정 퀴즈를 문제 지문을 통해 검색하면") {
+                val quizResponses = quizService.getQuizzesByQuestionContains(QUESTION).toList()
+
+                Then("해당 키워드가 들어간 문제 지문을 가진 퀴즈가 조회된다.") {
+                    quizResponses shouldContainExactly quizzes.map { QuizResponse(it) }
                 }
             }
 
@@ -89,7 +98,6 @@ class QuizServiceTest : BehaviorSpec() {
                     coVerify { quizRepository.deleteById(any()) }
                 }
             }
-
         }
 
         Given("유저가 좋아요한 퀴즈가 존재하는 경우") {

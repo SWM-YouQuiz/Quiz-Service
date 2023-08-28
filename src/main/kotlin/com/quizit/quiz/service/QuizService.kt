@@ -43,6 +43,10 @@ class QuizService(
         quizRepository.findAllByWriterId(writerId)
             .map { QuizResponse(it) }
 
+    fun getQuizzesByQuestionContains(keyword: String): Flow<QuizResponse> =
+        quizRepository.findAllByQuestionContains(keyword)
+            .map { QuizResponse(it) }
+
     suspend fun getQuizzesLikedQuiz(userId: String): Flow<QuizResponse> =
         quizRepository.findAllByIdIn(userClient.getUserById(userId).likedQuizIds.toList())
             .map { QuizResponse(it) }
@@ -149,6 +153,5 @@ class QuizService(
             )
             quizRepository.save(this)
         } ?: throw QuizNotFoundException()
-
     }
 }

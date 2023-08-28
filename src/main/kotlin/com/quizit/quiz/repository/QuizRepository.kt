@@ -15,4 +15,6 @@ interface QuizRepository : CoroutineCrudRepository<Quiz, String> {
     fun findAllByWriterId(writerId: String): Flow<Quiz>
 
     fun findAllByIdIn(ids: List<String>): Flow<Quiz>
+
+    fun findAllByQuestionContains(keyword: String): Flow<Quiz>
 }
