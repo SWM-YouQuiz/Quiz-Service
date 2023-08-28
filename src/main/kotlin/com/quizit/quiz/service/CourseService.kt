@@ -14,8 +14,8 @@ import org.springframework.stereotype.Service
 class CourseService(
     private val courseRepository: CourseRepository
 ) {
-    fun getCourses(): Flow<CourseResponse> =
-        courseRepository.findAll()
+    fun getCoursesByCurriculumId(chapterId: String): Flow<CourseResponse> =
+        courseRepository.findAllByCurriculumId(chapterId)
             .map { CourseResponse(it) }
 
     suspend fun createCourse(request: CreateCourseRequest): CourseResponse =
@@ -23,7 +23,8 @@ class CourseService(
             courseRepository.save(
                 Course(
                     title = title,
-                    image = image
+                    image = image,
+                    curriculumId = curriculumId
                 )
             ).let { CourseResponse(it) }
         }
@@ -35,7 +36,8 @@ class CourseService(
                 Course(
                     id = id,
                     title = title,
-                    image = image
+                    image = image,
+                    curriculumId = curriculumId
                 )
             ).let { CourseResponse(it) }
         }
