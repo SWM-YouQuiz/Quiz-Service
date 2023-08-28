@@ -18,19 +18,19 @@ class QuizHandler(
             ServerResponse.ok().bodyValueAndAwait(quizService.getQuizById(it))
         }
 
-    suspend fun getQuizzesByChapterId(request: ServerRequest): ServerResponse =
+    suspend fun getQuizzesByChapterIdAndAnswerRateRange(request: ServerRequest): ServerResponse =
         with(request) {
             val chapterId = pathVariable("id")
-            val page = queryParamOrNull("page")?.toInt()
-            val size = queryParamOrNull("size")?.toInt()
+            val page = queryParamOrNull("page")!!.toInt()
+            val size = queryParamOrNull("size")!!.toInt()
+            val answerRateRange = queryParamOrNull("range")!!.split(",").map { it.toDouble() }.toSet()
 
-            ServerResponse.ok().bodyAndAwait(
-                if ((page != null) && (size != null)) {
-                    quizService.getQuizzesByChapterId(chapterId, PageRequest.of(page, size))
-                } else {
-                    quizService.getQuizzesByChapterId(chapterId)
-                }
-            )
+            ServerResponse.ok()
+                .bodyAndAwait(
+                    quizService.getQuizzesByChapterIdAndAnswerRateRange(
+                        chapterId, answerRateRange, PageRequest.of(page, size)
+                    )
+                )
         }
 
     suspend fun getQuizzesByWriterId(request: ServerRequest): ServerResponse =

@@ -42,8 +42,11 @@ class QuizServiceTest : BehaviorSpec() {
             }
             val quizzes = listOf(quiz).apply {
                 asFlow().let {
-                    coEvery { quizRepository.findAllByChapterId(any()) } returns it
-                    coEvery { quizRepository.findAllByChapterId(any(), any()) } returns it
+                    coEvery {
+                        quizRepository.findAllByChapterIdAndAnswerRateBetween(
+                            any(), any(), any(), any()
+                        )
+                    } returns it
                     coEvery { quizRepository.findAllByIdIn(any()) } returns it
                     coEvery { quizRepository.findAllByQuestionContains(any()) } returns it
                 }
@@ -69,13 +72,13 @@ class QuizServiceTest : BehaviorSpec() {
             }
 
             When("유저가 챕터를 들어가면") {
-                val quizResponses = quizService.getQuizzesByChapterId(CHAPTER_ID).toList()
-                val quizResponsesWithPaging = quizService.getQuizzesByChapterId(CHAPTER_ID, PAGEABLE).toList()
+                val quizResponses =
+                    quizService.getQuizzesByChapterIdAndAnswerRateRange(CHAPTER_ID, setOf(0.0, 100.0), PAGEABLE)
+                        .toList()
 
                 Then("해당 챕터에 속하는 퀴즈들이 주어진다.") {
                     quizzes.map { QuizResponse(it) }.let {
                         quizResponses shouldContainExactly it
-                        quizResponsesWithPaging shouldContainExactly it
                     }
                 }
             }

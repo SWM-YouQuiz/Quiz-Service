@@ -12,10 +12,13 @@ class QuizRouter {
     @Bean
     fun quizRoutes(handler: QuizHandler): RouterFunction<ServerResponse> =
         coRouter {
-            "/api/quiz".nest {
-                GET("/search", queryParam("question") { true }, handler::getQuizzesByQuestionContains)
+            "/quiz".nest {
                 GET("/{id}", handler::getQuizById)
-                GET("/chapter/{id}", handler::getQuizzesByChapterId)
+                GET(
+                    "/chapter/{id}",
+                    queryParam("page") { true } and queryParam("size") { true } and queryParam("range") { true },
+                    handler::getQuizzesByChapterIdAndAnswerRateRange
+                )
                 GET("/writer/{id}", handler::getQuizzesByWriterId)
                 GET("/{id}/like", handler::likeQuiz)
                 GET("/liked-user/{id}", handler::getQuizzesLikedQuiz)

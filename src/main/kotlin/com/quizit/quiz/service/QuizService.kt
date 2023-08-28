@@ -31,13 +31,13 @@ class QuizService(
     suspend fun getQuizById(id: String): QuizResponse =
         quizRepository.findById(id)?.let { QuizResponse(it) } ?: throw QuizNotFoundException()
 
-    fun getQuizzesByChapterId(chapterId: String): Flow<QuizResponse> =
-        quizRepository.findAllByChapterId(chapterId)
-            .map { QuizResponse(it) }
-
-    fun getQuizzesByChapterId(chapterId: String, pageable: Pageable): Flow<QuizResponse> =
-        quizRepository.findAllByChapterId(chapterId, pageable)
-            .map { QuizResponse(it) }
+    fun getQuizzesByChapterIdAndAnswerRateRange(
+        chapterId: String, answerRateRange: Set<Double>, pageable: Pageable
+    ): Flow<QuizResponse> =
+        with(answerRateRange) {
+            quizRepository.findAllByChapterIdAndAnswerRateBetween(chapterId, min(), max(), pageable)
+                .map { QuizResponse(it) }
+        }
 
     fun getQuizzesByWriterId(writerId: String): Flow<QuizResponse> =
         quizRepository.findAllByWriterId(writerId)
