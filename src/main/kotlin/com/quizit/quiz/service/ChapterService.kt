@@ -41,6 +41,7 @@ class ChapterService(
         }
 
     suspend fun deleteChapterById(id: String) {
+        chapterRepository.findById(id) ?: throw ChapterNotFoundException()
         chapterRepository.deleteById(id)
     }
 }
