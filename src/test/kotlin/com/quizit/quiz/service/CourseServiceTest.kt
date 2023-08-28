@@ -1,10 +1,7 @@
 package com.quizit.quiz.service
 
 import com.quizit.quiz.dto.response.CourseResponse
-import com.quizit.quiz.fixture.ID
-import com.quizit.quiz.fixture.createCourse
-import com.quizit.quiz.fixture.createCreateCourseRequest
-import com.quizit.quiz.fixture.createUpdateCourseByIdRequest
+import com.quizit.quiz.fixture.*
 import com.quizit.quiz.repository.CourseRepository
 import io.kotest.core.spec.IsolationMode
 import io.kotest.core.spec.style.BehaviorSpec
@@ -30,17 +27,17 @@ class CourseServiceTest : BehaviorSpec() {
             }
             val courses = listOf(course).apply {
                 asFlow().let {
-                    coEvery { courseRepository.findAll() } returns it
+                    coEvery { courseRepository.findAllByCurriculumId(any()) } returns it
                 }
             }
             val updateCourseByIdRequest = createUpdateCourseByIdRequest(title = "update").also {
                 coEvery { courseRepository.save(any()) } returns createCourse(title = it.title)
             }
 
-            When("유저가 코스들을 조회하면") {
-                val courseResponses = courseService.getCourses().toList()
+            When("유저가 커리큘럼에 들어가면") {
+                val courseResponses = courseService.getCoursesByCurriculumId(CURRICULUM_ID).toList()
 
-                Then("해당 코스들이 주어진다.") {
+                Then("해당 커리큘럼에 속하는 코스들이 주어진다.") {
                     courseResponses shouldContainExactly courses.map { CourseResponse(it) }
                 }
             }

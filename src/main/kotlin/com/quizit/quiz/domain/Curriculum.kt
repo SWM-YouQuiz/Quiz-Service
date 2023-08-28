@@ -4,10 +4,9 @@ import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 
 @Document
-class Course(
+class Curriculum(
     @Id
     var id: String? = null,
     val title: String,
-    val image: String,
-    val curriculumId: String
+    val image: String
 )

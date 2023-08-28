@@ -31,38 +31,41 @@ class CourseControllerTest : BaseControllerTest() {
 
     private val createCourseRequestFields = listOf(
         "title" desc "제목",
-        "image" desc "이미지"
+        "image" desc "이미지",
+        "curriculumId" desc "커리큘럼 식별자"
     )
 
     private val updateCourseByIdRequestFields = listOf(
         "title" desc "제목",
-        "image" desc "이미지"
+        "image" desc "이미지",
+        "curriculumId" desc "커리큘럼 식별자"
     )
 
     private val courseResponseFields = listOf(
         "id" desc "식별자",
         "title" desc "제목",
-        "image" desc "이미지"
+        "image" desc "이미지",
+        "curriculumId" desc "커리큘럼 식별자"
     )
 
     private val courseResponsesFields = courseResponseFields.map { "[].${it.path}" desc it.description as String }
 
     init {
-        describe("getCourses()는") {
-            context("코스들이 존재하는 경우") {
-                coEvery { courseService.getCourses() } returns flowOf(createCourseResponse())
+        describe("getCoursesByCurriculumId()는") {
+            context("커리큘럼과 각각의 커리큘럼에 속하는 코스들이 존재하는 경우") {
+                coEvery { courseService.getCoursesByCurriculumId(any()) } returns flowOf(createCourseResponse())
 
                 it("상태 코드 200과 courseResponse들을 반환한다.") {
                     webClient
                         .get()
-                        .uri("/course")
+                        .uri("/course/curriculum/{id}", ID)
                         .exchange()
                         .expectStatus()
                         .isOk
                         .expectBody(List::class.java)
                         .consumeWith(
                             WebTestClientRestDocumentationWrapper.document(
-                                "코스 전체 조회 성공(200)",
+                                "커리큘럼 식별자를 통한 코스 전체 조회 성공(200)",
                                 Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
                                 Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
                                 responseFields(courseResponsesFields)
