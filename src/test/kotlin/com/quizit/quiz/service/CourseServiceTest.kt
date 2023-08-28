@@ -1,7 +1,10 @@
 package com.quizit.quiz.service
 
 import com.quizit.quiz.dto.response.CourseResponse
-import com.quizit.quiz.fixture.*
+import com.quizit.quiz.fixture.ID
+import com.quizit.quiz.fixture.createCourse
+import com.quizit.quiz.fixture.createCreateCourseRequest
+import com.quizit.quiz.fixture.createUpdateCourseByIdRequest
 import com.quizit.quiz.repository.CourseRepository
 import io.kotest.core.spec.IsolationMode
 import io.kotest.core.spec.style.BehaviorSpec
@@ -35,7 +38,7 @@ class CourseServiceTest : BehaviorSpec() {
             }
 
             When("유저가 커리큘럼에 들어가면") {
-                val courseResponses = courseService.getCoursesByCurriculumId(CURRICULUM_ID).toList()
+                val courseResponses = courseService.getCoursesByCurriculumId(ID).toList()
 
                 Then("해당 커리큘럼에 속하는 코스들이 주어진다.") {
                     courseResponses shouldContainExactly courses.map { CourseResponse(it) }

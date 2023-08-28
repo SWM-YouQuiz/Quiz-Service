@@ -5,7 +5,6 @@ import java.time.LocalDateTime
 
 const val USERNAME = "test"
 const val NICKNAME = "test"
-const val PASSWORD = "root"
 const val ROLE = "USER"
 const val ALLOW_PUSH = true
 val CORRECT_QUIZ_IDS = setOf("quiz")

@@ -6,11 +6,10 @@ import com.quizit.quiz.dto.request.UpdateChapterByIdRequest
 import com.quizit.quiz.dto.response.ChapterResponse
 
 const val DESCRIPTION = "test"
-const val COURSE_ID = "test"
 
 fun createCreateChapterRequest(
     description: String = DESCRIPTION,
-    courseId: String = COURSE_ID
+    courseId: String = ID
 ): CreateChapterRequest =
     CreateChapterRequest(
         description = description,
@@ -19,15 +18,17 @@ fun createCreateChapterRequest(
 
 fun createUpdateChapterByIdRequest(
     description: String = DESCRIPTION,
+    courseId: String = ID
 ): UpdateChapterByIdRequest =
     UpdateChapterByIdRequest(
         description = description,
+        courseId = courseId
     )
 
 fun createChapterResponse(
     id: String = ID,
     description: String = DESCRIPTION,
-    courseId: String = COURSE_ID
+    courseId: String = ID
 ): ChapterResponse =
     ChapterResponse(
         id = id,
@@ -38,7 +39,7 @@ fun createChapterResponse(
 fun createChapter(
     id: String = ID,
     description: String = DESCRIPTION,
-    courseId: String = COURSE_ID
+    courseId: String = ID
 ): Chapter =
     Chapter(
         id = id,

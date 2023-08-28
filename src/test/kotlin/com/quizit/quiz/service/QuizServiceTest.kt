@@ -73,7 +73,7 @@ class QuizServiceTest : BehaviorSpec() {
 
             When("유저가 챕터를 들어가면") {
                 val quizResponses =
-                    quizService.getQuizzesByChapterIdAndAnswerRateRange(CHAPTER_ID, setOf(0.0, 100.0), PAGEABLE)
+                    quizService.getQuizzesByChapterIdAndAnswerRateRange(ID, setOf(0.0, 100.0), PAGEABLE)
                         .toList()
 
                 Then("해당 챕터에 속하는 퀴즈들이 주어진다.") {
@@ -143,7 +143,9 @@ class QuizServiceTest : BehaviorSpec() {
             coEvery { userClient.getUserById(any()) } returns createGetUserByIdResponse()
 
             When("옳은 답을 제출하면") {
-                val checkAnswerResponse = quizService.checkAnswer(ID, ID, createCheckAnswerRequest())
+                val checkAnswerResponse = quizService.checkAnswer(
+                    ID, ID, createCheckAnswerRequest()
+                )
 
                 Then("정답으로 처리되어 정답률이 변경된다.") {
                     verify { userProducer.checkAnswer(any()) }
@@ -151,7 +153,9 @@ class QuizServiceTest : BehaviorSpec() {
             }
 
             When("틀린 답을 제출하면") {
-                val checkAnswerResponse = quizService.checkAnswer(ID, ID, createCheckAnswerRequest(answer = -1))
+                val checkAnswerResponse = quizService.checkAnswer(
+                    ID, ID, createCheckAnswerRequest(answer = -1)
+                )
 
                 Then("오답으로 처리되어 정답률이 변경된다.") {
                     verify { userProducer.checkAnswer(any()) }

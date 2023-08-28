@@ -1,7 +1,10 @@
 package com.quizit.quiz.service
 
 import com.quizit.quiz.dto.response.ChapterResponse
-import com.quizit.quiz.fixture.*
+import com.quizit.quiz.fixture.ID
+import com.quizit.quiz.fixture.createChapter
+import com.quizit.quiz.fixture.createCreateChapterRequest
+import com.quizit.quiz.fixture.createUpdateChapterByIdRequest
 import com.quizit.quiz.repository.ChapterRepository
 import io.kotest.core.spec.IsolationMode
 import io.kotest.core.spec.style.BehaviorSpec
@@ -35,7 +38,7 @@ class ChapterServiceTest : BehaviorSpec() {
             }
 
             When("유저가 코스에 들어가면") {
-                val chapterResponses = chapterService.getChaptersByCourseId(COURSE_ID).toList()
+                val chapterResponses = chapterService.getChaptersByCourseId(ID).toList()
 
                 Then("해당 코스에 속하는 챕터들이 주어진다.") {
                     chapterResponses shouldContainExactly chapters.map { ChapterResponse(it) }
