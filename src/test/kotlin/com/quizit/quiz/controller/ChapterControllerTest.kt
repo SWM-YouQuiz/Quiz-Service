@@ -3,17 +3,16 @@ package com.quizit.quiz.controller
 import com.epages.restdocs.apispec.WebTestClientRestDocumentationWrapper
 import com.ninjasquad.springmockk.MockkBean
 import com.quizit.quiz.dto.response.ChapterResponse
+import com.quizit.quiz.exception.ChapterNotFoundException
 import com.quizit.quiz.fixture.ID
 import com.quizit.quiz.fixture.createChapterResponse
 import com.quizit.quiz.fixture.createCreateChapterRequest
 import com.quizit.quiz.fixture.createUpdateChapterByIdRequest
+import com.quizit.quiz.global.dto.ErrorResponse
 import com.quizit.quiz.handler.ChapterHandler
 import com.quizit.quiz.router.ChapterRouter
 import com.quizit.quiz.service.ChapterService
-import com.quizit.quiz.util.BaseControllerTest
-import com.quizit.quiz.util.desc
-import com.quizit.quiz.util.paramDesc
-import com.quizit.quiz.util.withMockAdmin
+import com.quizit.quiz.util.*
 import io.mockk.coEvery
 import io.mockk.just
 import io.mockk.runs
@@ -125,6 +124,31 @@ class ChapterControllerTest : BaseControllerTest() {
                         )
                 }
             }
+
+            context("챕터가 존재하지 않는 경우") {
+                coEvery { chapterService.updateChapterById(any(), any()) } throws ChapterNotFoundException()
+                withMockAdmin()
+
+                it("상태 코드 404를 반환한다.") {
+                    webClient
+                        .put()
+                        .uri("/admin/chapter/{id}", ID)
+                        .bodyValue(createUpdateChapterByIdRequest())
+                        .exchange()
+                        .expectStatus()
+                        .isNotFound
+                        .expectBody(ErrorResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "챕터 수정 실패(404)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                requestFields(updateChapterByIdRequestFields),
+                                responseFields(errorResponseFields)
+                            )
+                        )
+                }
+            }
         }
 
         describe("deleteChapterById()는") {
@@ -146,6 +170,30 @@ class ChapterControllerTest : BaseControllerTest() {
                                 Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
                                 Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
                                 pathParameters("id" paramDesc "식별자"),
+                            )
+                        )
+                }
+            }
+
+            context("챕터가 존재하지 않는 경우") {
+                coEvery { chapterService.deleteChapterById(any()) } throws ChapterNotFoundException()
+                withMockAdmin()
+
+                it("상태 코드 404을 반환한다.") {
+                    webClient
+                        .delete()
+                        .uri("/admin/chapter/{id}", ID)
+                        .exchange()
+                        .expectStatus()
+                        .isNotFound
+                        .expectBody(ErrorResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "챕터 삭제 실패(404)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                pathParameters("id" paramDesc "식별자"),
+                                responseFields(errorResponseFields)
                             )
                         )
                 }

@@ -3,17 +3,16 @@ package com.quizit.quiz.controller
 import com.epages.restdocs.apispec.WebTestClientRestDocumentationWrapper
 import com.ninjasquad.springmockk.MockkBean
 import com.quizit.quiz.dto.response.CurriculumResponse
+import com.quizit.quiz.exception.CurriculumNotFoundException
 import com.quizit.quiz.fixture.ID
 import com.quizit.quiz.fixture.createCreateCurriculumRequest
 import com.quizit.quiz.fixture.createCurriculumResponse
 import com.quizit.quiz.fixture.createUpdateCurriculumByIdRequest
+import com.quizit.quiz.global.dto.ErrorResponse
 import com.quizit.quiz.handler.CurriculumHandler
 import com.quizit.quiz.router.CurriculumRouter
 import com.quizit.quiz.service.CurriculumService
-import com.quizit.quiz.util.BaseControllerTest
-import com.quizit.quiz.util.desc
-import com.quizit.quiz.util.paramDesc
-import com.quizit.quiz.util.withMockAdmin
+import com.quizit.quiz.util.*
 import io.mockk.coEvery
 import io.mockk.just
 import io.mockk.runs
@@ -125,6 +124,31 @@ class CurriculumControllerTest : BaseControllerTest() {
                         )
                 }
             }
+
+            context("커리큘럼이 존재하지 않는 경우") {
+                coEvery { curriculumService.updateCurriculumById(any(), any()) } throws CurriculumNotFoundException()
+                withMockAdmin()
+
+                it("상태 코드 404를 반환한다.") {
+                    webClient
+                        .put()
+                        .uri("/admin/curriculum/{id}", ID)
+                        .bodyValue(createUpdateCurriculumByIdRequest())
+                        .exchange()
+                        .expectStatus()
+                        .isNotFound
+                        .expectBody(ErrorResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "커리큘럼 수정 실패(404)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                requestFields(updateCurriculumByIdRequestFields),
+                                responseFields(errorResponseFields)
+                            )
+                        )
+                }
+            }
         }
 
         describe("deleteCurriculumById()는") {
@@ -146,6 +170,30 @@ class CurriculumControllerTest : BaseControllerTest() {
                                 Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
                                 Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
                                 pathParameters("id" paramDesc "식별자"),
+                            )
+                        )
+                }
+            }
+
+            context("어드민이 챕터를 삭제하는 경우") {
+                coEvery { curriculumService.deleteCurriculumById(any()) } throws CurriculumNotFoundException()
+                withMockAdmin()
+
+                it("상태 코드 404를 반환한다.") {
+                    webClient
+                        .delete()
+                        .uri("/admin/curriculum/{id}", ID)
+                        .exchange()
+                        .expectStatus()
+                        .isNotFound
+                        .expectBody(ErrorResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "커리큘럼 삭제 실패(404)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                pathParameters("id" paramDesc "식별자"),
+                                responseFields(errorResponseFields)
                             )
                         )
                 }

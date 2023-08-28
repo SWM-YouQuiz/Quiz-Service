@@ -3,17 +3,16 @@ package com.quizit.quiz.controller
 import com.epages.restdocs.apispec.WebTestClientRestDocumentationWrapper
 import com.ninjasquad.springmockk.MockkBean
 import com.quizit.quiz.dto.response.CourseResponse
+import com.quizit.quiz.exception.CourseNotFoundException
 import com.quizit.quiz.fixture.ID
 import com.quizit.quiz.fixture.createCourseResponse
 import com.quizit.quiz.fixture.createCreateCourseRequest
 import com.quizit.quiz.fixture.createUpdateCourseByIdRequest
+import com.quizit.quiz.global.dto.ErrorResponse
 import com.quizit.quiz.handler.CourseHandler
 import com.quizit.quiz.router.CourseRouter
 import com.quizit.quiz.service.CourseService
-import com.quizit.quiz.util.BaseControllerTest
-import com.quizit.quiz.util.desc
-import com.quizit.quiz.util.paramDesc
-import com.quizit.quiz.util.withMockAdmin
+import com.quizit.quiz.util.*
 import io.mockk.coEvery
 import io.mockk.just
 import io.mockk.runs
@@ -127,6 +126,31 @@ class CourseControllerTest : BaseControllerTest() {
                         )
                 }
             }
+
+            context("코스가 존재하지 않는 경우") {
+                coEvery { courseService.updateCourseById(any(), any()) } throws CourseNotFoundException()
+                withMockAdmin()
+
+                it("상태 코드 404를 반환한다.") {
+                    webClient
+                        .put()
+                        .uri("/admin/course/{id}", ID)
+                        .bodyValue(createUpdateCourseByIdRequest())
+                        .exchange()
+                        .expectStatus()
+                        .isNotFound
+                        .expectBody(ErrorResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "코스 수정 실패(404)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                requestFields(updateCourseByIdRequestFields),
+                                responseFields(errorResponseFields)
+                            )
+                        )
+                }
+            }
         }
 
         describe("deleteCourseById()는") {
@@ -148,6 +172,30 @@ class CourseControllerTest : BaseControllerTest() {
                                 Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
                                 Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
                                 pathParameters("id" paramDesc "식별자"),
+                            )
+                        )
+                }
+            }
+
+            context("코스가 존재하지 않는 경우") {
+                coEvery { courseService.deleteCourseById(any()) } throws CourseNotFoundException()
+                withMockAdmin()
+
+                it("상태 코드 404를 반환한다.") {
+                    webClient
+                        .delete()
+                        .uri("/admin/course/{id}", ID)
+                        .exchange()
+                        .expectStatus()
+                        .isNotFound
+                        .expectBody(ErrorResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "코스 삭제 실패(404)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                pathParameters("id" paramDesc "식별자"),
+                                responseFields(errorResponseFields)
                             )
                         )
                 }
