@@ -135,7 +135,7 @@ class QuizServiceTest : BehaviorSpec() {
         }
 
         Given("유저가 퀴즈를 푼 경우") {
-            val quiz = createQuiz().also {
+            createQuiz().also {
                 coEvery { quizRepository.findById(any()) } returns it
                 coEvery { quizRepository.save(any()) } returns it
             }
@@ -143,9 +143,7 @@ class QuizServiceTest : BehaviorSpec() {
             coEvery { userClient.getUserById(any()) } returns createGetUserByIdResponse()
 
             When("옳은 답을 제출하면") {
-                val checkAnswerResponse = quizService.checkAnswer(
-                    ID, ID, createCheckAnswerRequest()
-                )
+                quizService.checkAnswer(ID, ID, createCheckAnswerRequest())
 
                 Then("정답으로 처리되어 정답률이 변경된다.") {
                     verify { userProducer.checkAnswer(any()) }
@@ -153,9 +151,7 @@ class QuizServiceTest : BehaviorSpec() {
             }
 
             When("틀린 답을 제출하면") {
-                val checkAnswerResponse = quizService.checkAnswer(
-                    ID, ID, createCheckAnswerRequest(answer = -1)
-                )
+                quizService.checkAnswer(ID, ID, createCheckAnswerRequest(answer = -1))
 
                 Then("오답으로 처리되어 정답률이 변경된다.") {
                     verify { userProducer.checkAnswer(any()) }
@@ -172,7 +168,7 @@ class QuizServiceTest : BehaviorSpec() {
             coEvery { userClient.getUserById(any()) } returns createGetUserByIdResponse()
 
             When("해당 퀴즈를 풀고 정답을 제출하면") {
-                val checkAnswerResponse = quizService.checkAnswer(quiz.id!!, ID, createCheckAnswerRequest())
+                quizService.checkAnswer(quiz.id!!, ID, createCheckAnswerRequest())
 
                 Then("채점만 되고 정답률은 변경되지 않는다.") {
                     verify(exactly = 0) { userProducer.checkAnswer(any()) }
@@ -180,7 +176,7 @@ class QuizServiceTest : BehaviorSpec() {
             }
 
             When("해당 퀴즈를 풀고 오답을 제출하면") {
-                val checkAnswerResponse = quizService.checkAnswer(quiz.id!!, ID, createCheckAnswerRequest(answer = -1))
+                quizService.checkAnswer(quiz.id!!, ID, createCheckAnswerRequest(answer = -1))
 
                 Then("채점만 되고 정답률은 변경되지 않는다.") {
                     verify(exactly = 0) { userProducer.checkAnswer(any()) }
