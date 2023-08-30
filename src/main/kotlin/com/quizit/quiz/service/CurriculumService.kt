@@ -44,6 +44,7 @@ class CurriculumService(
         }
 
     suspend fun deleteCurriculumById(id: String) {
+        curriculumRepository.findById(id) ?: CurriculumNotFoundException()
         curriculumRepository.deleteById(id)
     }
 }

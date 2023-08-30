@@ -7,12 +7,11 @@ import com.quizit.quiz.dto.response.CourseResponse
 
 const val TITLE = "test"
 const val IMAGE = "test"
-const val CURRICULUM_ID = "test"
 
 fun createCreateCourseRequest(
     title: String = TITLE,
     image: String = IMAGE,
-    curriculumId: String = CURRICULUM_ID
+    curriculumId: String = ID
 ): CreateCourseRequest =
     CreateCourseRequest(
         title = title,
@@ -23,7 +22,7 @@ fun createCreateCourseRequest(
 fun createUpdateCourseByIdRequest(
     title: String = TITLE,
     image: String = IMAGE,
-    curriculumId: String = CURRICULUM_ID
+    curriculumId: String = ID
 ): UpdateCourseByIdRequest =
     UpdateCourseByIdRequest(
         title = title,
@@ -35,7 +34,7 @@ fun createCourseResponse(
     id: String = ID,
     title: String = TITLE,
     image: String = IMAGE,
-    curriculumId: String = CURRICULUM_ID
+    curriculumId: String = ID
 ): CourseResponse =
     CourseResponse(
         id = id,
@@ -48,7 +47,7 @@ fun createCourse(
     id: String = ID,
     title: String = TITLE,
     image: String = IMAGE,
-    curriculumId: String = CURRICULUM_ID
+    curriculumId: String = ID
 ): Course =
     Course(
         id = id,

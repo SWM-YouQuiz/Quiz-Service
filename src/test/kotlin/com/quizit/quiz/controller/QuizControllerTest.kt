@@ -4,6 +4,7 @@ import com.epages.restdocs.apispec.WebTestClientRestDocumentationWrapper
 import com.ninjasquad.springmockk.MockkBean
 import com.quizit.quiz.dto.response.CheckAnswerResponse
 import com.quizit.quiz.dto.response.QuizResponse
+import com.quizit.quiz.exception.PermissionDeniedException
 import com.quizit.quiz.exception.QuizNotFoundException
 import com.quizit.quiz.fixture.*
 import com.quizit.quiz.global.dto.ErrorResponse
@@ -87,6 +88,29 @@ class QuizControllerTest : BaseControllerTest() {
                                 Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
                                 pathParameters("id" paramDesc "식별자"),
                                 responseFields(quizResponseFields)
+                            )
+                        )
+                }
+            }
+
+            context("퀴즈가 존재하지 않는 경우") {
+                coEvery { quizService.getQuizById(any()) } throws QuizNotFoundException()
+
+                it("상태 코드 404를 반환한다.") {
+                    webClient
+                        .get()
+                        .uri("/quiz/{id}", ID)
+                        .exchange()
+                        .expectStatus()
+                        .isNotFound
+                        .expectBody(ErrorResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "식별자를 통한 퀴즈 단일 조회 실패(404)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                pathParameters("id" paramDesc "식별자"),
+                                responseFields(errorResponseFields)
                             )
                         )
                 }
@@ -252,6 +276,56 @@ class QuizControllerTest : BaseControllerTest() {
                         )
                 }
             }
+
+            context("퀴즈가 존재하지 않는 경우") {
+                coEvery { quizService.updateQuizById(any(), any(), any()) } throws QuizNotFoundException()
+                withMockUser()
+
+                it("상태 코드 404를 반환한다.") {
+                    webClient
+                        .put()
+                        .uri("/quiz/{id}", ID)
+                        .bodyValue(createUpdateQuizByIdRequest())
+                        .exchange()
+                        .expectStatus()
+                        .isNotFound
+                        .expectBody(ErrorResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "퀴즈 수정 실패(404)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                requestFields(updateQuizByIdRequestFields),
+                                responseFields(errorResponseFields)
+                            )
+                        )
+                }
+            }
+
+            context("유저가 다른 유저의 퀴즈를 수정해서 제출하는 경우") {
+                coEvery { quizService.updateQuizById(any(), any(), any()) } throws PermissionDeniedException()
+                withMockUser()
+
+                it("상태 코드 403을 반환한다.") {
+                    webClient
+                        .put()
+                        .uri("/quiz/{id}", ID)
+                        .bodyValue(createUpdateQuizByIdRequest())
+                        .exchange()
+                        .expectStatus()
+                        .isForbidden
+                        .expectBody(ErrorResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "퀴즈 수정 실패(403)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                requestFields(updateQuizByIdRequestFields),
+                                responseFields(errorResponseFields)
+                            )
+                        )
+                }
+            }
         }
 
         describe("deleteQuizById()는") {
@@ -277,10 +351,58 @@ class QuizControllerTest : BaseControllerTest() {
                         )
                 }
             }
+
+            context("퀴즈가 존재하지 않는 경우") {
+                coEvery { quizService.deleteQuizById(any(), any()) } throws QuizNotFoundException()
+                withMockUser()
+
+                it("상태 코드 404를 반환한다.") {
+                    webClient
+                        .delete()
+                        .uri("/quiz/{id}", ID)
+                        .exchange()
+                        .expectStatus()
+                        .isNotFound
+                        .expectBody(ErrorResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "퀴즈 삭제 실패(404)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                pathParameters("id" paramDesc "식별자"),
+                                responseFields(errorResponseFields)
+                            )
+                        )
+                }
+            }
+
+            context("유저가 다른 유저의 퀴즈를 삭제하는 경우") {
+                coEvery { quizService.deleteQuizById(any(), any()) } throws PermissionDeniedException()
+                withMockUser()
+
+                it("상태 코드 403을 반환한다.") {
+                    webClient
+                        .delete()
+                        .uri("/quiz/{id}", ID)
+                        .exchange()
+                        .expectStatus()
+                        .isForbidden
+                        .expectBody(ErrorResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "퀴즈 삭제 실패(403)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                pathParameters("id" paramDesc "식별자"),
+                                responseFields(errorResponseFields)
+                            )
+                        )
+                }
+            }
         }
 
         describe("checkQuiz()는") {
-            context("주어진 퀴즈 식별자에 대한 퀴즈가 존재하는 경우") {
+            context("유저가 퀴즈 답을 제출한 경우") {
                 coEvery { quizService.checkAnswer(any(), any(), any()) } returns createCheckAnswerResponse()
                 withMockUser()
 
@@ -305,7 +427,7 @@ class QuizControllerTest : BaseControllerTest() {
                 }
             }
 
-            context("주어진 퀴즈 식별자에 대한 퀴즈가 존재하지 않는 경우") {
+            context("퀴즈가 존재하지 않는 경우") {
                 coEvery { quizService.checkAnswer(any(), any(), any()) } throws QuizNotFoundException()
                 withMockUser()
 

@@ -30,20 +30,18 @@ class ChapterService(
 
     suspend fun updateChapterById(id: String, request: UpdateChapterByIdRequest): ChapterResponse =
         with(request) {
-            chapterRepository.findById(id)?.let {
-                chapterRepository.save(
-                    Chapter(
-                        id = id,
-                        description = description,
-                        courseId = it.courseId
-                    )
+            chapterRepository.findById(id) ?: throw ChapterNotFoundException()
+            chapterRepository.save(
+                Chapter(
+                    id = id,
+                    description = description,
+                    courseId = courseId
                 )
-            }?.let {
-                ChapterResponse(it)
-            } ?: throw ChapterNotFoundException()
+            ).let { ChapterResponse(it) }
         }
 
     suspend fun deleteChapterById(id: String) {
+        chapterRepository.findById(id) ?: throw ChapterNotFoundException()
         chapterRepository.deleteById(id)
     }
 }

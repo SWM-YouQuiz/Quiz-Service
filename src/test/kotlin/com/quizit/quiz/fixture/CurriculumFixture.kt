@@ -15,7 +15,6 @@ fun createCreateCurriculumRequest(
     )
 
 fun createUpdateCurriculumByIdRequest(
-    id: String = ID,
     title: String = TITLE,
     image: String = IMAGE
 ): UpdateCurriculumByIdRequest =

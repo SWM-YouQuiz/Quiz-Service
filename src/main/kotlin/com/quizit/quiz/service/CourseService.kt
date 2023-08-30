@@ -43,6 +43,7 @@ class CourseService(
         }
 
     suspend fun deleteCourseById(id: String) {
+        courseRepository.findById(id) ?: CourseNotFoundException()
         courseRepository.deleteById(id)
     }
 }

@@ -11,20 +11,17 @@ import java.time.LocalDateTime
 const val QUESTION = "question"
 const val ANSWER = 1
 const val SOLUTION = "solution"
-const val WRITER_ID = ID
-const val CHAPTER_ID = ID
 val OPTIONS = (0..4).map { "option_$it" }
 const val ANSWER_RATE = 50.0
 const val CORRECT_COUNT = 10L
 const val INCORRECT_COUNT = 10L
 val LIKED_USER_IDS = mutableSetOf("user_1")
-const val IS_ANSWER = true
 
 fun createCreateQuizRequest(
     question: String = QUESTION,
     answer: Int = ANSWER,
     solution: String = SOLUTION,
-    chapterId: String = CHAPTER_ID,
+    chapterId: String = ID,
     options: List<String> = OPTIONS,
 ): CreateQuizRequest =
     CreateQuizRequest(
@@ -39,7 +36,7 @@ fun createUpdateQuizByIdRequest(
     question: String = QUESTION,
     answer: Int = ANSWER,
     solution: String = SOLUTION,
-    chapterId: String = CHAPTER_ID,
+    chapterId: String = ID,
     options: List<String> = OPTIONS,
 ): UpdateQuizByIdRequest =
     UpdateQuizByIdRequest(
@@ -67,8 +64,8 @@ fun createCheckAnswerResponse(
 fun createQuizResponse(
     id: String = ID,
     question: String = QUESTION,
-    writerId: String = WRITER_ID,
-    chapterId: String = CHAPTER_ID,
+    writerId: String = ID,
+    chapterId: String = ID,
     options: List<String> = OPTIONS,
     answerRate: Double = ANSWER_RATE,
     correctCount: Long = CORRECT_COUNT,
@@ -94,8 +91,8 @@ fun createQuiz(
     question: String = QUESTION,
     answer: Int = ANSWER,
     solution: String = SOLUTION,
-    writerId: String = WRITER_ID,
-    chapterId: String = CHAPTER_ID,
+    writerId: String = ID,
+    chapterId: String = ID,
     options: List<String> = OPTIONS,
     answerRate: Double = ANSWER_RATE,
     correctCount: Long = CORRECT_COUNT,
