@@ -43,5 +43,8 @@ class SecurityConfiguration {
 suspend fun ServerRequest.awaitAuthentication(): DefaultJwtAuthentication =
     this.awaitPrincipal() as DefaultJwtAuthentication
 
+suspend fun getCurrentAuthentication(): DefaultJwtAuthentication =
+    ReactiveSecurityContextHolder.getContext().awaitSingle().authentication as DefaultJwtAuthentication
+
 fun DefaultJwtAuthentication.isAdmin(): Boolean =
     this.isAuthenticated and (this.authorities[0] == SimpleGrantedAuthority("ADMIN"))
