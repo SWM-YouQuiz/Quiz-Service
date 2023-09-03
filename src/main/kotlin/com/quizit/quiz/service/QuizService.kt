@@ -5,7 +5,7 @@ import com.quizit.quiz.adapter.client.UserClient
 import com.quizit.quiz.adapter.producer.QuizProducer
 import com.quizit.quiz.domain.Quiz
 import com.quizit.quiz.dto.event.CheckAnswerEvent
-import com.quizit.quiz.dto.event.LikeQuizEvent
+import com.quizit.quiz.dto.event.MarkQuizEvent
 import com.quizit.quiz.dto.request.CheckAnswerRequest
 import com.quizit.quiz.dto.request.CreateQuizRequest
 import com.quizit.quiz.dto.request.UpdateQuizByIdRequest
@@ -47,8 +47,8 @@ class QuizService(
         quizRepository.findAllByQuestionContains(keyword)
             .map { QuizResponse(it) }
 
-    suspend fun getQuizzesLikedQuiz(userId: String): Flow<QuizResponse> =
-        quizRepository.findAllByIdIn(userClient.getUserById(userId).likedQuizIds.toList())
+    suspend fun getMarkedQuizzes(userId: String): Flow<QuizResponse> =
+        quizRepository.findAllByIdIn(userClient.getUserById(userId).markedQuidIds.toList())
             .map { QuizResponse(it) }
 
     suspend fun createQuiz(userId: String, request: CreateQuizRequest): QuizResponse =
@@ -64,7 +64,7 @@ class QuizService(
                     answerRate = 0.0,
                     correctCount = 0,
                     incorrectCount = 0,
-                    likedUserIds = mutableSetOf()
+                    markedUserIds = mutableSetOf()
                 )
             ).let { QuizResponse(it) }
         }
@@ -87,7 +87,7 @@ class QuizService(
                             answerRate = it.answerRate,
                             correctCount = it.correctCount,
                             incorrectCount = it.incorrectCount,
-                            likedUserIds = it.likedUserIds
+                            markedUserIds = it.markedUserIds
                         )
                     )
                 } else throw PermissionDeniedException()
@@ -136,18 +136,18 @@ class QuizService(
             }
         }
 
-    suspend fun likeQuiz(id: String, userId: String) {
+    suspend fun markQuiz(id: String, userId: String) {
         quizRepository.findById(id)?.run {
-            quizProducer.likeQuiz(
-                LikeQuizEvent(
+            quizProducer.markQuiz(
+                MarkQuizEvent(
                     userId = userId,
                     quizId = id,
-                    isLike = (userId !in likedUserIds)
+                    isMarked = (userId !in markedUserIds)
                 ).apply {
-                    if (isLike) {
-                        like(userId)
+                    if (isMarked) {
+                        mark(userId)
                     } else {
-                        unlike(userId)
+                        unmark(userId)
                     }
                 }
             )

@@ -57,7 +57,7 @@ class QuizControllerTest : BaseControllerTest() {
         "options" desc "선지",
         "correctCount" desc "정답 횟수",
         "incorrectCount" desc "오답 횟수",
-        "likedUserIds" desc "좋아요한 유저 리스트",
+        "markedUserIds" desc "저장한 유저 리스트",
         "createdDate" desc "생성 날짜",
     )
 
@@ -204,22 +204,22 @@ class QuizControllerTest : BaseControllerTest() {
             }
         }
 
-        describe("getQuizzesLikedQuiz()는") {
-            context("유저가 좋아요한 퀴즈가 존재하는 경우") {
-                coEvery { quizService.getQuizzesLikedQuiz(any()) } returns flowOf(createQuizResponse())
+        describe("getMarkedQuizzes()는") {
+            context("유저가 저장한 퀴즈가 존재하는 경우") {
+                coEvery { quizService.getMarkedQuizzes(any()) } returns flowOf(createQuizResponse())
                 withMockUser()
 
                 it("상태 코드 200과 quizResponse들을 반환한다.") {
                     webClient
                         .get()
-                        .uri("/quiz/liked-user/{id}", ID)
+                        .uri("/quiz/marked-user/{id}", ID)
                         .exchange()
                         .expectStatus()
                         .isOk
                         .expectBody(List::class.java)
                         .consumeWith(
                             WebTestClientRestDocumentationWrapper.document(
-                                "유저가 좋아요한 퀴즈 전체 조회 성공(200)",
+                                "유저가 저장한 퀴즈 전체 조회 성공(200)",
                                 Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
                                 Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
                                 responseFields(quizResponsesFields)
@@ -458,22 +458,22 @@ class QuizControllerTest : BaseControllerTest() {
             }
         }
 
-        describe("likeQuiz()는") {
+        describe("markQuiz()는") {
             context("주어진 퀴즈 식별자에 대한 퀴즈가 존재하는 경우") {
-                coEvery { quizService.likeQuiz(any(), any()) } just runs
+                coEvery { quizService.markQuiz(any(), any()) } just runs
                 withMockUser()
 
-                it("상태 코드 200과 정답 여부가 담긴 checkAnswerResponse를 반환한다.") {
+                it("상태 코드 200을 반환한다.") {
                     webClient
                         .get()
-                        .uri("/quiz/{id}/like", ID)
+                        .uri("/quiz/{id}/mark", ID)
                         .exchange()
                         .expectStatus()
                         .isOk
                         .expectBody(CheckAnswerResponse::class.java)
                         .consumeWith(
                             WebTestClientRestDocumentationWrapper.document(
-                                "퀴즈 좋아요 성공(200)",
+                                "퀴즈 저장 성공(200)",
                                 Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
                                 Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
                                 pathParameters("id" paramDesc "식별자"),
@@ -483,20 +483,20 @@ class QuizControllerTest : BaseControllerTest() {
             }
 
             context("주어진 퀴즈 식별자에 대한 퀴즈가 존재하지 않는 경우") {
-                coEvery { quizService.likeQuiz(any(), any()) } throws QuizNotFoundException()
+                coEvery { quizService.markQuiz(any(), any()) } throws QuizNotFoundException()
                 withMockUser()
 
                 it("상태 코드 404과 에러를 반환한다.") {
                     webClient
                         .get()
-                        .uri("/quiz/{id}/like", ID)
+                        .uri("/quiz/{id}/mark", ID)
                         .exchange()
                         .expectStatus()
                         .isNotFound
                         .expectBody(ErrorResponse::class.java)
                         .consumeWith(
                             WebTestClientRestDocumentationWrapper.document(
-                                "퀴즈 좋아요 실패(404)",
+                                "퀴즈 저장 실패(404)",
                                 Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
                                 Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
                                 pathParameters("id" paramDesc "식별자"),

@@ -2,7 +2,7 @@ package com.quizit.quiz.adapter.producer
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.quizit.quiz.dto.event.CheckAnswerEvent
-import com.quizit.quiz.dto.event.LikeQuizEvent
+import com.quizit.quiz.dto.event.MarkQuizEvent
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Component
 
@@ -15,7 +15,7 @@ class QuizProducer(
         kafkaTemplate.send("check-answer", objectMapper.writeValueAsString(event))
     }
 
-    fun likeQuiz(event: LikeQuizEvent) {
-        kafkaTemplate.send("like-quiz", objectMapper.writeValueAsString(event))
+    fun markQuiz(event: MarkQuizEvent) {
+        kafkaTemplate.send("mark-quiz", objectMapper.writeValueAsString(event))
     }
 }

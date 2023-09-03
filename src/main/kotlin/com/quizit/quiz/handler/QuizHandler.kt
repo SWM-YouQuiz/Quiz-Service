@@ -43,9 +43,9 @@ class QuizHandler(
             ServerResponse.ok().bodyAndAwait(quizService.getQuizzesByQuestionContains(it))
         }
 
-    suspend fun getQuizzesLikedQuiz(request: ServerRequest): ServerResponse =
+    suspend fun getMarkedQuizzes(request: ServerRequest): ServerResponse =
         request.pathVariable("id").let {
-            ServerResponse.ok().bodyAndAwait(quizService.getQuizzesLikedQuiz(it))
+            ServerResponse.ok().bodyAndAwait(quizService.getMarkedQuizzes(it))
         }
 
     suspend fun createQuiz(request: ServerRequest): ServerResponse =
@@ -84,12 +84,12 @@ class QuizHandler(
             ServerResponse.ok().bodyValueAndAwait(quizService.checkAnswer(id, userId, checkAnswerRequest))
         }
 
-    suspend fun likeQuiz(request: ServerRequest): ServerResponse =
+    suspend fun markQuiz(request: ServerRequest): ServerResponse =
         with(request) {
             val id = pathVariable("id")
             val userId = awaitAuthentication().id
 
-            quizService.likeQuiz(id, userId)
+            quizService.markQuiz(id, userId)
 
             ServerResponse.ok().buildAndAwait()
         }

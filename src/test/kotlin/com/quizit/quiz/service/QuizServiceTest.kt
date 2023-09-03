@@ -23,7 +23,7 @@ class QuizServiceTest : BehaviorSpec() {
 
     private val quizProducer = mockk<QuizProducer>().apply {
         coEvery { checkAnswer(any()) } just runs
-        coEvery { likeQuiz(any()) } just runs
+        coEvery { markQuiz(any()) } just runs
     }
 
     private val quizService = QuizService(
@@ -100,7 +100,7 @@ class QuizServiceTest : BehaviorSpec() {
             }
         }
 
-        Given("유저가 좋아요한 퀴즈가 존재하는 경우") {
+        Given("유저가 저장한 퀴즈가 존재하는 경우") {
             val quizzes = listOf(createQuiz()).apply {
                 asFlow().let {
                     coEvery { quizRepository.findAllByIdIn(any()) } returns it
@@ -109,10 +109,10 @@ class QuizServiceTest : BehaviorSpec() {
 
             coEvery { userClient.getUserById(any()) } returns createGetUserByIdResponse()
 
-            When("유저가 본인이 좋아요한 퀴즈 보관함에 들어가면") {
-                val quizResponses = quizService.getQuizzesLikedQuiz(ID).toList()
+            When("유저가 본인이 저장한 퀴즈 보관함에 들어가면") {
+                val quizResponses = quizService.getMarkedQuizzes(ID).toList()
 
-                Then("유저가 좋아요한 퀴즈들이 주어진다.") {
+                Then("유저가 저장한 퀴즈들이 주어진다.") {
                     quizResponses shouldContainExactly quizzes.map { QuizResponse(it) }
                 }
             }
@@ -198,25 +198,25 @@ class QuizServiceTest : BehaviorSpec() {
             }
         }
 
-        Given("유저가 퀴즈에 좋아요를 하는 경우") {
+        Given("유저가 퀴즈를 저장하는 경우") {
             val quiz = createQuiz().also {
                 coEvery { quizRepository.save(any()) } returns it
                 coEvery { quizRepository.findById(any()) } returns it
             }
 
-            When("유저가 해당 퀴즈에 처음으로 좋아요를 한다면") {
-                quizService.likeQuiz(ID, ID)
+            When("유저가 해당 퀴즈를 처음 저장한다면") {
+                quizService.markQuiz(ID, ID)
 
-                Then("퀴즈에 좋아요가 된다.") {
-                    quiz.likedUserIds.size shouldBeGreaterThan createQuiz().likedUserIds.size
+                Then("퀴즈가 저장된다.") {
+                    quiz.markedUserIds.size shouldBeGreaterThan createQuiz().markedUserIds.size
                 }
             }
 
-            When("이미 유저가 해당 퀴즈에 좋아요를 한 상태라면") {
-                quizService.likeQuiz(ID, quiz.likedUserIds.random())
+            When("이미 유저가 해당 퀴즈를 저장한 상태라면") {
+                quizService.markQuiz(ID, quiz.markedUserIds.random())
 
-                Then("퀴즈에 좋아요가 취소된다.") {
-                    quiz.likedUserIds.size shouldBeLessThan createQuiz().likedUserIds.size
+                Then("퀴즈가 저장 취소된다.") {
+                    quiz.markedUserIds.size shouldBeLessThan createQuiz().markedUserIds.size
                 }
             }
         }

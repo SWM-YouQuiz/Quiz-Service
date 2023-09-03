@@ -11,5 +11,5 @@ data class GetUserByIdResponse(
     val createdDate: LocalDateTime,
     val correctQuizIds: Set<String>,
     val incorrectQuizIds: Set<String>,
-    val likedQuizIds: Set<String>
+    val markedQuidIds: Set<String>
 )
