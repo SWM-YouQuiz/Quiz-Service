@@ -9,7 +9,7 @@ const val ROLE = "USER"
 const val ALLOW_PUSH = true
 val CORRECT_QUIZ_IDS = setOf("quiz")
 val INCORRECT_QUIZ_IDS = setOf("quiz")
-val LIKED_QUIZ_IDS = setOf("quiz")
+val MARKED_QUIZ_IDS = setOf("quiz")
 
 fun createGetUserByIdResponse(
     id: String = ID,
@@ -20,7 +20,7 @@ fun createGetUserByIdResponse(
     createdDate: LocalDateTime = LocalDateTime.now(),
     correctQuizIds: Set<String> = CORRECT_QUIZ_IDS,
     incorrectQuizIds: Set<String> = INCORRECT_QUIZ_IDS,
-    likedQuizIds: Set<String> = LIKED_QUIZ_IDS
+    markedQuizIds: Set<String> = MARKED_QUIZ_IDS
 ): GetUserByIdResponse =
     GetUserByIdResponse(
         id = id,
@@ -31,5 +31,5 @@ fun createGetUserByIdResponse(
         createdDate = createdDate,
         correctQuizIds = correctQuizIds,
         incorrectQuizIds = incorrectQuizIds,
-        likedQuizIds = likedQuizIds
+        markedQuidIds = markedQuizIds
     )

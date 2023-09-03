@@ -21,8 +21,8 @@ class QuizRouter {
                     handler::getQuizzesByChapterIdAndAnswerRateRange
                 )
                 GET("/writer/{id}", handler::getQuizzesByWriterId)
-                GET("/{id}/like", handler::likeQuiz)
-                GET("/liked-user/{id}", handler::getQuizzesLikedQuiz)
+                GET("/{id}/mark", handler::markQuiz)
+                GET("/marked-user/{id}", handler::getMarkedQuizzes)
                 POST("", handler::createQuiz)
                 POST("/{id}/check", handler::checkAnswer)
                 PUT("/{id}", handler::updateQuizById)

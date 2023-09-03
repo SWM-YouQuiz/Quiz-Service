@@ -32,19 +32,19 @@ class QuizTest : BehaviorSpec() {
                 }
             }
 
-            When("유저가 해당 퀴즈에 좋아요를 했다면") {
-                val likedQuiz = createQuiz().apply { like(ID) }
+            When("유저가 해당 퀴즈를 저장했다면") {
+                val markedQuiz = createQuiz().apply { mark(ID) }
 
-                Then("해당 퀴즈에 좋아요한 유저가 추가된다.") {
-                    likedQuiz.likedUserIds.size shouldBeGreaterThan quiz.likedUserIds.size
+                Then("해당 퀴즈에 저장한 유저가 추가된다.") {
+                    markedQuiz.markedUserIds.size shouldBeGreaterThan quiz.markedUserIds.size
                 }
             }
 
-            When("유저가 해당 퀴즈에 좋아요 취소를 했다면") {
-                val unlikedQuiz = createQuiz().apply { unlike(likedUserIds.random()) }
+            When("유저가 해당 퀴즈를 저장 취소를 했다면") {
+                val unmarkedQuiz = createQuiz().apply { unmark(markedUserIds.random()) }
 
-                Then("해당 퀴즈에 좋아요한 유저가 삭제된다.") {
-                    unlikedQuiz.likedUserIds.size shouldBeLessThan quiz.likedUserIds.size
+                Then("해당 퀴즈에 저장한 유저가 삭제된다.") {
+                    unmarkedQuiz.markedUserIds.size shouldBeLessThan quiz.markedUserIds.size
                 }
             }
         }
