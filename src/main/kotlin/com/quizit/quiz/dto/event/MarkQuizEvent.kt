@@ -1,7 +1,7 @@
 package com.quizit.quiz.dto.event
 
-data class LikeQuizEvent(
+data class MarkQuizEvent(
     val userId: String,
     val quizId: String,
-    val isLike: Boolean
+    val isMarked: Boolean
 )
