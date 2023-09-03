@@ -3,6 +3,7 @@ package com.quizit.quiz.global.config
 import com.github.jwt.authentication.DefaultJwtAuthentication
 import com.github.jwt.authentication.JwtAuthenticationFilter
 import com.github.jwt.core.JwtProvider
+import kotlinx.coroutines.reactor.awaitSingle
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpStatus
@@ -10,6 +11,7 @@ import org.springframework.security.config.annotation.web.reactive.EnableWebFlux
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder
 import org.springframework.security.config.web.server.ServerHttpSecurity
 import org.springframework.security.core.authority.SimpleGrantedAuthority
+import org.springframework.security.core.context.ReactiveSecurityContextHolder
 import org.springframework.security.web.server.SecurityWebFilterChain
 import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint
 import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository
@@ -28,10 +30,10 @@ class SecurityConfiguration {
             httpBasic { it.authenticationEntryPoint(HttpStatusServerEntryPoint(HttpStatus.UNAUTHORIZED)) }
             securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
             authorizeExchange {
-                it.pathMatchers("/api/quiz/admin/**")
+                it.pathMatchers("/quiz/admin/**")
                     .hasAuthority("ADMIN")
                     .anyExchange()
-                    .permitAll()
+                    .authenticated()
             }
             addFilterAt(JwtAuthenticationFilter(jwtProvider), SecurityWebFiltersOrder.AUTHORIZATION)
             build()
