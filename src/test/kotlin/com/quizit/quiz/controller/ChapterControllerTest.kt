@@ -50,6 +50,7 @@ class ChapterControllerTest : BaseControllerTest() {
         describe("getChaptersByCourseId()는") {
             context("코스와 각각의 코스에 속하는 챕터들이 존재하는 경우") {
                 coEvery { chapterService.getChaptersByCourseId(any()) } returns flowOf(createChapterResponse())
+                withMockUser()
 
                 it("상태 코드 200과 chapterResponse들을 반환한다.") {
                     webClient

@@ -72,6 +72,7 @@ class QuizControllerTest : BaseControllerTest() {
         describe("getQuizById()는") {
             context("퀴즈가 존재하는 경우") {
                 coEvery { quizService.getQuizById(any()) } returns createQuizResponse()
+                withMockUser()
 
                 it("상태 코드 200과 quizResponse를 반환한다.") {
                     webClient
@@ -95,6 +96,7 @@ class QuizControllerTest : BaseControllerTest() {
 
             context("퀴즈가 존재하지 않는 경우") {
                 coEvery { quizService.getQuizById(any()) } throws QuizNotFoundException()
+                withMockUser()
 
                 it("상태 코드 404를 반환한다.") {
                     webClient
@@ -119,9 +121,10 @@ class QuizControllerTest : BaseControllerTest() {
 
         describe("getQuizzesByChapterIdAndAnswerRateRange()는") {
             context("챕터와 각각의 챕터에 속하는 퀴즈들이 존재하는 경우") {
-                flowOf(createQuizResponse()).let {
-                    coEvery { quizService.getQuizzesByChapterIdAndAnswerRateRange(any(), any(), any()) } returns it
-                }
+                coEvery {
+                    quizService.getQuizzesByChapterIdAndAnswerRateRange(any(), any(), any())
+                } returns flowOf(createQuizResponse())
+                withMockUser()
 
                 it("상태 코드 200과 quizResponse들을 반환한다.") {
                     webClient
@@ -152,6 +155,7 @@ class QuizControllerTest : BaseControllerTest() {
         describe("getQuizzesByWriterId()는") {
             context("유저가 작성한 퀴즈가 존재하는 경우") {
                 coEvery { quizService.getQuizzesByWriterId(any()) } returns flowOf(createQuizResponse())
+                withMockUser()
 
                 it("상태 코드 200과 quizResponse들을 반환한다.") {
                     webClient
@@ -177,6 +181,7 @@ class QuizControllerTest : BaseControllerTest() {
         describe("getQuizzesByQuestionContains()는") {
             context("주어진 키워드를 문제 지문에 포함하는 퀴즈가 존재하는 경우") {
                 coEvery { quizService.getQuizzesByQuestionContains(any()) } returns flowOf(createQuizResponse())
+                withMockUser()
 
                 it("상태 코드 200과 quizResponse들을 반환한다.") {
                     webClient

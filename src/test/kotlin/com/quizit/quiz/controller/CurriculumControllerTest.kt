@@ -51,6 +51,7 @@ class CurriculumControllerTest : BaseControllerTest() {
         describe("getCurriculums()는") {
             context("커리큘럼들이 존재하는 경우") {
                 coEvery { curriculumService.getCurriculums() } returns flowOf(createCurriculumResponse())
+                withMockUser()
 
                 it("상태 코드 200과 curriculumResponse들을 반환한다.") {
                     webClient
