@@ -53,6 +53,7 @@ class CourseControllerTest : BaseControllerTest() {
         describe("getCoursesByCurriculumId()는") {
             context("커리큘럼과 각각의 커리큘럼에 속하는 코스들이 존재하는 경우") {
                 coEvery { courseService.getCoursesByCurriculumId(any()) } returns flowOf(createCourseResponse())
+                withMockUser()
 
                 it("상태 코드 200과 courseResponse들을 반환한다.") {
                     webClient
