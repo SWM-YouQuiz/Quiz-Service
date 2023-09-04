@@ -6,6 +6,16 @@ spring:
       uri: ${QUIZ_DB_URL}
   kafka:
     bootstrap-servers: ${KAFKA_URL}
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
 jwt:
   secretKey: ${JWT_SECRET}
   accessTokenExpire: ${JWT_ACCESS_EXPIRE}
