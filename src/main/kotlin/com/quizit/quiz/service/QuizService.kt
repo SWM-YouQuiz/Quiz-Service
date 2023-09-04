@@ -48,7 +48,7 @@ class QuizService(
             .map { QuizResponse(it) }
 
     suspend fun getMarkedQuizzes(userId: String): Flow<QuizResponse> =
-        quizRepository.findAllByIdIn(userClient.getUserById(userId).markedQuidIds.toList())
+        quizRepository.findAllByIdIn(userClient.getUserById(userId).markedQuizIds.toList())
             .map { QuizResponse(it) }
 
     suspend fun createQuiz(userId: String, request: CreateQuizRequest): QuizResponse =

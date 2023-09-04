@@ -31,5 +31,5 @@ fun createGetUserByIdResponse(
         createdDate = createdDate,
         correctQuizIds = correctQuizIds,
         incorrectQuizIds = incorrectQuizIds,
-        markedQuidIds = markedQuizIds
+        markedQuizIds = markedQuizIds
     )
