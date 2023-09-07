@@ -30,17 +30,20 @@ class ChapterControllerTest : BaseControllerTest() {
 
     private val createChapterRequestFields = listOf(
         "description" desc "설명",
+        "document" desc "공식 문서",
         "courseId" desc "코스 식별자"
     )
 
     private val updateChapterByIdRequestFields = listOf(
         "description" desc "설명",
+        "document" desc "공식 문서",
         "courseId" desc "코스 식별자",
     )
 
     private val chapterResponseFields = listOf(
         "id" desc "식별자",
         "description" desc "설명",
+        "document" desc "공식 문서",
         "courseId" desc "코스 식별자"
     )
 
