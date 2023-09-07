@@ -220,5 +220,51 @@ class QuizServiceTest : BehaviorSpec() {
                 }
             }
         }
+
+        Given("유저가 퀴즈를 좋아요로 평가하는 경우") {
+            val quiz = createQuiz().also {
+                coEvery { quizRepository.save(any()) } returns it
+                coEvery { quizRepository.findById(any()) } returns it
+            }
+
+            When("유저가 해당 퀴즈를 처음 좋아요로 평가한다면") {
+                quizService.evaluateQuiz(ID, ID, true)
+
+                Then("퀴즈가 평가된다.") {
+                    quiz.likedUserIds.size shouldBeGreaterThan createQuiz().likedUserIds.size
+                }
+            }
+
+            When("유저가 이미 해당 퀴즈를 좋아요로 평가한 상태라면") {
+                quizService.evaluateQuiz(ID, quiz.likedUserIds.random(), true)
+
+                Then("퀴즈 평가가 취소된다.") {
+                    quiz.likedUserIds.size shouldBeLessThan createQuiz().likedUserIds.size
+                }
+            }
+        }
+
+        Given("유저가 퀴즈를 싫어요로 평가하는 경우") {
+            val quiz = createQuiz().also {
+                coEvery { quizRepository.save(any()) } returns it
+                coEvery { quizRepository.findById(any()) } returns it
+            }
+
+            When("유저가 해당 퀴즈를 처음 싫어요로 평가한다면") {
+                quizService.evaluateQuiz(ID, ID, false)
+
+                Then("퀴즈가 평가된다.") {
+                    quiz.unlikedUserIds.size shouldBeGreaterThan createQuiz().unlikedUserIds.size
+                }
+            }
+
+            When("유저가 이미 해당 퀴즈를 좋아요로 평가한 상태라면") {
+                quizService.evaluateQuiz(ID, quiz.unlikedUserIds.random(), false)
+
+                Then("퀴즈 평가가 취소된다.") {
+                    quiz.unlikedUserIds.size shouldBeLessThan createQuiz().unlikedUserIds.size
+                }
+            }
+        }
     }
 }
