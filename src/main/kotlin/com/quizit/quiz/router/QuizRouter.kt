@@ -23,6 +23,11 @@ class QuizRouter {
                 )
                 GET("/writer/{id}", handler::getQuizzesByWriterId)
                 GET("/{id}/mark", handler::markQuiz)
+                GET(
+                    "/{id}/evaluate",
+                    queryParams("isLike"),
+                    handler::evaluateQuiz
+                )
                 GET("/marked-user/{id}", handler::getMarkedQuizzes)
                 POST("", handler::createQuiz)
                 POST("/{id}/check", handler::checkAnswer)

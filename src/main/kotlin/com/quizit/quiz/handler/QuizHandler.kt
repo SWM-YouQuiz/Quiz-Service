@@ -92,4 +92,13 @@ class QuizHandler(
 
             ServerResponse.ok().bodyValueAndAwait(quizService.markQuiz(id, userId))
         }
+
+    suspend fun evaluateQuiz(request: ServerRequest): ServerResponse =
+        with(request) {
+            val id = pathVariable("id")
+            val userId = awaitAuthentication().id
+            val isLike = queryParamNotNull<Boolean>("isLike")
+
+            ServerResponse.ok().bodyValueAndAwait(quizService.evaluateQuiz(id, userId, isLike))
+        }
 }
