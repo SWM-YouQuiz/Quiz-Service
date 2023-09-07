@@ -42,6 +42,14 @@ class Quiz(
         markedUserIds.remove(userId)
     }
 
+    fun like(userId: String) {
+        likedUserIds.add(userId)
+    }
+
+    fun unlike(userId: String) {
+        unlikedUserIds.add(userId)
+    }
+
     private fun changeAnswerRate() {
         answerRate = (correctCount.toDouble() / (correctCount + incorrectCount).toDouble()) * 100
     }
