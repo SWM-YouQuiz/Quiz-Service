@@ -47,6 +47,22 @@ class QuizTest : BehaviorSpec() {
                     unmarkedQuiz.markedUserIds.size shouldBeLessThan quiz.markedUserIds.size
                 }
             }
+
+            When("유저가 해당 퀴즈를 좋아요로 평가했다면") {
+                val likedQuiz = createQuiz().apply { like(ID) }
+
+                Then("해당 퀴즈에 좋아요한 유저가 추가된다.") {
+                    likedQuiz.likedUserIds.size shouldBeGreaterThan quiz.likedUserIds.size
+                }
+            }
+
+            When("유저가 해당 퀴즈를 싫어요로 평가했다면") {
+                val unlikedQuiz = createQuiz().apply { unlike(ID) }
+
+                Then("해당 퀴즈에 싫어요한 유저가 추가된다.") {
+                    unlikedQuiz.unlikedUserIds.size shouldBeGreaterThan quiz.unlikedUserIds.size
+                }
+            }
         }
     }
 }
