@@ -13,6 +13,8 @@ data class QuizResponse(
     val correctCount: Long,
     val incorrectCount: Long,
     val markedUserIds: Set<String>,
+    val likedUserIds: Set<String>,
+    val unlikedUserIds: Set<String>,
     val createdDate: LocalDateTime,
 ) {
     companion object {
@@ -28,6 +30,8 @@ data class QuizResponse(
                     correctCount = correctCount,
                     incorrectCount = incorrectCount,
                     markedUserIds = markedUserIds,
+                    likedUserIds = likedUserIds,
+                    unlikedUserIds = unlikedUserIds,
                     createdDate = createdDate
                 )
             }

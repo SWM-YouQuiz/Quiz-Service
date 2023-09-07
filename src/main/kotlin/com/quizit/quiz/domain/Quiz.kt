@@ -19,6 +19,8 @@ class Quiz(
     var correctCount: Long,
     var incorrectCount: Long,
     val markedUserIds: MutableSet<String>,
+    val likedUserIds: MutableSet<String>,
+    val unlikedUserIds: MutableSet<String>,
     @CreatedDate
     var createdDate: LocalDateTime = LocalDateTime.now()
 ) {
