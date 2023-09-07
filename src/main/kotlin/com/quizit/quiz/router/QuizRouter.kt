@@ -1,5 +1,6 @@
 package com.quizit.quiz.router
 
+import com.quizit.quiz.global.util.queryParams
 import com.quizit.quiz.handler.QuizHandler
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -13,11 +14,11 @@ class QuizRouter {
     fun quizRoutes(handler: QuizHandler): RouterFunction<ServerResponse> =
         coRouter {
             "/quiz".nest {
-                GET("/search", queryParam("question") { true }, handler::getQuizzesByQuestionContains)
+                GET("/search", queryParams("question"), handler::getQuizzesByQuestionContains)
                 GET("/{id}", handler::getQuizById)
                 GET(
                     "/chapter/{id}",
-                    queryParam("page") { true } and queryParam("size") { true } and queryParam("range") { true },
+                    queryParams("page", "size", "range"),
                     handler::getQuizzesByChapterIdAndAnswerRateRange
                 )
                 GET("/writer/{id}", handler::getQuizzesByWriterId)
@@ -25,6 +26,7 @@ class QuizRouter {
                 GET("/marked-user/{id}", handler::getMarkedQuizzes)
                 POST("", handler::createQuiz)
                 POST("/{id}/check", handler::checkAnswer)
+                POST("/{id}/evaluate", handler::evaluateQuiz)
                 PUT("/{id}", handler::updateQuizById)
                 DELETE("/{id}", handler::deleteQuizById)
             }
