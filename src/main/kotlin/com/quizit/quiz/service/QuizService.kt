@@ -64,7 +64,9 @@ class QuizService(
                     answerRate = 0.0,
                     correctCount = 0,
                     incorrectCount = 0,
-                    markedUserIds = mutableSetOf()
+                    markedUserIds = mutableSetOf(),
+                    likedUserIds = mutableSetOf(),
+                    unlikedUserIds = mutableSetOf()
                 )
             ).let { QuizResponse(it) }
         }
@@ -87,7 +89,10 @@ class QuizService(
                             answerRate = it.answerRate,
                             correctCount = it.correctCount,
                             incorrectCount = it.incorrectCount,
-                            markedUserIds = it.markedUserIds
+                            markedUserIds = it.markedUserIds,
+                            likedUserIds = it.likedUserIds,
+                            unlikedUserIds = it.unlikedUserIds,
+                            createdDate = it.createdDate
                         )
                     )
                 } else throw PermissionDeniedException()
@@ -136,7 +141,7 @@ class QuizService(
             }
         }
 
-    suspend fun markQuiz(id: String, userId: String) {
+    suspend fun markQuiz(id: String, userId: String): QuizResponse =
         quizRepository.findById(id)?.run {
             quizProducer.markQuiz(
                 MarkQuizEvent(
@@ -152,6 +157,25 @@ class QuizService(
                 }
             )
             quizRepository.save(this)
-        } ?: throw QuizNotFoundException()
-    }
+        }?.let { QuizResponse(it) } ?: throw QuizNotFoundException()
+
+    suspend fun evaluateQuiz(id: String, userId: String, isLike: Boolean): QuizResponse =
+        quizRepository.findById(id)?.run {
+            if (isLike) {
+                if (userId in likedUserIds) {
+                    likedUserIds.remove(userId)
+                } else {
+                    unlikedUserIds.remove(userId)
+                    like(userId)
+                }
+            } else {
+                if (userId in unlikedUserIds) {
+                    unlikedUserIds.remove(userId)
+                } else {
+                    likedUserIds.remove(userId)
+                    unlike(userId)
+                }
+            }
+            quizRepository.save(this)
+        }?.let { QuizResponse(it) } ?: throw QuizNotFoundException()
 }
