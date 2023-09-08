@@ -6,6 +6,16 @@ spring:
       uri: ${QUIZ_DB_URL}
   kafka:
     bootstrap-servers: ${KAFKA_URL}
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
 logging:
   level:
     web: debug

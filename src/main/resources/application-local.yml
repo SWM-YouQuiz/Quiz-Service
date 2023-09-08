@@ -8,6 +8,16 @@ spring:
       uri: mongodb://localhost:27017/quiz
   kafka:
     bootstrap-servers: localhost:9092
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
 logging:
   level:
     web: debug
