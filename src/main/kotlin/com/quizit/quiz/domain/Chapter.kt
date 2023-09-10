@@ -8,5 +8,6 @@ class Chapter(
     @Id
     var id: String? = null,
     val description: String,
+    val document: String,
     val courseId: String,
 )

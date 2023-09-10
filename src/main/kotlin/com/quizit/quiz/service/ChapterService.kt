@@ -23,6 +23,7 @@ class ChapterService(
             chapterRepository.save(
                 Chapter(
                     description = description,
+                    document = document,
                     courseId = courseId
                 )
             ).let { ChapterResponse(it) }
@@ -35,6 +36,7 @@ class ChapterService(
                 Chapter(
                     id = id,
                     description = description,
+                    document = document,
                     courseId = courseId
                 )
             ).let { ChapterResponse(it) }
