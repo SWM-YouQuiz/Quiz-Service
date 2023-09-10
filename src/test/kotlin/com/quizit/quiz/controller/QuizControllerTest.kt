@@ -58,6 +58,8 @@ class QuizControllerTest : BaseControllerTest() {
         "correctCount" desc "정답 횟수",
         "incorrectCount" desc "오답 횟수",
         "markedUserIds" desc "저장한 유저 리스트",
+        "likedUserIds" desc "좋아요한 유저 리스트",
+        "unlikedUserIds" desc "싫어요한 유저 리스트",
         "createdDate" desc "생성 날짜",
     )
 
@@ -460,7 +462,7 @@ class QuizControllerTest : BaseControllerTest() {
 
         describe("markQuiz()는") {
             context("주어진 퀴즈 식별자에 대한 퀴즈가 존재하는 경우") {
-                coEvery { quizService.markQuiz(any(), any()) } just runs
+                coEvery { quizService.markQuiz(any(), any()) } returns createQuizResponse()
                 withMockUser()
 
                 it("상태 코드 200을 반환한다.") {
@@ -470,13 +472,14 @@ class QuizControllerTest : BaseControllerTest() {
                         .exchange()
                         .expectStatus()
                         .isOk
-                        .expectBody(CheckAnswerResponse::class.java)
+                        .expectBody(QuizResponse::class.java)
                         .consumeWith(
                             WebTestClientRestDocumentationWrapper.document(
                                 "퀴즈 저장 성공(200)",
                                 Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
                                 Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
                                 pathParameters("id" paramDesc "식별자"),
+                                responseFields(quizResponseFields)
                             )
                         )
                 }
@@ -500,6 +503,58 @@ class QuizControllerTest : BaseControllerTest() {
                                 Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
                                 Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
                                 pathParameters("id" paramDesc "식별자"),
+                                responseFields(errorResponseFields)
+                            )
+                        )
+                }
+            }
+        }
+
+        describe("evaluateQuiz()는") {
+            context("주어진 퀴즈 식별자에 대한 퀴즈가 존재하는 경우") {
+                coEvery { quizService.evaluateQuiz(any(), any(), any()) } returns createQuizResponse()
+                withMockUser()
+
+                it("상태 코드 200을 반환한다.") {
+                    webClient
+                        .get()
+                        .uri("/quiz/{id}/evaluate?isLike={isLike}", ID, true)
+                        .exchange()
+                        .expectStatus()
+                        .isOk
+                        .expectBody(QuizResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "퀴즈 평가 성공(200)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                pathParameters("id" paramDesc "식별자"),
+                                queryParameters("isLike" paramDesc "좋아요 여부"),
+                                responseFields(quizResponseFields)
+                            )
+                        )
+                }
+            }
+
+            context("주어진 퀴즈 식별자에 대한 퀴즈가 존재하지 않는 경우") {
+                coEvery { quizService.evaluateQuiz(any(), any(), any()) } throws QuizNotFoundException()
+                withMockUser()
+
+                it("상태 코드 404과 에러를 반환한다.") {
+                    webClient
+                        .get()
+                        .uri("/quiz/{id}/evaluate?isLike={isLike}", ID, true)
+                        .exchange()
+                        .expectStatus()
+                        .isNotFound
+                        .expectBody(ErrorResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "퀴즈 평가 실패(404)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                pathParameters("id" paramDesc "식별자"),
+                                queryParameters("isLike" paramDesc "좋아요 여부"),
                                 responseFields(errorResponseFields)
                             )
                         )

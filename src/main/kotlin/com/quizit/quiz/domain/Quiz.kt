@@ -19,6 +19,8 @@ class Quiz(
     var correctCount: Long,
     var incorrectCount: Long,
     val markedUserIds: MutableSet<String>,
+    val likedUserIds: MutableSet<String>,
+    val unlikedUserIds: MutableSet<String>,
     @CreatedDate
     var createdDate: LocalDateTime = LocalDateTime.now()
 ) {
@@ -38,6 +40,14 @@ class Quiz(
 
     fun unmark(userId: String) {
         markedUserIds.remove(userId)
+    }
+
+    fun like(userId: String) {
+        likedUserIds.add(userId)
+    }
+
+    fun unlike(userId: String) {
+        unlikedUserIds.add(userId)
     }
 
     private fun changeAnswerRate() {

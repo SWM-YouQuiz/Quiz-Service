@@ -4,6 +4,7 @@ import com.quizit.quiz.dto.request.CheckAnswerRequest
 import com.quizit.quiz.dto.request.CreateQuizRequest
 import com.quizit.quiz.dto.request.UpdateQuizByIdRequest
 import com.quizit.quiz.global.config.awaitAuthentication
+import com.quizit.quiz.global.util.queryParamNotNull
 import com.quizit.quiz.service.QuizService
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Component
@@ -21,9 +22,9 @@ class QuizHandler(
     suspend fun getQuizzesByChapterIdAndAnswerRateRange(request: ServerRequest): ServerResponse =
         with(request) {
             val chapterId = pathVariable("id")
-            val page = queryParamOrNull("page")!!.toInt()
-            val size = queryParamOrNull("size")!!.toInt()
-            val answerRateRange = queryParamOrNull("range")!!.split(",").map { it.toDouble() }.toSet()
+            val page = queryParamNotNull<Int>("page")
+            val size = queryParamNotNull<Int>("size")
+            val answerRateRange = queryParamNotNull<String>("range").split(",").map { it.toDouble() }.toSet()
 
             ServerResponse.ok()
                 .bodyAndAwait(
@@ -89,8 +90,15 @@ class QuizHandler(
             val id = pathVariable("id")
             val userId = awaitAuthentication().id
 
-            quizService.markQuiz(id, userId)
+            ServerResponse.ok().bodyValueAndAwait(quizService.markQuiz(id, userId))
+        }
 
-            ServerResponse.ok().buildAndAwait()
+    suspend fun evaluateQuiz(request: ServerRequest): ServerResponse =
+        with(request) {
+            val id = pathVariable("id")
+            val userId = awaitAuthentication().id
+            val isLike = queryParamNotNull<Boolean>("isLike")
+
+            ServerResponse.ok().bodyValueAndAwait(quizService.evaluateQuiz(id, userId, isLike))
         }
 }

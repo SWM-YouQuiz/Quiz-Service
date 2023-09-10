@@ -16,6 +16,8 @@ const val ANSWER_RATE = 50.0
 const val CORRECT_COUNT = 10L
 const val INCORRECT_COUNT = 10L
 val MARKED_USER_IDS = mutableSetOf("user_1")
+val LIKED_USER_IDS = mutableSetOf("user_1")
+val UNLIKED_USER_IDS = mutableSetOf("user_1")
 
 fun createCreateQuizRequest(
     question: String = QUESTION,
@@ -71,6 +73,8 @@ fun createQuizResponse(
     correctCount: Long = CORRECT_COUNT,
     incorrectCount: Long = INCORRECT_COUNT,
     markedUserIds: Set<String> = MARKED_USER_IDS,
+    likedUserIds: MutableSet<String> = LIKED_USER_IDS,
+    unlikedUserIds: MutableSet<String> = UNLIKED_USER_IDS,
     createdDate: LocalDateTime = CREATED_DATE
 ): QuizResponse =
     QuizResponse(
@@ -83,6 +87,8 @@ fun createQuizResponse(
         correctCount = correctCount,
         incorrectCount = incorrectCount,
         markedUserIds = markedUserIds,
+        likedUserIds = likedUserIds,
+        unlikedUserIds = unlikedUserIds,
         createdDate = createdDate
     )
 
@@ -98,6 +104,8 @@ fun createQuiz(
     correctCount: Long = CORRECT_COUNT,
     incorrectCount: Long = INCORRECT_COUNT,
     markedUserIds: MutableSet<String> = MARKED_USER_IDS.toMutableSet(),
+    likedUserIds: MutableSet<String> = LIKED_USER_IDS.toMutableSet(),
+    unlikedUserIds: MutableSet<String> = UNLIKED_USER_IDS.toMutableSet(),
     createdDate: LocalDateTime = CREATED_DATE
 ): Quiz = Quiz(
     id = id,
@@ -111,5 +119,7 @@ fun createQuiz(
     correctCount = correctCount,
     markedUserIds = markedUserIds,
     incorrectCount = incorrectCount,
+    likedUserIds = likedUserIds,
+    unlikedUserIds = unlikedUserIds,
     createdDate = createdDate
 )
