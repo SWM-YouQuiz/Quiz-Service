@@ -71,11 +71,11 @@ class QuizService(
                     likedUserIds = mutableSetOf(),
                     unlikedUserIds = mutableSetOf()
                 )
-                val quizJob = async { quizRepository.save(quiz) }
+                val quizDeferred = async { quizRepository.save(quiz) }
                 val cacheJob = launch { quizCacheRepository.save(quiz) }
 
                 cacheJob.join()
-                quizJob.await()
+                quizDeferred.await()
             }.let { QuizResponse(it) }
         }
 
