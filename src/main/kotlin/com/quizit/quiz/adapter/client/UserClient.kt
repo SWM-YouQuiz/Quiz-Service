@@ -1,6 +1,6 @@
 package com.quizit.quiz.adapter.client
 
-import com.quizit.quiz.dto.response.GetUserByIdResponse
+import com.quizit.quiz.dto.response.UserResponse
 import com.quizit.quiz.exception.UserNotFoundException
 import com.quizit.quiz.global.config.getCurrentAuthentication
 import org.springframework.beans.factory.annotation.Value
@@ -22,5 +22,5 @@ class UserClient(
             .header(HttpHeaders.AUTHORIZATION, "Bearer ${getCurrentAuthentication().token}")
             .retrieve()
             .onStatus(HttpStatus.NOT_FOUND::equals) { throw UserNotFoundException() }
-            .awaitBody<GetUserByIdResponse>()
+            .awaitBody<UserResponse>()
 }
