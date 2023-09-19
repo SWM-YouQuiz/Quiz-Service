@@ -4,6 +4,7 @@ import com.quizit.quiz.adapter.client.UserClient
 import com.quizit.quiz.adapter.producer.QuizProducer
 import com.quizit.quiz.dto.response.QuizResponse
 import com.quizit.quiz.fixture.*
+import com.quizit.quiz.repository.QuizCacheRepository
 import com.quizit.quiz.repository.QuizRepository
 import io.kotest.core.spec.IsolationMode
 import io.kotest.core.spec.style.BehaviorSpec
@@ -19,6 +20,10 @@ import kotlinx.coroutines.flow.toList
 class QuizServiceTest : BehaviorSpec() {
     private val quizRepository = mockk<QuizRepository>()
 
+    private val quizCacheRepository = mockk<QuizCacheRepository>().apply {
+        coEvery { save(any()) } returns true
+    }
+
     private val userClient = mockk<UserClient>()
 
     private val quizProducer = mockk<QuizProducer>().apply {
@@ -28,6 +33,7 @@ class QuizServiceTest : BehaviorSpec() {
 
     private val quizService = QuizService(
         quizRepository = quizRepository,
+        quizCacheRepository = quizCacheRepository,
         userClient = userClient,
         quizProducer = quizProducer
     )
@@ -37,22 +43,23 @@ class QuizServiceTest : BehaviorSpec() {
     init {
         Given("챕터와 각각의 챕터에 속하는 퀴즈들이 존재하는 경우") {
             val quiz = createQuiz().also {
-                coEvery { quizRepository.findById(any()) } returns it
                 coEvery { quizRepository.deleteById(any()) } just runs
+                coEvery { quizCacheRepository.findById(any()) } returns it
+                coEvery { quizCacheRepository.deleteById(any()) } returns true
             }
             val quizzes = listOf(quiz).apply {
                 asFlow().let {
                     coEvery {
-                        quizRepository.findAllByChapterIdAndAnswerRateBetween(
-                            any(), any(), any(), any()
-                        )
+                        quizRepository.findAllByChapterIdAndAnswerRateBetween(any(), any(), any(), any())
                     } returns it
                     coEvery { quizRepository.findAllByIdIn(any()) } returns it
                     coEvery { quizRepository.findAllByQuestionContains(any()) } returns it
                 }
             }
-            val updateQuizByIdRequest = createUpdateQuizByIdRequest(question = "update").also {
-                coEvery { quizRepository.save(any()) } returns createQuiz(question = it.question)
+            val updateQuizByIdRequest = createUpdateQuizByIdRequest(question = "update").apply {
+                createQuiz(question = question).let {
+                    coEvery { quizRepository.save(any()) } returns it
+                }
             }
 
             When("유저가 특정 퀴즈를 조회하면") {
@@ -73,8 +80,7 @@ class QuizServiceTest : BehaviorSpec() {
 
             When("유저가 챕터를 들어가면") {
                 val quizResponses =
-                    quizService.getQuizzesByChapterIdAndAnswerRateRange(ID, setOf(0.0, 100.0), PAGEABLE)
-                        .toList()
+                    quizService.getQuizzesByChapterIdAndAnswerRateRange(ID, setOf(0.0, 100.0), PAGEABLE).toList()
 
                 Then("해당 챕터에 속하는 퀴즈들이 주어진다.") {
                     quizzes.map { QuizResponse(it) }.let {
@@ -107,7 +113,7 @@ class QuizServiceTest : BehaviorSpec() {
                 }
             }
 
-            coEvery { userClient.getUserById(any()) } returns createGetUserByIdResponse()
+            coEvery { userClient.getUserById(any()) } returns createUserResponse()
 
             When("유저가 본인이 저장한 퀴즈 보관함에 들어가면") {
                 val quizResponses = quizService.getMarkedQuizzes(ID).toList()
@@ -136,11 +142,11 @@ class QuizServiceTest : BehaviorSpec() {
 
         Given("유저가 퀴즈를 푼 경우") {
             createQuiz().also {
-                coEvery { quizRepository.findById(any()) } returns it
                 coEvery { quizRepository.save(any()) } returns it
+                coEvery { quizCacheRepository.findById(any()) } returns it
             }
 
-            coEvery { userClient.getUserById(any()) } returns createGetUserByIdResponse()
+            coEvery { userClient.getUserById(any()) } returns createUserResponse()
 
             When("옳은 답을 제출하면") {
                 quizService.checkAnswer(ID, ID, createCheckAnswerRequest())
@@ -161,11 +167,11 @@ class QuizServiceTest : BehaviorSpec() {
 
         Given("유저가 이미 푼 퀴즈가 존재하는 경우") {
             val quiz = createQuiz(id = "quiz").also {
-                coEvery { quizRepository.findById(any()) } returns it
                 coEvery { quizRepository.save(any()) } returns it
+                coEvery { quizCacheRepository.findById(any()) } returns it
             }
 
-            coEvery { userClient.getUserById(any()) } returns createGetUserByIdResponse()
+            coEvery { userClient.getUserById(any()) } returns createUserResponse()
 
             When("해당 퀴즈를 풀고 정답을 제출하면") {
                 quizService.checkAnswer(quiz.id!!, ID, createCheckAnswerRequest())
@@ -201,7 +207,7 @@ class QuizServiceTest : BehaviorSpec() {
         Given("유저가 퀴즈를 저장하는 경우") {
             val quiz = createQuiz().also {
                 coEvery { quizRepository.save(any()) } returns it
-                coEvery { quizRepository.findById(any()) } returns it
+                coEvery { quizCacheRepository.findById(any()) } returns it
             }
 
             When("유저가 해당 퀴즈를 처음 저장한다면") {
@@ -224,7 +230,7 @@ class QuizServiceTest : BehaviorSpec() {
         Given("유저가 퀴즈를 좋아요로 평가하는 경우") {
             val quiz = createQuiz().also {
                 coEvery { quizRepository.save(any()) } returns it
-                coEvery { quizRepository.findById(any()) } returns it
+                coEvery { quizCacheRepository.findById(any()) } returns it
             }
 
             When("유저가 해당 퀴즈를 처음 좋아요로 평가한다면") {
@@ -247,7 +253,7 @@ class QuizServiceTest : BehaviorSpec() {
         Given("유저가 퀴즈를 싫어요로 평가하는 경우") {
             val quiz = createQuiz().also {
                 coEvery { quizRepository.save(any()) } returns it
-                coEvery { quizRepository.findById(any()) } returns it
+                coEvery { quizCacheRepository.findById(any()) } returns it
             }
 
             When("유저가 해당 퀴즈를 처음 싫어요로 평가한다면") {
