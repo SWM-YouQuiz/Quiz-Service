@@ -48,6 +48,54 @@ class CurriculumControllerTest : BaseControllerTest() {
         curriculumResponseFields.map { "[].${it.path}" desc it.description as String }
 
     init {
+        describe("getCurriculumById()는") {
+            context("커리큘럼이 존재하는 경우") {
+                coEvery { curriculumService.getCurriculumById(any()) } returns createCurriculumResponse()
+                withMockUser()
+
+                it("상태 코드 200과 curriculumResponse를 반환한다.") {
+                    webClient
+                        .get()
+                        .uri("/curriculum/{id}", ID)
+                        .exchange()
+                        .expectStatus()
+                        .isOk
+                        .expectBody(CurriculumResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "식별자를 통한 커리큘럼 단일 조회 성공(200)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                responseFields(curriculumResponseFields)
+                            )
+                        )
+                }
+            }
+
+            context("커리큘럼이 존재하지 않는 경우") {
+                coEvery { curriculumService.getCurriculumById(any()) } throws CurriculumNotFoundException()
+                withMockUser()
+
+                it("상태 코드 404를 반환한다.") {
+                    webClient
+                        .get()
+                        .uri("/curriculum/{id}", ID)
+                        .exchange()
+                        .expectStatus()
+                        .isNotFound
+                        .expectBody(ErrorResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "식별자를 통한 커리큘럼 단일 조회 실패(404)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                responseFields(errorResponseFields)
+                            )
+                        )
+                }
+            }
+        }
+
         describe("getCurriculums()는") {
             context("커리큘럼들이 존재하는 경우") {
                 coEvery { curriculumService.getCurriculums() } returns flowOf(createCurriculumResponse())
