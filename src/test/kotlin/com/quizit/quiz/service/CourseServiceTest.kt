@@ -39,9 +39,11 @@ class CourseServiceTest : BehaviorSpec() {
 
             When("유저가 커리큘럼에 들어가면") {
                 val courseResponses = courseService.getCoursesByCurriculumId(ID).toList()
+                val courseResponse = courseService.getCourseById(ID)
 
                 Then("해당 커리큘럼에 속하는 코스들이 주어진다.") {
                     courseResponses shouldContainExactly courses.map { CourseResponse(it) }
+                    courseResponse shouldBeEqualToComparingFields CourseResponse(course)
                 }
             }
 
