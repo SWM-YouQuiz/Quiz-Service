@@ -39,9 +39,11 @@ class CurriculumServiceTest : BehaviorSpec() {
 
             When("유저가 메인 화면에 들어가면") {
                 val curriculumResponses = curriculumService.getCurriculums().toList()
+                val curriculumResponse = curriculumService.getCurriculumById(ID)
 
                 Then("커리큘럼이 주어진다.") {
                     curriculumResponses shouldContainExactly curriculums.map { CurriculumResponse(it) }
+                    curriculumResponse shouldBeEqualToComparingFields CurriculumResponse(curriculum)
                 }
             }
 

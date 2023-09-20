@@ -14,6 +14,9 @@ import org.springframework.stereotype.Service
 class CourseService(
     private val courseRepository: CourseRepository
 ) {
+    suspend fun getCourseById(id: String): CourseResponse =
+        courseRepository.findById(id)?.let { CourseResponse(it) } ?: throw CourseNotFoundException()
+    
     fun getCoursesByCurriculumId(chapterId: String): Flow<CourseResponse> =
         courseRepository.findAllByCurriculumId(chapterId)
             .map { CourseResponse(it) }

@@ -57,7 +57,7 @@ class QuizService(
     suspend fun createQuiz(userId: String, request: CreateQuizRequest): QuizResponse =
         coroutineScope {
             with(request) {
-                val quiz = Quiz(
+                Quiz(
                     question = question,
                     answer = answer,
                     solution = solution,
@@ -70,12 +70,13 @@ class QuizService(
                     markedUserIds = mutableSetOf(),
                     likedUserIds = mutableSetOf(),
                     unlikedUserIds = mutableSetOf()
-                )
-                val quizDeferred = async { quizRepository.save(quiz) }
-                val cacheJob = launch { quizCacheRepository.save(quiz) }
+                ).let {
+                    val quizDeferred = async { quizRepository.save(it) }
+                    val cacheJob = launch { quizCacheRepository.save(it) }
 
-                cacheJob.join()
-                quizDeferred.await()
+                    cacheJob.join()
+                    quizDeferred.await()
+                }
             }.let { QuizResponse(it) }
         }
 

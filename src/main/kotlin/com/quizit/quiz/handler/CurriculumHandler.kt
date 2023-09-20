@@ -10,6 +10,11 @@ import org.springframework.web.reactive.function.server.*
 class CurriculumHandler(
     private val curriculumService: CurriculumService
 ) {
+    suspend fun getCurriculumById(request: ServerRequest): ServerResponse =
+        request.pathVariable("id").let {
+            ServerResponse.ok().bodyValueAndAwait(curriculumService.getCurriculumById(it))
+        }
+
     suspend fun getCurriculums(request: ServerRequest): ServerResponse =
         ServerResponse.ok().bodyAndAwait(curriculumService.getCurriculums())
 

@@ -14,6 +14,7 @@ class CurriculumRouter {
         coRouter {
             "/curriculum".nest {
                 GET("", handler::getCurriculums)
+                GET("/{id}", handler::getCurriculumById)
             }
             "/admin/curriculum".nest {
                 POST("", handler::createCurriculum)
