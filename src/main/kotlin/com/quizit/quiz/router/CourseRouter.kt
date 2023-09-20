@@ -11,6 +11,7 @@ class CourseRouter {
     fun courseRoutes(handler: CourseHandler) =
         coRouter {
             "/course".nest {
+                GET("/{id}", handler::getCourseById)
                 GET("/curriculum/{id}", handler::getCoursesByCurriculumId)
             }
             "/admin/course".nest {

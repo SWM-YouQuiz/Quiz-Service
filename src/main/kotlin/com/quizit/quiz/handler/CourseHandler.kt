@@ -10,6 +10,11 @@ import org.springframework.web.reactive.function.server.*
 class CourseHandler(
     private val courseService: CourseService
 ) {
+    suspend fun getCourseById(request: ServerRequest): ServerResponse =
+        request.pathVariable("id").let {
+            ServerResponse.ok().bodyValueAndAwait(courseService.getCourseById(it))
+        }
+
     suspend fun getCoursesByCurriculumId(request: ServerRequest): ServerResponse =
         request.pathVariable("id").let {
             ServerResponse.ok().bodyAndAwait(courseService.getCoursesByCurriculumId(it))
