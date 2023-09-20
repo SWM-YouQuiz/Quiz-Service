@@ -50,6 +50,54 @@ class CourseControllerTest : BaseControllerTest() {
     private val courseResponsesFields = courseResponseFields.map { "[].${it.path}" desc it.description as String }
 
     init {
+        describe("getCourseById()는") {
+            context("코스가 존재하는 경우") {
+                coEvery { courseService.getCourseById(any()) } returns createCourseResponse()
+                withMockUser()
+
+                it("상태 코드 200과 courseResponse를 반환한다.") {
+                    webClient
+                        .get()
+                        .uri("/course/{id}", ID)
+                        .exchange()
+                        .expectStatus()
+                        .isOk
+                        .expectBody(CourseResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "식별자를 통한 코스 단일 조회 성공(200)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                responseFields(courseResponseFields)
+                            )
+                        )
+                }
+            }
+
+            context("코스가 존재하지 않는 경우") {
+                coEvery { courseService.getCourseById(any()) } throws CourseNotFoundException()
+                withMockUser()
+
+                it("상태 코드 404를 반환한다.") {
+                    webClient
+                        .get()
+                        .uri("/course/{id}", ID)
+                        .exchange()
+                        .expectStatus()
+                        .isNotFound
+                        .expectBody(ErrorResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "식별자를 통한 코스 단일 조회 실패(404)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                responseFields(errorResponseFields)
+                            )
+                        )
+                }
+            }
+        }
+
         describe("getCoursesByCurriculumId()는") {
             context("커리큘럼과 각각의 커리큘럼에 속하는 코스들이 존재하는 경우") {
                 coEvery { courseService.getCoursesByCurriculumId(any()) } returns flowOf(createCourseResponse())
