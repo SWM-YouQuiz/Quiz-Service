@@ -39,9 +39,11 @@ class ChapterServiceTest : BehaviorSpec() {
 
             When("유저가 코스에 들어가면") {
                 val chapterResponses = chapterService.getChaptersByCourseId(ID).toList()
+                val chapterResponse = chapterService.getChapterById(ID)
 
                 Then("해당 코스에 속하는 챕터들이 주어진다.") {
                     chapterResponses shouldContainExactly chapters.map { ChapterResponse(it) }
+                    chapterResponse shouldBeEqualToComparingFields ChapterResponse(chapter)
                 }
             }
 
