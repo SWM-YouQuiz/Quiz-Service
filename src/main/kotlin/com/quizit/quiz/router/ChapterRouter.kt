@@ -13,6 +13,7 @@ class ChapterRouter {
     fun chapterRoutes(handler: ChapterHandler): RouterFunction<ServerResponse> =
         coRouter {
             "/chapter".nest {
+                GET("/{id}", handler::getChapterById)
                 GET("/course/{id}", handler::getChaptersByCourseId)
             }
             "/admin/chapter".nest {

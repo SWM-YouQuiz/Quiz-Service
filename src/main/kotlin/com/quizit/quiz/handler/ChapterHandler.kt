@@ -10,6 +10,11 @@ import org.springframework.web.reactive.function.server.*
 class ChapterHandler(
     private val chapterService: ChapterService
 ) {
+    suspend fun getChapterById(request: ServerRequest): ServerResponse =
+        request.pathVariable("id").let {
+            ServerResponse.ok().bodyValueAndAwait(chapterService.getChapterById(it))
+        }
+
     suspend fun getChaptersByCourseId(request: ServerRequest): ServerResponse =
         request.pathVariable("id").let {
             ServerResponse.ok().bodyAndAwait(chapterService.getChaptersByCourseId(it))
