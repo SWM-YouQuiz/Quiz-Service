@@ -50,6 +50,56 @@ class ChapterControllerTest : BaseControllerTest() {
     private val chapterResponsesFields = chapterResponseFields.map { "[].${it.path}" desc it.description as String }
 
     init {
+        describe("getChapterById()는") {
+            context("챕터가 존재하는 경우") {
+                coEvery { chapterService.getChapterById(any()) } returns createChapterResponse()
+                withMockUser()
+
+                it("상태 코드 200과 chapterResponse를 반환한다.") {
+                    webClient
+                        .get()
+                        .uri("/chapter/{id}", ID)
+                        .exchange()
+                        .expectStatus()
+                        .isOk
+                        .expectBody(ChapterResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "식별자를 통한 챕터 단일 조회 성공(200)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                pathParameters("id" paramDesc "식별자"),
+                                responseFields(chapterResponseFields)
+                            )
+                        )
+                }
+            }
+
+            context("챕터가 존재하지 않는 경우") {
+                coEvery { chapterService.getChapterById(any()) } throws ChapterNotFoundException()
+                withMockUser()
+
+                it("상태 코드 404를 반환한다.") {
+                    webClient
+                        .get()
+                        .uri("/chapter/{id}", ID)
+                        .exchange()
+                        .expectStatus()
+                        .isNotFound
+                        .expectBody(ErrorResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "식별자를 통한 챕터 단일 조회 실패(404)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                pathParameters("id" paramDesc "식별자"),
+                                responseFields(errorResponseFields)
+                            )
+                        )
+                }
+            }
+        }
+
         describe("getChaptersByCourseId()는") {
             context("코스와 각각의 코스에 속하는 챕터들이 존재하는 경우") {
                 coEvery { chapterService.getChaptersByCourseId(any()) } returns flowOf(createChapterResponse())
