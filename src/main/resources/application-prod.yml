@@ -4,6 +4,9 @@ spring:
   data:
     mongodb:
       uri: ${QUIZ_DB_URL}
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
   kafka:
     bootstrap-servers: ${KAFKA_URL}
 management:

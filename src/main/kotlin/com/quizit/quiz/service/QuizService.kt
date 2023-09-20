@@ -14,22 +14,25 @@ import com.quizit.quiz.dto.response.QuizResponse
 import com.quizit.quiz.exception.PermissionDeniedException
 import com.quizit.quiz.exception.QuizNotFoundException
 import com.quizit.quiz.global.config.isAdmin
+import com.quizit.quiz.repository.QuizCacheRepository
 import com.quizit.quiz.repository.QuizRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 
 @Service
 class QuizService(
     private val quizRepository: QuizRepository,
+    private val quizCacheRepository: QuizCacheRepository,
     private val userClient: UserClient,
     private val quizProducer: QuizProducer
 ) {
     suspend fun getQuizById(id: String): QuizResponse =
-        quizRepository.findById(id)?.let { QuizResponse(it) } ?: throw QuizNotFoundException()
+        quizCacheRepository.findById(id)?.let { QuizResponse(it) } ?: throw QuizNotFoundException()
 
     fun getQuizzesByChapterIdAndAnswerRateRange(
         chapterId: String, answerRateRange: Set<Double>, pageable: Pageable
@@ -52,9 +55,9 @@ class QuizService(
             .map { QuizResponse(it) }
 
     suspend fun createQuiz(userId: String, request: CreateQuizRequest): QuizResponse =
-        with(request) {
-            quizRepository.save(
-                Quiz(
+        coroutineScope {
+            with(request) {
+                val quiz = Quiz(
                     question = question,
                     answer = answer,
                     solution = solution,
@@ -68,16 +71,21 @@ class QuizService(
                     likedUserIds = mutableSetOf(),
                     unlikedUserIds = mutableSetOf()
                 )
-            ).let { QuizResponse(it) }
+                val quizDeferred = async { quizRepository.save(quiz) }
+                val cacheJob = launch { quizCacheRepository.save(quiz) }
+
+                cacheJob.join()
+                quizDeferred.await()
+            }.let { QuizResponse(it) }
         }
 
     suspend fun updateQuizById(
         id: String, authentication: DefaultJwtAuthentication, request: UpdateQuizByIdRequest
     ): QuizResponse =
-        with(request) {
-            quizRepository.findById(id)?.let {
-                if ((authentication.id == it.writerId) || authentication.isAdmin()) {
-                    quizRepository.save(
+        coroutineScope {
+            with(request) {
+                quizCacheRepository.findById(id)?.let {
+                    if ((authentication.id == it.writerId) || authentication.isAdmin()) {
                         Quiz(
                             id = id,
                             question = question,
@@ -93,31 +101,40 @@ class QuizService(
                             likedUserIds = it.likedUserIds,
                             unlikedUserIds = it.unlikedUserIds,
                             createdDate = it.createdDate
-                        )
-                    )
-                } else throw PermissionDeniedException()
-            }?.let { QuizResponse(it) } ?: throw QuizNotFoundException()
+                        ).apply {
+                            val quizJob = launch { quizRepository.save(it) }
+                            val cacheJob = launch { quizCacheRepository.save(it) }
+
+                            quizJob.join()
+                            cacheJob.join()
+                        }
+                    } else throw PermissionDeniedException()
+                }?.let { QuizResponse(it) } ?: throw QuizNotFoundException()
+            }
         }
 
-    suspend fun deleteQuizById(id: String, authentication: DefaultJwtAuthentication) {
-        quizRepository.findById(id)?.let {
-            if ((authentication.id == it.writerId) || authentication.isAdmin()) {
-                quizRepository.deleteById(id)
-            } else throw PermissionDeniedException()
-        } ?: throw QuizNotFoundException()
-    }
+    suspend fun deleteQuizById(id: String, authentication: DefaultJwtAuthentication) =
+        coroutineScope {
+            quizCacheRepository.findById(id)?.let {
+                if ((authentication.id == it.writerId) || authentication.isAdmin()) {
+                    val quizJob = launch { quizRepository.deleteById(id) }
+                    val cacheJob = launch { quizCacheRepository.deleteById(id) }
+
+                    quizJob.join()
+                    cacheJob.join()
+                } else throw PermissionDeniedException()
+            } ?: throw QuizNotFoundException()
+        }
 
     suspend fun checkAnswer(id: String, userId: String, request: CheckAnswerRequest): CheckAnswerResponse =
         coroutineScope {
-            val quizDeferred = async { quizRepository.findById(id) ?: throw QuizNotFoundException() }
-            val findUserByIdResponseDeferred = async { userClient.getUserById(userId) }
+            val quizDeferred = async { quizCacheRepository.findById(id) ?: throw QuizNotFoundException() }
+            val userResponseDeferred = async { userClient.getUserById(userId) }
             val quiz = quizDeferred.await()
-            val findUserByIdResponse = findUserByIdResponseDeferred.await()
-            val correctQuizIds = findUserByIdResponse.correctQuizIds
-            val incorrectQuizIds = findUserByIdResponse.incorrectQuizIds
+            val userResponse = userResponseDeferred.await()
 
             quiz.apply {
-                if ((id !in correctQuizIds) && (id !in incorrectQuizIds)) {
+                if ((id !in userResponse.correctQuizIds) && (id !in userResponse.incorrectQuizIds)) {
                     quizProducer.checkAnswer(
                         CheckAnswerEvent(
                             userId = userId,
@@ -131,7 +148,11 @@ class QuizService(
                             }
                         }
                     )
-                    quizRepository.save(this)
+                    val quizJob = launch { quizRepository.save(this@apply) }
+                    val cacheJob = launch { quizCacheRepository.save(this@apply) }
+
+                    quizJob.join()
+                    cacheJob.join()
                 }
             }.run {
                 CheckAnswerResponse(
@@ -142,40 +163,52 @@ class QuizService(
         }
 
     suspend fun markQuiz(id: String, userId: String): QuizResponse =
-        quizRepository.findById(id)?.run {
-            quizProducer.markQuiz(
-                MarkQuizEvent(
-                    userId = userId,
-                    quizId = id,
-                    isMarked = (userId !in markedUserIds)
-                ).apply {
-                    if (isMarked) {
-                        mark(userId)
-                    } else {
-                        unmark(userId)
+        coroutineScope {
+            quizCacheRepository.findById(id)?.apply {
+                quizProducer.markQuiz(
+                    MarkQuizEvent(
+                        userId = userId,
+                        quizId = id,
+                        isMarked = (userId !in markedUserIds)
+                    ).apply {
+                        if (isMarked) {
+                            mark(userId)
+                        } else {
+                            unmark(userId)
+                        }
                     }
-                }
-            )
-            quizRepository.save(this)
-        }?.let { QuizResponse(it) } ?: throw QuizNotFoundException()
+                )
+                val quizJob = launch { quizRepository.save(this@apply) }
+                val cacheJob = launch { quizCacheRepository.save(this@apply) }
+
+                quizJob.join()
+                cacheJob.join()
+            }?.let { QuizResponse(it) } ?: throw QuizNotFoundException()
+        }
 
     suspend fun evaluateQuiz(id: String, userId: String, isLike: Boolean): QuizResponse =
-        quizRepository.findById(id)?.run {
-            if (isLike) {
-                if (userId in likedUserIds) {
-                    likedUserIds.remove(userId)
+        coroutineScope {
+            quizCacheRepository.findById(id)?.apply {
+                if (isLike) {
+                    if (userId in likedUserIds) {
+                        likedUserIds.remove(userId)
+                    } else {
+                        unlikedUserIds.remove(userId)
+                        like(userId)
+                    }
                 } else {
-                    unlikedUserIds.remove(userId)
-                    like(userId)
+                    if (userId in unlikedUserIds) {
+                        unlikedUserIds.remove(userId)
+                    } else {
+                        likedUserIds.remove(userId)
+                        unlike(userId)
+                    }
                 }
-            } else {
-                if (userId in unlikedUserIds) {
-                    unlikedUserIds.remove(userId)
-                } else {
-                    likedUserIds.remove(userId)
-                    unlike(userId)
-                }
-            }
-            quizRepository.save(this)
-        }?.let { QuizResponse(it) } ?: throw QuizNotFoundException()
+                val quizJob = launch { quizRepository.save(this@apply) }
+                val cacheJob = launch { quizCacheRepository.save(this@apply) }
+
+                quizJob.join()
+                cacheJob.join()
+            }?.let { QuizResponse(it) } ?: throw QuizNotFoundException()
+        }
 }
