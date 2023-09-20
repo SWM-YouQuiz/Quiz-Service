@@ -14,6 +14,9 @@ import org.springframework.stereotype.Service
 class ChapterService(
     private val chapterRepository: ChapterRepository
 ) {
+    suspend fun getChapterById(id: String): ChapterResponse =
+        chapterRepository.findById(id)?.let { ChapterResponse(it) } ?: throw ChapterNotFoundException()
+
     fun getChaptersByCourseId(courseId: String): Flow<ChapterResponse> =
         chapterRepository.findAllByCourseId(courseId)
             .map { ChapterResponse(it) }
