@@ -14,6 +14,9 @@ import org.springframework.stereotype.Service
 class CurriculumService(
     private val curriculumRepository: CurriculumRepository
 ) {
+    suspend fun getCurriculumById(id: String): CurriculumResponse =
+        curriculumRepository.findById(id)?.let { CurriculumResponse(it) } ?: throw CurriculumNotFoundException()
+
     fun getCurriculums(): Flow<CurriculumResponse> =
         curriculumRepository.findAll()
             .map { CurriculumResponse(it) }
