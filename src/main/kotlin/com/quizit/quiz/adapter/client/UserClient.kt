@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.security.core.context.ReactiveSecurityContextHolder
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Mono
 
 @Component
@@ -27,6 +28,6 @@ class UserClient(
                     )
                     .retrieve()
                     .onStatus(HttpStatus.NOT_FOUND::equals) { Mono.error(UserNotFoundException()) }
-                    .bodyToMono(UserResponse::class.java)
+                    .bodyToMono<UserResponse>()
             }
 }
