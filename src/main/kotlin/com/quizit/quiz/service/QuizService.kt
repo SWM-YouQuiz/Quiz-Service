@@ -217,5 +217,4 @@ class QuizService(
                 )
             }
             .map { (quiz) -> QuizResponse(quiz) }
-
 }
