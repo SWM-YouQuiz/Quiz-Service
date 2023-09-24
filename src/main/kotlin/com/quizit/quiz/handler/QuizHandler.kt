@@ -3,102 +3,108 @@ package com.quizit.quiz.handler
 import com.quizit.quiz.dto.request.CheckAnswerRequest
 import com.quizit.quiz.dto.request.CreateQuizRequest
 import com.quizit.quiz.dto.request.UpdateQuizByIdRequest
-import com.quizit.quiz.global.config.awaitAuthentication
+import com.quizit.quiz.global.config.authentication
+import com.quizit.quiz.global.util.component1
+import com.quizit.quiz.global.util.component2
 import com.quizit.quiz.global.util.queryParamNotNull
 import com.quizit.quiz.service.QuizService
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Component
-import org.springframework.web.reactive.function.server.*
+import org.springframework.web.reactive.function.server.ServerRequest
+import org.springframework.web.reactive.function.server.ServerResponse
+import org.springframework.web.reactive.function.server.body
+import org.springframework.web.reactive.function.server.bodyToMono
+import reactor.core.publisher.Mono
 
 @Component
 class QuizHandler(
     private val quizService: QuizService
 ) {
-    suspend fun getQuizById(request: ServerRequest): ServerResponse =
-        request.pathVariable("id").let {
-            ServerResponse.ok().bodyValueAndAwait(quizService.getQuizById(it))
-        }
+    fun getQuizById(request: ServerRequest): Mono<ServerResponse> =
+        ServerResponse.ok()
+            .body(quizService.getQuizById(request.pathVariable("id")))
 
-    suspend fun getQuizzesByChapterIdAndAnswerRateRange(request: ServerRequest): ServerResponse =
+    fun getQuizzesByChapterIdAndAnswerRateRange(request: ServerRequest): Mono<ServerResponse> =
         with(request) {
-            val chapterId = pathVariable("id")
-            val page = queryParamNotNull<Int>("page")
-            val size = queryParamNotNull<Int>("size")
-            val answerRateRange = queryParamNotNull<String>("range").split(",").map { it.toDouble() }.toSet()
-
             ServerResponse.ok()
-                .bodyAndAwait(
+                .body(
                     quizService.getQuizzesByChapterIdAndAnswerRateRange(
-                        chapterId, answerRateRange, PageRequest.of(page, size)
+                        pathVariable("id"),
+                        queryParamNotNull<String>("range")
+                            .split(",")
+                            .map { it.toDouble() }
+                            .toSet(),
+                        PageRequest.of(
+                            queryParamNotNull<Int>("page"),
+                            queryParamNotNull<Int>("size")
+                        )
                     )
                 )
         }
 
-    suspend fun getQuizzesByWriterId(request: ServerRequest): ServerResponse =
-        request.pathVariable("id").let {
-            ServerResponse.ok().bodyAndAwait(quizService.getQuizzesByWriterId(it))
-        }
+    fun getQuizzesByWriterId(request: ServerRequest): Mono<ServerResponse> =
+        ServerResponse.ok()
+            .body(quizService.getQuizzesByWriterId(request.pathVariable("id")))
 
-    suspend fun getQuizzesByQuestionContains(request: ServerRequest): ServerResponse =
-        request.queryParamOrNull("question")!!.let {
-            ServerResponse.ok().bodyAndAwait(quizService.getQuizzesByQuestionContains(it))
-        }
+    fun getQuizzesByQuestionContains(request: ServerRequest): Mono<ServerResponse> =
+        ServerResponse.ok()
+            .body(quizService.getQuizzesByQuestionContains(request.queryParamNotNull("question")))
 
-    suspend fun getMarkedQuizzes(request: ServerRequest): ServerResponse =
-        request.pathVariable("id").let {
-            ServerResponse.ok().bodyAndAwait(quizService.getMarkedQuizzes(it))
-        }
+    fun getMarkedQuizzes(request: ServerRequest): Mono<ServerResponse> =
+        ServerResponse.ok()
+            .body(quizService.getMarkedQuizzes(request.pathVariable("id")))
 
-    suspend fun createQuiz(request: ServerRequest): ServerResponse =
+    fun createQuiz(request: ServerRequest): Mono<ServerResponse> =
         with(request) {
-            val userId = awaitAuthentication().id
-            val createQuizRequest = awaitBody<CreateQuizRequest>()
-
-            ServerResponse.ok().bodyValueAndAwait(quizService.createQuiz(userId, createQuizRequest))
+            Mono.zip(authentication(), bodyToMono<CreateQuizRequest>())
+                .flatMap { (authentication, request) ->
+                    ServerResponse.ok()
+                        .body(quizService.createQuiz(authentication.id, request))
+                }
         }
 
-    suspend fun updateQuizById(request: ServerRequest): ServerResponse =
+    fun updateQuizById(request: ServerRequest): Mono<ServerResponse> =
         with(request) {
-            val id = pathVariable("id")
-            val authentication = awaitAuthentication()
-            val updateQuizByIdRequest = awaitBody<UpdateQuizByIdRequest>()
-
-            ServerResponse.ok().bodyValueAndAwait(quizService.updateQuizById(id, authentication, updateQuizByIdRequest))
+            Mono.zip(authentication(), bodyToMono<UpdateQuizByIdRequest>())
+                .flatMap { (authentication, request) ->
+                    ServerResponse.ok()
+                        .body(quizService.updateQuizById(pathVariable("id"), authentication, request))
+                }
         }
 
-    suspend fun deleteQuizById(request: ServerRequest): ServerResponse =
+    fun deleteQuizById(request: ServerRequest): Mono<ServerResponse> =
         with(request) {
-            val id = pathVariable("id")
-            val authentication = awaitAuthentication()
-
-            quizService.deleteQuizById(id, authentication)
-
-            ServerResponse.ok().buildAndAwait()
+            authentication()
+                .flatMap {
+                    ServerResponse.ok()
+                        .body(quizService.deleteQuizById(pathVariable("id"), it))
+                }
         }
 
-    suspend fun checkAnswer(request: ServerRequest): ServerResponse =
+    fun checkAnswer(request: ServerRequest): Mono<ServerResponse> =
         with(request) {
-            val id = pathVariable("id")
-            val userId = awaitAuthentication().id
-            val checkAnswerRequest = awaitBody<CheckAnswerRequest>()
-
-            ServerResponse.ok().bodyValueAndAwait(quizService.checkAnswer(id, userId, checkAnswerRequest))
+            Mono.zip(authentication(), bodyToMono<CheckAnswerRequest>())
+                .flatMap { (authentication, request) ->
+                    ServerResponse.ok()
+                        .body(quizService.checkAnswer(pathVariable("id"), authentication.id, request))
+                }
         }
 
-    suspend fun markQuiz(request: ServerRequest): ServerResponse =
+    fun markQuiz(request: ServerRequest): Mono<ServerResponse> =
         with(request) {
-            val id = pathVariable("id")
-            val userId = awaitAuthentication().id
-
-            ServerResponse.ok().bodyValueAndAwait(quizService.markQuiz(id, userId))
+            authentication()
+                .flatMap {
+                    ServerResponse.ok()
+                        .body(quizService.markQuiz(pathVariable("id"), it.id))
+                }
         }
 
-    suspend fun evaluateQuiz(request: ServerRequest): ServerResponse =
+    fun evaluateQuiz(request: ServerRequest): Mono<ServerResponse> =
         with(request) {
-            val id = pathVariable("id")
-            val userId = awaitAuthentication().id
-            val isLike = queryParamNotNull<Boolean>("isLike")
-
-            ServerResponse.ok().bodyValueAndAwait(quizService.evaluateQuiz(id, userId, isLike))
+            authentication()
+                .flatMap {
+                    ServerResponse.ok()
+                        .body(quizService.evaluateQuiz(pathVariable("id"), it.id, queryParamNotNull<Boolean>("isLike")))
+                }
         }
 }

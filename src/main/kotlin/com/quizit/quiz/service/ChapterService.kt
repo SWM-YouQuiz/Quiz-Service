@@ -6,22 +6,24 @@ import com.quizit.quiz.dto.request.UpdateChapterByIdRequest
 import com.quizit.quiz.dto.response.ChapterResponse
 import com.quizit.quiz.exception.ChapterNotFoundException
 import com.quizit.quiz.repository.ChapterRepository
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import org.springframework.stereotype.Service
+import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 
 @Service
 class ChapterService(
     private val chapterRepository: ChapterRepository
 ) {
-    suspend fun getChapterById(id: String): ChapterResponse =
-        chapterRepository.findById(id)?.let { ChapterResponse(it) } ?: throw ChapterNotFoundException()
+    fun getChapterById(id: String): Mono<ChapterResponse> =
+        chapterRepository.findById(id)
+            .switchIfEmpty(Mono.error(ChapterNotFoundException()))
+            .map { ChapterResponse(it) }
 
-    fun getChaptersByCourseId(courseId: String): Flow<ChapterResponse> =
+    fun getChaptersByCourseId(courseId: String): Flux<ChapterResponse> =
         chapterRepository.findAllByCourseId(courseId)
             .map { ChapterResponse(it) }
 
-    suspend fun createChapter(request: CreateChapterRequest): ChapterResponse =
+    fun createChapter(request: CreateChapterRequest): Mono<ChapterResponse> =
         with(request) {
             chapterRepository.save(
                 Chapter(
@@ -29,24 +31,18 @@ class ChapterService(
                     document = document,
                     courseId = courseId
                 )
-            ).let { ChapterResponse(it) }
+            ).map { ChapterResponse(it) }
         }
 
-    suspend fun updateChapterById(id: String, request: UpdateChapterByIdRequest): ChapterResponse =
-        with(request) {
-            chapterRepository.findById(id) ?: throw ChapterNotFoundException()
-            chapterRepository.save(
-                Chapter(
-                    id = id,
-                    description = description,
-                    document = document,
-                    courseId = courseId
-                )
-            ).let { ChapterResponse(it) }
-        }
+    fun updateChapterById(id: String, request: UpdateChapterByIdRequest): Mono<ChapterResponse> =
+        chapterRepository.findById(id)
+            .switchIfEmpty(Mono.error(ChapterNotFoundException()))
+            .map { request.run { it.update(description, document, courseId) } }
+            .flatMap { chapterRepository.save(it) }
+            .map { ChapterResponse(it) }
 
-    suspend fun deleteChapterById(id: String) {
-        chapterRepository.findById(id) ?: throw ChapterNotFoundException()
-        chapterRepository.deleteById(id)
-    }
+    fun deleteChapterById(id: String): Mono<Void> =
+        chapterRepository.findById(id)
+            .switchIfEmpty(Mono.error(ChapterNotFoundException()))
+            .flatMap { chapterRepository.deleteById(id) }
 }

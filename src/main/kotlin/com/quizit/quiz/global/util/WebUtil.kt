@@ -1,11 +1,11 @@
 package com.quizit.quiz.global.util
 
-import org.springframework.web.reactive.function.server.CoRouterFunctionDsl
 import org.springframework.web.reactive.function.server.RequestPredicate
+import org.springframework.web.reactive.function.server.RouterFunctionDsl
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.queryParamOrNull
 
-fun CoRouterFunctionDsl.queryParams(vararg name: String): RequestPredicate =
+fun RouterFunctionDsl.queryParams(vararg name: String): RequestPredicate =
     name.map { queryParam(it) { true } }.reduce { total, next -> total and next }
 
 inline fun <reified T> ServerRequest.queryParamNotNull(name: String): T =

@@ -7,6 +7,12 @@ import org.springframework.data.mongodb.core.mapping.Document
 class Curriculum(
     @Id
     var id: String? = null,
-    val title: String,
-    val image: String
-)
+    var title: String,
+    var image: String
+) {
+    fun update(title: String, image: String): Curriculum =
+        also {
+            it.title = title
+            it.image = image
+        }
+}

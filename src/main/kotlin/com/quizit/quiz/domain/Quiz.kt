@@ -9,18 +9,18 @@ import java.time.LocalDateTime
 class Quiz(
     @Id
     var id: String? = null,
-    val question: String,
-    val answer: Int,
-    val solution: String,
-    val writerId: String,
-    val chapterId: String,
-    val options: List<String>,
+    var question: String,
+    var answer: Int,
+    var solution: String,
+    var writerId: String,
+    var chapterId: String,
+    var options: List<String>,
     var answerRate: Double,
     var correctCount: Long,
     var incorrectCount: Long,
-    val markedUserIds: MutableSet<String>,
-    val likedUserIds: MutableSet<String>,
-    val unlikedUserIds: MutableSet<String>,
+    val markedUserIds: HashSet<String>,
+    val likedUserIds: HashSet<String>,
+    val unlikedUserIds: HashSet<String>,
     @CreatedDate
     var createdDate: LocalDateTime = LocalDateTime.now()
 ) {
@@ -53,4 +53,13 @@ class Quiz(
     private fun changeAnswerRate() {
         answerRate = (correctCount.toDouble() / (correctCount + incorrectCount).toDouble()) * 100
     }
+
+    fun update(question: String, answer: Int, solution: String, chapterId: String, options: List<String>): Quiz =
+        also {
+            it.question = question
+            it.answer = answer
+            it.solution = solution
+            it.chapterId = chapterId
+            it.options = options
+        }
 }
