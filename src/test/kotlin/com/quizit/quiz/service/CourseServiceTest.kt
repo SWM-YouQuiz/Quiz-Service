@@ -8,12 +8,13 @@ import com.quizit.quiz.fixture.createUpdateCourseByIdRequest
 import com.quizit.quiz.repository.CourseRepository
 import io.kotest.core.spec.IsolationMode
 import io.kotest.core.spec.style.BehaviorSpec
-import io.kotest.matchers.collections.shouldContainExactly
-import io.kotest.matchers.equality.shouldBeEqualToComparingFields
-import io.kotest.matchers.equals.shouldNotBeEqual
-import io.mockk.*
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.toList
+import io.kotest.matchers.equality.shouldNotBeEqualToComparingFields
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
+import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
+import reactor.test.StepVerifier
 
 class CourseServiceTest : BehaviorSpec() {
     private val courseRepository = mockk<CourseRepository>()
@@ -24,56 +25,68 @@ class CourseServiceTest : BehaviorSpec() {
 
     init {
         Given("코스들이 존재하는 경우") {
-            val course = createCourse().also {
-                coEvery { courseRepository.findById(any()) } returns it
-                coEvery { courseRepository.deleteById(any()) } just runs
-            }
-            val courses = listOf(course).apply {
-                asFlow().let {
-                    coEvery { courseRepository.findAllByCurriculumId(any()) } returns it
+            val course = createCourse()
+                .also {
+                    every { courseRepository.findAllByCurriculumId(any()) } returns Flux.just(it)
+                    every { courseRepository.findById(any<String>()) } returns Mono.just(it)
+                    every { courseRepository.deleteById(any<String>()) } returns Mono.empty()
                 }
-            }
-            val updateCourseByIdRequest = createUpdateCourseByIdRequest(title = "update").also {
-                coEvery { courseRepository.save(any()) } returns createCourse(title = it.title)
-            }
+            val courseResponse = CourseResponse(course)
 
-            When("유저가 커리큘럼에 들어가면") {
-                val courseResponses = courseService.getCoursesByCurriculumId(ID).toList()
-                val courseResponse = courseService.getCourseById(ID)
+            When("유저가 메인 화면에 들어가면") {
+                val results = listOf(
+                    StepVerifier.create(courseService.getCoursesByCurriculumId(ID)),
+                    StepVerifier.create(courseService.getCourseById(ID))
+                )
 
-                Then("해당 커리큘럼에 속하는 코스들이 주어진다.") {
-                    courseResponses shouldContainExactly courses.map { CourseResponse(it) }
-                    courseResponse shouldBeEqualToComparingFields CourseResponse(course)
+                Then("코스가 주어진다.") {
+                    results.map {
+                        it.expectSubscription()
+                            .expectNext(courseResponse)
+                            .verifyComplete()
+                    }
                 }
             }
 
             When("어드민이 특정 코스를 수정하면") {
-                val courseResponse = courseService.updateCourseById(ID, updateCourseByIdRequest)
+                val updateCourseByIdRequest = createUpdateCourseByIdRequest(title = "updated_title")
+                    .also {
+                        every { courseRepository.save(any()) } returns Mono.just(createCourse(title = it.title))
+                    }
+                val result =
+                    StepVerifier.create(courseService.updateCourseById(ID, updateCourseByIdRequest))
 
                 Then("해당 코스가 수정된다.") {
-                    courseResponse.title shouldNotBeEqual course.title
+                    result.expectSubscription()
+                        .assertNext { it shouldNotBeEqualToComparingFields courseResponse }
+                        .verifyComplete()
                 }
             }
 
             When("어드민이 특정 코스를 삭제하면") {
                 courseService.deleteCourseById(ID)
+                    .subscribe()
 
                 Then("해당 코스가 삭제된다.") {
-                    coVerify { courseRepository.deleteById(any()) }
+                    verify { courseRepository.deleteById(any<String>()) }
                 }
             }
         }
 
         Given("어드민이 코스를 작성 중인 경우") {
-            val course = createCourse().also {
-                coEvery { courseRepository.save(any()) } returns it
-            }
+            val course = createCourse()
+                .also {
+                    every { courseRepository.save(any()) } returns Mono.just(it)
+                }
+            val courseResponse = CourseResponse(course)
 
-            When("어드민이 챕터를 제출하면") {
-                val courseResponse = courseService.createCourse(createCreateCourseRequest())
+            When("어드민이 코스를 제출하면") {
+                val result = StepVerifier.create(courseService.createCourse(createCreateCourseRequest()))
 
-                Then("챕터가 생성된다.") {
-                    courseResponse shouldBeEqualToComparingFields CourseResponse(course)
+                Then("코스가 생성된다.") {
+                    result.expectSubscription()
+                        .expectNext(courseResponse)
+                        .verifyComplete()
                 }
             }
         }

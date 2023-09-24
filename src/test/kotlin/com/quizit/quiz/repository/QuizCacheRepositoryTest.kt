@@ -8,21 +8,23 @@ import io.kotest.core.spec.style.ExpectSpec
 import io.kotest.core.test.TestCase
 import io.kotest.matchers.equality.shouldBeEqualToComparingFields
 import io.kotest.matchers.nulls.shouldBeNull
-import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
-import kotlinx.coroutines.reactive.awaitSingle
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.redis.core.ReactiveRedisTemplate
 import org.springframework.test.context.ContextConfiguration
+import reactor.core.publisher.Mono
+import reactor.test.StepVerifier
 
 @ContextConfiguration(classes = [RedisTestConfiguration::class])
 class QuizCacheRepositoryTest : ExpectSpec() {
     @Autowired
     private lateinit var redisTemplate: ReactiveRedisTemplate<String, String>
 
-    private val quizRepository = mockk<QuizRepository>().apply {
-        coEvery { findById(any()) } returns null
-    }
+    private val quizRepository = mockk<QuizRepository>()
+        .apply {
+            every { findById(any<String>()) } returns Mono.empty()
+        }
 
     private val quizCacheRepository by lazy {
         QuizCacheRepository(
@@ -33,26 +35,45 @@ class QuizCacheRepositoryTest : ExpectSpec() {
     }
 
     override suspend fun beforeContainer(testCase: TestCase) {
-        redisTemplate.execute { it.serverCommands().flushAll() }.awaitSingle()
+        redisTemplate.execute {
+            it.serverCommands()
+                .flushAll()
+        }.subscribe()
     }
 
     init {
         context("캐시 조회") {
-            val quiz = createQuiz().also { quizCacheRepository.save(it) }
+            val quiz = createQuiz()
+                .also {
+                    quizCacheRepository.save(it)
+                        .subscribe()
+                }
 
             expect("캐시를 조회한다.") {
-                quizCacheRepository.findById(ID)!! shouldBeEqualToComparingFields quiz
+                val result = StepVerifier.create(quizCacheRepository.findById(ID))
+
+                result.expectSubscription()
+                    .assertNext { it shouldBeEqualToComparingFields quiz }
+                    .verifyComplete()
             }
         }
 
         context("캐시 삭제") {
-            coEvery { quizRepository.findById(any()) } returns null
-            createQuiz().let { quizCacheRepository.save(it) }
+            createQuiz()
+                .also {
+                    quizCacheRepository.save(it)
+                        .subscribe()
+                }
 
             expect("특정 유저의 리프레쉬 토큰을 삭제한다.") {
-                quizCacheRepository.deleteById(ID)
+                val result = StepVerifier.create(quizCacheRepository.deleteById(ID))
 
-                quizCacheRepository.findById(ID).shouldBeNull()
+                result.expectSubscription()
+                    .assertNext {
+                        quizCacheRepository.findById(ID)
+                            .subscribe { it.shouldBeNull() }
+                    }
+                    .verifyComplete()
             }
         }
     }

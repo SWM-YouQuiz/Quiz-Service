@@ -12,16 +12,15 @@ import com.quizit.quiz.handler.QuizHandler
 import com.quizit.quiz.router.QuizRouter
 import com.quizit.quiz.service.QuizService
 import com.quizit.quiz.util.*
-import io.mockk.coEvery
-import io.mockk.just
-import io.mockk.runs
-import kotlinx.coroutines.flow.flowOf
+import io.mockk.every
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.restdocs.operation.preprocess.Preprocessors
 import org.springframework.restdocs.payload.PayloadDocumentation.requestFields
 import org.springframework.restdocs.payload.PayloadDocumentation.responseFields
 import org.springframework.restdocs.request.RequestDocumentation.pathParameters
 import org.springframework.restdocs.request.RequestDocumentation.queryParameters
+import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 
 @WebFluxTest(QuizRouter::class, QuizHandler::class)
 class QuizControllerTest : BaseControllerTest() {
@@ -73,7 +72,7 @@ class QuizControllerTest : BaseControllerTest() {
     init {
         describe("getQuizById()는") {
             context("퀴즈가 존재하는 경우") {
-                coEvery { quizService.getQuizById(any()) } returns createQuizResponse()
+                every { quizService.getQuizById(any()) } returns Mono.just(createQuizResponse())
                 withMockUser()
 
                 it("상태 코드 200과 quizResponse를 반환한다.") {
@@ -97,7 +96,7 @@ class QuizControllerTest : BaseControllerTest() {
             }
 
             context("퀴즈가 존재하지 않는 경우") {
-                coEvery { quizService.getQuizById(any()) } throws QuizNotFoundException()
+                every { quizService.getQuizById(any()) } throws QuizNotFoundException()
                 withMockUser()
 
                 it("상태 코드 404를 반환한다.") {
@@ -123,9 +122,9 @@ class QuizControllerTest : BaseControllerTest() {
 
         describe("getQuizzesByChapterIdAndAnswerRateRange()는") {
             context("챕터와 각각의 챕터에 속하는 퀴즈들이 존재하는 경우") {
-                coEvery {
+                every {
                     quizService.getQuizzesByChapterIdAndAnswerRateRange(any(), any(), any())
-                } returns flowOf(createQuizResponse())
+                } returns Flux.just(createQuizResponse())
                 withMockUser()
 
                 it("상태 코드 200과 quizResponse들을 반환한다.") {
@@ -156,7 +155,7 @@ class QuizControllerTest : BaseControllerTest() {
 
         describe("getQuizzesByWriterId()는") {
             context("유저가 작성한 퀴즈가 존재하는 경우") {
-                coEvery { quizService.getQuizzesByWriterId(any()) } returns flowOf(createQuizResponse())
+                every { quizService.getQuizzesByWriterId(any()) } returns Flux.just(createQuizResponse())
                 withMockUser()
 
                 it("상태 코드 200과 quizResponse들을 반환한다.") {
@@ -182,7 +181,7 @@ class QuizControllerTest : BaseControllerTest() {
 
         describe("getQuizzesByQuestionContains()는") {
             context("주어진 키워드를 문제 지문에 포함하는 퀴즈가 존재하는 경우") {
-                coEvery { quizService.getQuizzesByQuestionContains(any()) } returns flowOf(createQuizResponse())
+                every { quizService.getQuizzesByQuestionContains(any()) } returns Flux.just(createQuizResponse())
                 withMockUser()
 
                 it("상태 코드 200과 quizResponse들을 반환한다.") {
@@ -208,7 +207,7 @@ class QuizControllerTest : BaseControllerTest() {
 
         describe("getMarkedQuizzes()는") {
             context("유저가 저장한 퀴즈가 존재하는 경우") {
-                coEvery { quizService.getMarkedQuizzes(any()) } returns flowOf(createQuizResponse())
+                every { quizService.getMarkedQuizzes(any()) } returns Flux.just(createQuizResponse())
                 withMockUser()
 
                 it("상태 코드 200과 quizResponse들을 반환한다.") {
@@ -233,7 +232,7 @@ class QuizControllerTest : BaseControllerTest() {
 
         describe("createQuiz()는") {
             context("유저가 퀴즈를 작성해서 제출하는 경우") {
-                coEvery { quizService.createQuiz(any(), any()) } returns createQuizResponse()
+                every { quizService.createQuiz(any(), any()) } returns Mono.just(createQuizResponse())
                 withMockUser()
 
                 it("상태 코드 200과 quizResponse를 반환한다.") {
@@ -260,7 +259,7 @@ class QuizControllerTest : BaseControllerTest() {
 
         describe("updateQuizById()는") {
             context("유저가 퀴즈를 수정해서 제출하는 경우") {
-                coEvery { quizService.updateQuizById(any(), any(), any()) } returns createQuizResponse()
+                every { quizService.updateQuizById(any(), any(), any()) } returns Mono.just(createQuizResponse())
                 withMockUser()
 
                 it("상태 코드 200과 quizResponse를 반환한다.") {
@@ -285,7 +284,7 @@ class QuizControllerTest : BaseControllerTest() {
             }
 
             context("퀴즈가 존재하지 않는 경우") {
-                coEvery { quizService.updateQuizById(any(), any(), any()) } throws QuizNotFoundException()
+                every { quizService.updateQuizById(any(), any(), any()) } throws QuizNotFoundException()
                 withMockUser()
 
                 it("상태 코드 404를 반환한다.") {
@@ -310,7 +309,7 @@ class QuizControllerTest : BaseControllerTest() {
             }
 
             context("유저가 다른 유저의 퀴즈를 수정해서 제출하는 경우") {
-                coEvery { quizService.updateQuizById(any(), any(), any()) } throws PermissionDeniedException()
+                every { quizService.updateQuizById(any(), any(), any()) } throws PermissionDeniedException()
                 withMockUser()
 
                 it("상태 코드 403을 반환한다.") {
@@ -337,7 +336,7 @@ class QuizControllerTest : BaseControllerTest() {
 
         describe("deleteQuizById()는") {
             context("유저가 퀴즈를 삭제하는 경우") {
-                coEvery { quizService.deleteQuizById(any(), any()) } just runs
+                every { quizService.deleteQuizById(any(), any()) } returns Mono.empty()
                 withMockUser()
 
                 it("상태 코드 200을 반환한다.") {
@@ -360,7 +359,7 @@ class QuizControllerTest : BaseControllerTest() {
             }
 
             context("퀴즈가 존재하지 않는 경우") {
-                coEvery { quizService.deleteQuizById(any(), any()) } throws QuizNotFoundException()
+                every { quizService.deleteQuizById(any(), any()) } throws QuizNotFoundException()
                 withMockUser()
 
                 it("상태 코드 404를 반환한다.") {
@@ -384,7 +383,7 @@ class QuizControllerTest : BaseControllerTest() {
             }
 
             context("유저가 다른 유저의 퀴즈를 삭제하는 경우") {
-                coEvery { quizService.deleteQuizById(any(), any()) } throws PermissionDeniedException()
+                every { quizService.deleteQuizById(any(), any()) } throws PermissionDeniedException()
                 withMockUser()
 
                 it("상태 코드 403을 반환한다.") {
@@ -410,7 +409,7 @@ class QuizControllerTest : BaseControllerTest() {
 
         describe("checkQuiz()는") {
             context("유저가 퀴즈 답을 제출한 경우") {
-                coEvery { quizService.checkAnswer(any(), any(), any()) } returns createCheckAnswerResponse()
+                every { quizService.checkAnswer(any(), any(), any()) } returns Mono.just(createCheckAnswerResponse())
                 withMockUser()
 
                 it("상태 코드 200과 정답 여부가 담긴 checkAnswerResponse를 반환한다.") {
@@ -435,7 +434,7 @@ class QuizControllerTest : BaseControllerTest() {
             }
 
             context("퀴즈가 존재하지 않는 경우") {
-                coEvery { quizService.checkAnswer(any(), any(), any()) } throws QuizNotFoundException()
+                every { quizService.checkAnswer(any(), any(), any()) } throws QuizNotFoundException()
                 withMockUser()
 
                 it("상태 코드 404과 에러를 반환한다.") {
@@ -462,7 +461,7 @@ class QuizControllerTest : BaseControllerTest() {
 
         describe("markQuiz()는") {
             context("주어진 퀴즈 식별자에 대한 퀴즈가 존재하는 경우") {
-                coEvery { quizService.markQuiz(any(), any()) } returns createQuizResponse()
+                every { quizService.markQuiz(any(), any()) } returns Mono.just(createQuizResponse())
                 withMockUser()
 
                 it("상태 코드 200을 반환한다.") {
@@ -486,7 +485,7 @@ class QuizControllerTest : BaseControllerTest() {
             }
 
             context("주어진 퀴즈 식별자에 대한 퀴즈가 존재하지 않는 경우") {
-                coEvery { quizService.markQuiz(any(), any()) } throws QuizNotFoundException()
+                every { quizService.markQuiz(any(), any()) } throws QuizNotFoundException()
                 withMockUser()
 
                 it("상태 코드 404과 에러를 반환한다.") {
@@ -512,7 +511,7 @@ class QuizControllerTest : BaseControllerTest() {
 
         describe("evaluateQuiz()는") {
             context("주어진 퀴즈 식별자에 대한 퀴즈가 존재하는 경우") {
-                coEvery { quizService.evaluateQuiz(any(), any(), any()) } returns createQuizResponse()
+                every { quizService.evaluateQuiz(any(), any(), any()) } returns Mono.just(createQuizResponse())
                 withMockUser()
 
                 it("상태 코드 200을 반환한다.") {
@@ -537,7 +536,7 @@ class QuizControllerTest : BaseControllerTest() {
             }
 
             context("주어진 퀴즈 식별자에 대한 퀴즈가 존재하지 않는 경우") {
-                coEvery { quizService.evaluateQuiz(any(), any(), any()) } throws QuizNotFoundException()
+                every { quizService.evaluateQuiz(any(), any(), any()) } throws QuizNotFoundException()
                 withMockUser()
 
                 it("상태 코드 404과 에러를 반환한다.") {

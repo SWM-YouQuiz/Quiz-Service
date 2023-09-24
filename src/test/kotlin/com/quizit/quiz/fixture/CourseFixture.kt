@@ -5,8 +5,7 @@ import com.quizit.quiz.dto.request.CreateCourseRequest
 import com.quizit.quiz.dto.request.UpdateCourseByIdRequest
 import com.quizit.quiz.dto.response.CourseResponse
 
-const val TITLE = "test"
-const val IMAGE = "test"
+const val TITLE = "title"
 
 fun createCreateCourseRequest(
     title: String = TITLE,
