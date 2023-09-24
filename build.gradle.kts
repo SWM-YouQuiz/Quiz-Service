@@ -42,6 +42,7 @@ dependencies {
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")
     implementation("com.github.earlgrey02:JWT-Module:2.0.2")
     implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
+    implementation("io.projectreactor.kafka:reactor-kafka")
     implementation("io.github.microutils:kotlin-logging:3.0.5")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.restdocs:spring-restdocs-webtestclient")
