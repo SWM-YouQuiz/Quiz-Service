@@ -8,7 +8,7 @@ import com.quizit.quiz.fixture.createUpdateCurriculumByIdRequest
 import com.quizit.quiz.repository.CurriculumRepository
 import io.kotest.core.spec.IsolationMode
 import io.kotest.core.spec.style.BehaviorSpec
-import io.kotest.matchers.equality.shouldNotBeEqualToComparingFields
+import io.kotest.matchers.equals.shouldNotBeEqual
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -58,7 +58,7 @@ class CurriculumServiceTest : BehaviorSpec() {
 
                 Then("해당 커리큘럼이 수정된다.") {
                     result.expectSubscription()
-                        .assertNext { it shouldNotBeEqualToComparingFields curriculumResponse }
+                        .assertNext { it shouldNotBeEqual curriculumResponse }
                         .verifyComplete()
                 }
             }

@@ -8,7 +8,7 @@ import com.quizit.quiz.fixture.createUpdateChapterByIdRequest
 import com.quizit.quiz.repository.ChapterRepository
 import io.kotest.core.spec.IsolationMode
 import io.kotest.core.spec.style.BehaviorSpec
-import io.kotest.matchers.equality.shouldNotBeEqualToComparingFields
+import io.kotest.matchers.equals.shouldNotBeEqual
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -60,7 +60,7 @@ class ChapterServiceTest : BehaviorSpec() {
 
                 Then("해당 챕터가 수정된다.") {
                     result.expectSubscription()
-                        .assertNext { it shouldNotBeEqualToComparingFields chapterResponse }
+                        .assertNext { it shouldNotBeEqual chapterResponse }
                         .verifyComplete()
                 }
             }

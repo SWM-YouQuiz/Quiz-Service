@@ -8,7 +8,7 @@ import com.quizit.quiz.fixture.createUpdateCourseByIdRequest
 import com.quizit.quiz.repository.CourseRepository
 import io.kotest.core.spec.IsolationMode
 import io.kotest.core.spec.style.BehaviorSpec
-import io.kotest.matchers.equality.shouldNotBeEqualToComparingFields
+import io.kotest.matchers.equals.shouldNotBeEqual
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -58,7 +58,7 @@ class CourseServiceTest : BehaviorSpec() {
 
                 Then("해당 코스가 수정된다.") {
                     result.expectSubscription()
-                        .assertNext { it shouldNotBeEqualToComparingFields courseResponse }
+                        .assertNext { it shouldNotBeEqual courseResponse }
                         .verifyComplete()
                 }
             }
