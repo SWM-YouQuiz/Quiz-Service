@@ -3,8 +3,6 @@ package com.quizit.quiz.global.exception
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.quizit.quiz.global.dto.ErrorResponse
 import com.quizit.quiz.global.util.logger
-import kotlinx.coroutines.reactor.awaitSingleOrNull
-import kotlinx.coroutines.reactor.mono
 import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpStatusCode
@@ -12,27 +10,28 @@ import org.springframework.http.MediaType
 import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
-import java.io.PrintWriter
-import java.io.StringWriter
 
 @Configuration
 class GlobalExceptionHandler(
     private val objectMapper: ObjectMapper
 ) : ErrorWebExceptionHandler {
-    override fun handle(exchange: ServerWebExchange, ex: Throwable): Mono<Void> = mono {
-        logger.error { "${ex.message} at ${ex.stackTrace[0]}" }
-
-        val errorResponse = if (ex is ServerException) {
-            ErrorResponse(code = ex.code, message = ex.message)
-        } else {
-            ErrorResponse(code = 500, message = "Internal Server Error")
-        }
-
+    override fun handle(exchange: ServerWebExchange, ex: Throwable): Mono<Void> =
         with(exchange.response) {
+            val errorResponse = if (ex is ServerException) {
+                ErrorResponse(code = ex.code, message = ex.message)
+            } else {
+                ErrorResponse(code = 500, message = "Internal Server Error")
+            }
+
+            logger.error { "${ex.message} at ${ex.stackTrace[0]}" }
+
             statusCode = HttpStatusCode.valueOf(errorResponse.code)
             headers.contentType = MediaType.APPLICATION_JSON
 
-            writeWith(bufferFactory().wrap(objectMapper.writeValueAsBytes(errorResponse)).toMono()).awaitSingleOrNull()
+            writeWith(
+                bufferFactory()
+                    .wrap(objectMapper.writeValueAsBytes(errorResponse))
+                    .toMono()
+            )
         }
-    }
 }

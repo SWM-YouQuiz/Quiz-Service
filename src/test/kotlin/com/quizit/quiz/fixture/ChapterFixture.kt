@@ -5,8 +5,8 @@ import com.quizit.quiz.dto.request.CreateChapterRequest
 import com.quizit.quiz.dto.request.UpdateChapterByIdRequest
 import com.quizit.quiz.dto.response.ChapterResponse
 
-const val DESCRIPTION = "test"
-const val DOCUMENT = "test"
+const val DESCRIPTION = "description"
+const val DOCUMENT = "document"
 
 fun createCreateChapterRequest(
     description: String = DESCRIPTION,

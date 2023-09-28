@@ -12,9 +12,9 @@ data class QuizResponse(
     val options: List<String>,
     val correctCount: Long,
     val incorrectCount: Long,
-    val markedUserIds: Set<String>,
-    val likedUserIds: Set<String>,
-    val unlikedUserIds: Set<String>,
+    val markedUserIds: HashSet<String>,
+    val likedUserIds: HashSet<String>,
+    val unlikedUserIds: HashSet<String>,
     val createdDate: LocalDateTime,
 ) {
     companion object {

@@ -4,39 +4,41 @@ import com.quizit.quiz.dto.request.CreateChapterRequest
 import com.quizit.quiz.dto.request.UpdateChapterByIdRequest
 import com.quizit.quiz.service.ChapterService
 import org.springframework.stereotype.Component
-import org.springframework.web.reactive.function.server.*
+import org.springframework.web.reactive.function.server.ServerRequest
+import org.springframework.web.reactive.function.server.ServerResponse
+import org.springframework.web.reactive.function.server.body
+import org.springframework.web.reactive.function.server.bodyToMono
+import reactor.core.publisher.Mono
 
 @Component
 class ChapterHandler(
     private val chapterService: ChapterService
 ) {
-    suspend fun getChapterById(request: ServerRequest): ServerResponse =
-        request.pathVariable("id").let {
-            ServerResponse.ok().bodyValueAndAwait(chapterService.getChapterById(it))
-        }
+    fun getChapterById(request: ServerRequest): Mono<ServerResponse> =
+        ServerResponse.ok()
+            .body(chapterService.getChapterById(request.pathVariable("id")))
 
-    suspend fun getChaptersByCourseId(request: ServerRequest): ServerResponse =
-        request.pathVariable("id").let {
-            ServerResponse.ok().bodyAndAwait(chapterService.getChaptersByCourseId(it))
-        }
+    fun getChaptersByCourseId(request: ServerRequest): Mono<ServerResponse> =
+        ServerResponse.ok()
+            .body(chapterService.getChaptersByCourseId(request.pathVariable("id")))
 
-    suspend fun createChapter(request: ServerRequest): ServerResponse =
-        request.awaitBody<CreateChapterRequest>().let {
-            ServerResponse.ok().bodyValueAndAwait(chapterService.createChapter(it))
-        }
+    fun createChapter(request: ServerRequest): Mono<ServerResponse> =
+        request.bodyToMono<CreateChapterRequest>()
+            .flatMap {
+                ServerResponse.ok()
+                    .body(chapterService.createChapter(it))
+            }
 
-    suspend fun updateChapterById(request: ServerRequest): ServerResponse =
+    fun updateChapterById(request: ServerRequest): Mono<ServerResponse> =
         with(request) {
-            val id = pathVariable("id")
-            val updateChapterByIdRequest = awaitBody<UpdateChapterByIdRequest>()
-
-            ServerResponse.ok().bodyValueAndAwait(chapterService.updateChapterById(id, updateChapterByIdRequest))
+            bodyToMono<UpdateChapterByIdRequest>()
+                .flatMap {
+                    ServerResponse.ok()
+                        .body(chapterService.updateChapterById(pathVariable("id"), it))
+                }
         }
 
-    suspend fun deleteChapterById(request: ServerRequest): ServerResponse =
-        request.pathVariable("id").let {
-            chapterService.deleteChapterById(it)
-
-            ServerResponse.ok().buildAndAwait()
-        }
+    fun deleteChapterById(request: ServerRequest): Mono<ServerResponse> =
+        ServerResponse.ok()
+            .body(chapterService.deleteChapterById(request.pathVariable("id")))
 }

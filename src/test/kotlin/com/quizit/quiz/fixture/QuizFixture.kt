@@ -11,13 +11,13 @@ import java.time.LocalDateTime
 const val QUESTION = "question"
 const val ANSWER = 1
 const val SOLUTION = "solution"
-val OPTIONS = (0..4).map { "option_$it" }
+val OPTIONS = (0..4).map { "$it" }
 const val ANSWER_RATE = 50.0
 const val CORRECT_COUNT = 10L
 const val INCORRECT_COUNT = 10L
-val MARKED_USER_IDS = mutableSetOf("user_1")
-val LIKED_USER_IDS = mutableSetOf("user_1")
-val UNLIKED_USER_IDS = mutableSetOf("user_1")
+val MARKED_USER_IDS = hashSetOf("1")
+val LIKED_USER_IDS = hashSetOf("1")
+val UNLIKED_USER_IDS = hashSetOf("1")
 
 fun createCreateQuizRequest(
     question: String = QUESTION,
@@ -72,9 +72,9 @@ fun createQuizResponse(
     answerRate: Double = ANSWER_RATE,
     correctCount: Long = CORRECT_COUNT,
     incorrectCount: Long = INCORRECT_COUNT,
-    markedUserIds: Set<String> = MARKED_USER_IDS,
-    likedUserIds: MutableSet<String> = LIKED_USER_IDS,
-    unlikedUserIds: MutableSet<String> = UNLIKED_USER_IDS,
+    markedUserIds: HashSet<String> = MARKED_USER_IDS,
+    likedUserIds: HashSet<String> = LIKED_USER_IDS,
+    unlikedUserIds: HashSet<String> = UNLIKED_USER_IDS,
     createdDate: LocalDateTime = CREATED_DATE
 ): QuizResponse =
     QuizResponse(
@@ -103,9 +103,9 @@ fun createQuiz(
     answerRate: Double = ANSWER_RATE,
     correctCount: Long = CORRECT_COUNT,
     incorrectCount: Long = INCORRECT_COUNT,
-    markedUserIds: MutableSet<String> = MARKED_USER_IDS.toMutableSet(),
-    likedUserIds: MutableSet<String> = LIKED_USER_IDS.toMutableSet(),
-    unlikedUserIds: MutableSet<String> = UNLIKED_USER_IDS.toMutableSet(),
+    markedUserIds: HashSet<String> = MARKED_USER_IDS.toHashSet(),
+    likedUserIds: HashSet<String> = LIKED_USER_IDS.toHashSet(),
+    unlikedUserIds: HashSet<String> = UNLIKED_USER_IDS.toHashSet(),
     createdDate: LocalDateTime = CREATED_DATE
 ): Quiz = Quiz(
     id = id,

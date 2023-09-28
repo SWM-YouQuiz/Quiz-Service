@@ -7,7 +7,14 @@ import org.springframework.data.mongodb.core.mapping.Document
 class Chapter(
     @Id
     var id: String? = null,
-    val description: String,
-    val document: String,
-    val courseId: String,
-)
+    var description: String,
+    var document: String,
+    var courseId: String,
+) {
+    fun update(description: String, document: String, courseId: String): Chapter =
+        also {
+            it.description = description
+            it.document = document
+            it.courseId = courseId
+        }
+}

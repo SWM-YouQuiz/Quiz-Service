@@ -4,39 +4,41 @@ import com.quizit.quiz.dto.request.CreateCourseRequest
 import com.quizit.quiz.dto.request.UpdateCourseByIdRequest
 import com.quizit.quiz.service.CourseService
 import org.springframework.stereotype.Component
-import org.springframework.web.reactive.function.server.*
+import org.springframework.web.reactive.function.server.ServerRequest
+import org.springframework.web.reactive.function.server.ServerResponse
+import org.springframework.web.reactive.function.server.body
+import org.springframework.web.reactive.function.server.bodyToMono
+import reactor.core.publisher.Mono
 
 @Component
 class CourseHandler(
     private val courseService: CourseService
 ) {
-    suspend fun getCourseById(request: ServerRequest): ServerResponse =
-        request.pathVariable("id").let {
-            ServerResponse.ok().bodyValueAndAwait(courseService.getCourseById(it))
-        }
+    fun getCourseById(request: ServerRequest): Mono<ServerResponse> =
+        ServerResponse.ok()
+            .body(courseService.getCourseById(request.pathVariable("id")))
 
-    suspend fun getCoursesByCurriculumId(request: ServerRequest): ServerResponse =
-        request.pathVariable("id").let {
-            ServerResponse.ok().bodyAndAwait(courseService.getCoursesByCurriculumId(it))
-        }
+    fun getCoursesByCurriculumId(request: ServerRequest): Mono<ServerResponse> =
+        ServerResponse.ok()
+            .body(courseService.getCoursesByCurriculumId(request.pathVariable("id")))
 
-    suspend fun createCourse(request: ServerRequest): ServerResponse =
-        request.awaitBody<CreateCourseRequest>().let {
-            ServerResponse.ok().bodyValueAndAwait(courseService.createCourse(it))
-        }
+    fun createCourse(request: ServerRequest): Mono<ServerResponse> =
+        request.bodyToMono<CreateCourseRequest>()
+            .flatMap {
+                ServerResponse.ok()
+                    .body(courseService.createCourse(it))
+            }
 
-    suspend fun updateCourseById(request: ServerRequest): ServerResponse =
+    fun updateCourseById(request: ServerRequest): Mono<ServerResponse> =
         with(request) {
-            val id = pathVariable("id")
-            val updateCourseByIdRequest = awaitBody<UpdateCourseByIdRequest>()
-
-            ServerResponse.ok().bodyValueAndAwait(courseService.updateCourseById(id, updateCourseByIdRequest))
+            bodyToMono<UpdateCourseByIdRequest>()
+                .flatMap {
+                    ServerResponse.ok()
+                        .body(courseService.updateCourseById(pathVariable("id"), it))
+                }
         }
 
-    suspend fun deleteCourseById(request: ServerRequest): ServerResponse =
-        request.pathVariable("id").let {
-            courseService.deleteCourseById(it)
-
-            ServerResponse.ok().buildAndAwait()
-        }
+    fun deleteCourseById(request: ServerRequest): Mono<ServerResponse> =
+        ServerResponse.ok()
+            .body(courseService.deleteCourseById(request.pathVariable("id")))
 }

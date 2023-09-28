@@ -8,12 +8,13 @@ import com.quizit.quiz.fixture.createUpdateCurriculumByIdRequest
 import com.quizit.quiz.repository.CurriculumRepository
 import io.kotest.core.spec.IsolationMode
 import io.kotest.core.spec.style.BehaviorSpec
-import io.kotest.matchers.collections.shouldContainExactly
-import io.kotest.matchers.equality.shouldBeEqualToComparingFields
 import io.kotest.matchers.equals.shouldNotBeEqual
-import io.mockk.*
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.toList
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
+import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
+import reactor.test.StepVerifier
 
 class CurriculumServiceTest : BehaviorSpec() {
     private val curriculumRepository = mockk<CurriculumRepository>()
@@ -24,56 +25,68 @@ class CurriculumServiceTest : BehaviorSpec() {
 
     init {
         Given("커리큘럼들이 존재하는 경우") {
-            val curriculum = createCurriculum().also {
-                coEvery { curriculumRepository.findById(any()) } returns it
-                coEvery { curriculumRepository.deleteById(any()) } just runs
-            }
-            val curriculums = List(3) { curriculum }.apply {
-                asFlow().let {
-                    coEvery { curriculumRepository.findAll() } returns it
+            val curriculum = createCurriculum()
+                .also {
+                    every { curriculumRepository.findAll() } returns Flux.just(it)
+                    every { curriculumRepository.findById(any<String>()) } returns Mono.just(it)
+                    every { curriculumRepository.deleteById(any<String>()) } returns Mono.empty()
                 }
-            }
-            val updateCurriculumByIdRequest = createUpdateCurriculumByIdRequest(title = "update").also {
-                coEvery { curriculumRepository.save(any()) } returns createCurriculum(title = it.title)
-            }
+            val curriculumResponse = CurriculumResponse(curriculum)
 
             When("유저가 메인 화면에 들어가면") {
-                val curriculumResponses = curriculumService.getCurriculums().toList()
-                val curriculumResponse = curriculumService.getCurriculumById(ID)
+                val results = listOf(
+                    StepVerifier.create(curriculumService.getCurriculums()),
+                    StepVerifier.create(curriculumService.getCurriculumById(ID))
+                )
 
                 Then("커리큘럼이 주어진다.") {
-                    curriculumResponses shouldContainExactly curriculums.map { CurriculumResponse(it) }
-                    curriculumResponse shouldBeEqualToComparingFields CurriculumResponse(curriculum)
+                    results.map {
+                        it.expectSubscription()
+                            .expectNext(curriculumResponse)
+                            .verifyComplete()
+                    }
                 }
             }
 
             When("어드민이 특정 커리큘럼을 수정하면") {
-                val chapterResponse = curriculumService.updateCurriculumById(ID, updateCurriculumByIdRequest)
+                val updateCurriculumByIdRequest = createUpdateCurriculumByIdRequest(title = "updated_title")
+                    .also {
+                        every { curriculumRepository.save(any()) } returns Mono.just(createCurriculum(title = it.title))
+                    }
+                val result =
+                    StepVerifier.create(curriculumService.updateCurriculumById(ID, updateCurriculumByIdRequest))
 
                 Then("해당 커리큘럼이 수정된다.") {
-                    chapterResponse.title shouldNotBeEqual curriculum.title
+                    result.expectSubscription()
+                        .assertNext { it shouldNotBeEqual curriculumResponse }
+                        .verifyComplete()
                 }
             }
 
             When("어드민이 특정 커리큘럼을 삭제하면") {
                 curriculumService.deleteCurriculumById(ID)
+                    .subscribe()
 
                 Then("해당 커리큘럼이 삭제된다.") {
-                    coVerify { curriculumRepository.deleteById(any()) }
+                    verify { curriculumRepository.deleteById(any<String>()) }
                 }
             }
         }
 
         Given("어드민이 커리큘럼을 작성 중인 경우") {
-            val curriculum = createCurriculum().also {
-                coEvery { curriculumRepository.save(any()) } returns it
-            }
+            val curriculum = createCurriculum()
+                .also {
+                    every { curriculumRepository.save(any()) } returns Mono.just(it)
+                }
+            val curriculumResponse = CurriculumResponse(curriculum)
 
             When("어드민이 커리큘럼을 제출하면") {
-                val curriculumResponse = curriculumService.createCurriculum(createCreateCurriculumRequest())
+                val result = StepVerifier.create(curriculumService.createCurriculum(createCreateCurriculumRequest()))
 
                 Then("커리큘럼이 생성된다.") {
-                    curriculumResponse shouldBeEqualToComparingFields CurriculumResponse(curriculum)
+                    result.expectSubscription()
+                        .expectNext(curriculumResponse)
+                        .verifyComplete()
                 }
             }
         }

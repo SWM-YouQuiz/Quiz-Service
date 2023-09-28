@@ -13,15 +13,14 @@ import com.quizit.quiz.handler.CurriculumHandler
 import com.quizit.quiz.router.CurriculumRouter
 import com.quizit.quiz.service.CurriculumService
 import com.quizit.quiz.util.*
-import io.mockk.coEvery
-import io.mockk.just
-import io.mockk.runs
-import kotlinx.coroutines.flow.flowOf
+import io.mockk.every
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.restdocs.operation.preprocess.Preprocessors
 import org.springframework.restdocs.payload.PayloadDocumentation.requestFields
 import org.springframework.restdocs.payload.PayloadDocumentation.responseFields
 import org.springframework.restdocs.request.RequestDocumentation.pathParameters
+import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 
 @WebFluxTest(CurriculumRouter::class, CurriculumHandler::class)
 class CurriculumControllerTest : BaseControllerTest() {
@@ -50,7 +49,7 @@ class CurriculumControllerTest : BaseControllerTest() {
     init {
         describe("getCurriculumById()는") {
             context("커리큘럼이 존재하는 경우") {
-                coEvery { curriculumService.getCurriculumById(any()) } returns createCurriculumResponse()
+                every { curriculumService.getCurriculumById(any()) } returns Mono.just(createCurriculumResponse())
                 withMockUser()
 
                 it("상태 코드 200과 curriculumResponse를 반환한다.") {
@@ -73,7 +72,7 @@ class CurriculumControllerTest : BaseControllerTest() {
             }
 
             context("커리큘럼이 존재하지 않는 경우") {
-                coEvery { curriculumService.getCurriculumById(any()) } throws CurriculumNotFoundException()
+                every { curriculumService.getCurriculumById(any()) } throws CurriculumNotFoundException()
                 withMockUser()
 
                 it("상태 코드 404를 반환한다.") {
@@ -98,7 +97,7 @@ class CurriculumControllerTest : BaseControllerTest() {
 
         describe("getCurriculums()는") {
             context("커리큘럼들이 존재하는 경우") {
-                coEvery { curriculumService.getCurriculums() } returns flowOf(createCurriculumResponse())
+                every { curriculumService.getCurriculums() } returns Flux.just(createCurriculumResponse())
                 withMockUser()
 
                 it("상태 코드 200과 curriculumResponse들을 반환한다.") {
@@ -123,7 +122,7 @@ class CurriculumControllerTest : BaseControllerTest() {
 
         describe("createCurriculum()는") {
             context("어드민이 챕터를 작성해서 제출하는 경우") {
-                coEvery { curriculumService.createCurriculum(any()) } returns createCurriculumResponse()
+                every { curriculumService.createCurriculum(any()) } returns Mono.just(createCurriculumResponse())
                 withMockAdmin()
 
                 it("상태 코드 200과 curriculumResponse를 반환한다.") {
@@ -150,7 +149,9 @@ class CurriculumControllerTest : BaseControllerTest() {
 
         describe("updateCurriculumById()는") {
             context("어드민이 커리큘럼을 수정해서 제출하는 경우") {
-                coEvery { curriculumService.updateCurriculumById(any(), any()) } returns createCurriculumResponse()
+                every { curriculumService.updateCurriculumById(any(), any()) } returns Mono.just(
+                    createCurriculumResponse()
+                )
                 withMockAdmin()
 
                 it("상태 코드 200과 curriculumResponse를 반환한다.") {
@@ -175,7 +176,7 @@ class CurriculumControllerTest : BaseControllerTest() {
             }
 
             context("커리큘럼이 존재하지 않는 경우") {
-                coEvery { curriculumService.updateCurriculumById(any(), any()) } throws CurriculumNotFoundException()
+                every { curriculumService.updateCurriculumById(any(), any()) } throws CurriculumNotFoundException()
                 withMockAdmin()
 
                 it("상태 코드 404를 반환한다.") {
@@ -202,7 +203,7 @@ class CurriculumControllerTest : BaseControllerTest() {
 
         describe("deleteCurriculumById()는") {
             context("어드민이 챕터를 삭제하는 경우") {
-                coEvery { curriculumService.deleteCurriculumById(any()) } just runs
+                every { curriculumService.deleteCurriculumById(any()) } returns Mono.empty()
                 withMockAdmin()
 
                 it("상태 코드 200을 반환한다.") {
@@ -225,7 +226,7 @@ class CurriculumControllerTest : BaseControllerTest() {
             }
 
             context("어드민이 챕터를 삭제하는 경우") {
-                coEvery { curriculumService.deleteCurriculumById(any()) } throws CurriculumNotFoundException()
+                every { curriculumService.deleteCurriculumById(any()) } throws CurriculumNotFoundException()
                 withMockAdmin()
 
                 it("상태 코드 404를 반환한다.") {

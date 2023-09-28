@@ -5,13 +5,13 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.reactive.function.server.RouterFunction
 import org.springframework.web.reactive.function.server.ServerResponse
-import org.springframework.web.reactive.function.server.coRouter
+import org.springframework.web.reactive.function.server.router
 
 @Configuration
 class CurriculumRouter {
     @Bean
     fun curriculumRoutes(handler: CurriculumHandler): RouterFunction<ServerResponse> =
-        coRouter {
+        router {
             "/curriculum".nest {
                 GET("", handler::getCurriculums)
                 GET("/{id}", handler::getCurriculumById)

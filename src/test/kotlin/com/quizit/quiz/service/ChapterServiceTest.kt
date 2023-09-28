@@ -8,12 +8,13 @@ import com.quizit.quiz.fixture.createUpdateChapterByIdRequest
 import com.quizit.quiz.repository.ChapterRepository
 import io.kotest.core.spec.IsolationMode
 import io.kotest.core.spec.style.BehaviorSpec
-import io.kotest.matchers.collections.shouldContainExactly
-import io.kotest.matchers.equality.shouldBeEqualToComparingFields
 import io.kotest.matchers.equals.shouldNotBeEqual
-import io.mockk.*
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.toList
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
+import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
+import reactor.test.StepVerifier
 
 class ChapterServiceTest : BehaviorSpec() {
     private val chapterRepository = mockk<ChapterRepository>()
@@ -23,60 +24,73 @@ class ChapterServiceTest : BehaviorSpec() {
     override fun isolationMode(): IsolationMode = IsolationMode.InstancePerTest
 
     init {
-        Given("코스와 각각의 코스에 속하는 챕터들이 존재하는 경우") {
-            val chapter = createChapter().also {
-                coEvery { chapterRepository.findById(any()) } returns it
-                coEvery { chapterRepository.deleteById(any()) } just runs
-            }
-            val chapters = List(3) { chapter }.apply {
-                asFlow().let {
-                    coEvery { chapterRepository.findAllByCourseId(any()) } returns it
+        Given("챕터들이 존재하는 경우") {
+            val chapter = createChapter()
+                .also {
+                    every { chapterRepository.findAllByCourseId(any()) } returns Flux.just(it)
+                    every { chapterRepository.findById(any<String>()) } returns Mono.just(it)
+                    every { chapterRepository.deleteById(any<String>()) } returns Mono.empty()
                 }
-            }
-            val updateChapterByIdRequest = createUpdateChapterByIdRequest(description = "update").also {
-                coEvery { chapterRepository.save(any()) } returns createChapter(description = it.description)
-            }
+            val chapterResponse = ChapterResponse(chapter)
 
-            When("유저가 코스에 들어가면") {
-                val chapterResponses = chapterService.getChaptersByCourseId(ID).toList()
-                val chapterResponse = chapterService.getChapterById(ID)
+            When("유저가 메인 화면에 들어가면") {
+                val results = listOf(
+                    StepVerifier.create(chapterService.getChaptersByCourseId(ID)),
+                    StepVerifier.create(chapterService.getChapterById(ID))
+                )
 
-                Then("해당 코스에 속하는 챕터들이 주어진다.") {
-                    chapterResponses shouldContainExactly chapters.map { ChapterResponse(it) }
-                    chapterResponse shouldBeEqualToComparingFields ChapterResponse(chapter)
+                Then("챕터가 주어진다.") {
+                    results.map {
+                        it.expectSubscription()
+                            .expectNext(chapterResponse)
+                            .verifyComplete()
+                    }
                 }
             }
 
             When("어드민이 특정 챕터를 수정하면") {
-                val chapterResponse = chapterService.updateChapterById(ID, updateChapterByIdRequest)
+                val updateChapterByIdRequest = createUpdateChapterByIdRequest(description = "updated_description")
+                    .also {
+                        every { chapterRepository.save(any()) } returns Mono.just(
+                            createChapter(description = it.description)
+                        )
+                    }
+                val result =
+                    StepVerifier.create(chapterService.updateChapterById(ID, updateChapterByIdRequest))
 
                 Then("해당 챕터가 수정된다.") {
-                    chapterResponse.description shouldNotBeEqual chapter.description
+                    result.expectSubscription()
+                        .assertNext { it shouldNotBeEqual chapterResponse }
+                        .verifyComplete()
                 }
             }
 
             When("어드민이 특정 챕터를 삭제하면") {
                 chapterService.deleteChapterById(ID)
+                    .subscribe()
 
                 Then("해당 챕터가 삭제된다.") {
-                    coVerify { chapterRepository.deleteById(any()) }
+                    verify { chapterRepository.deleteById(any<String>()) }
                 }
             }
         }
 
         Given("어드민이 챕터를 작성 중인 경우") {
-            val chapter = createChapter().also {
-                coEvery { chapterRepository.save(any()) } returns it
-            }
+            val chapter = createChapter()
+                .also {
+                    every { chapterRepository.save(any()) } returns Mono.just(it)
+                }
+            val chapterResponse = ChapterResponse(chapter)
 
             When("어드민이 챕터를 제출하면") {
-                val chapterResponse = chapterService.createChapter(createCreateChapterRequest())
+                val result = StepVerifier.create(chapterService.createChapter(createCreateChapterRequest()))
 
                 Then("챕터가 생성된다.") {
-                    chapterResponse shouldBeEqualToComparingFields ChapterResponse(chapter)
+                    result.expectSubscription()
+                        .expectNext(chapterResponse)
+                        .verifyComplete()
                 }
             }
         }
-
     }
 }

@@ -6,13 +6,13 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.reactive.function.server.RouterFunction
 import org.springframework.web.reactive.function.server.ServerResponse
-import org.springframework.web.reactive.function.server.coRouter
+import org.springframework.web.reactive.function.server.router
 
 @Configuration
 class QuizRouter {
     @Bean
     fun quizRoutes(handler: QuizHandler): RouterFunction<ServerResponse> =
-        coRouter {
+        router {
             "/quiz".nest {
                 GET("/search", queryParams("question"), handler::getQuizzesByQuestionContains)
                 GET("/{id}", handler::getQuizById)
@@ -23,11 +23,7 @@ class QuizRouter {
                 )
                 GET("/writer/{id}", handler::getQuizzesByWriterId)
                 GET("/{id}/mark", handler::markQuiz)
-                GET(
-                    "/{id}/evaluate",
-                    queryParams("isLike"),
-                    handler::evaluateQuiz
-                )
+                GET("/{id}/evaluate", queryParams("isLike"), handler::evaluateQuiz)
                 GET("/marked-user/{id}", handler::getMarkedQuizzes)
                 POST("", handler::createQuiz)
                 POST("/{id}/check", handler::checkAnswer)
