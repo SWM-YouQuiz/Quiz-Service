@@ -8,7 +8,7 @@ data class CurriculumResponse(
     val image: String,
 ) {
     companion object {
-        operator fun invoke(curriculum: Curriculum) =
+        operator fun invoke(curriculum: Curriculum): CurriculumResponse =
             with(curriculum) {
                 CurriculumResponse(
                     id = id!!,

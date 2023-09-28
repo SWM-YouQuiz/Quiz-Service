@@ -18,7 +18,7 @@ data class QuizResponse(
     val createdDate: LocalDateTime,
 ) {
     companion object {
-        operator fun invoke(quiz: Quiz) =
+        operator fun invoke(quiz: Quiz): QuizResponse =
             with(quiz) {
                 QuizResponse(
                     id = id!!,
