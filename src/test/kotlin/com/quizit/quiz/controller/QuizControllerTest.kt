@@ -3,6 +3,8 @@ package com.quizit.quiz.controller
 import com.epages.restdocs.apispec.WebTestClientRestDocumentationWrapper
 import com.ninjasquad.springmockk.MockkBean
 import com.quizit.quiz.dto.response.CheckAnswerResponse
+import com.quizit.quiz.dto.response.LikedUserIdsResponse
+import com.quizit.quiz.dto.response.MarkedUserIdsResponse
 import com.quizit.quiz.dto.response.QuizResponse
 import com.quizit.quiz.exception.PermissionDeniedException
 import com.quizit.quiz.exception.QuizNotFoundException
@@ -63,6 +65,15 @@ class QuizControllerTest : BaseControllerTest() {
     )
 
     private val quizResponsesFields = quizResponseFields.map { "[].${it.path}" desc it.description as String }
+
+    private val markedUserIdsResponseFields = listOf(
+        "markedUserIds" desc "저장한 유저 리스트"
+    )
+
+    private val likedUserIdsResponseFields = listOf(
+        "likedUserIds" desc "좋아요한 유저 리스트",
+        "unlikedUserIds" desc "싫어요한 유저 리스트"
+    )
 
     private val checkAnswerResponseFields = listOf(
         "answer" desc "정답",
@@ -224,6 +235,102 @@ class QuizControllerTest : BaseControllerTest() {
                                 Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
                                 Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
                                 responseFields(quizResponsesFields)
+                            )
+                        )
+                }
+            }
+        }
+
+        describe("getMarkedUserIdsById()는") {
+            context("유저가 저장한 퀴즈가 존재하는 경우") {
+                every { quizService.getMarkedUserIdsById(any()) } returns Mono.just(createMarkedUserIdsResponse())
+                withMockUser()
+
+                it("상태 코드 200과 markedUserIdsResponse를 반환한다.") {
+                    webClient
+                        .get()
+                        .uri("/quiz/{id}/marked-user-ids", ID)
+                        .exchange()
+                        .expectStatus()
+                        .isOk
+                        .expectBody(MarkedUserIdsResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "퀴즈를 저장한 유저 식별자 리스트 조회 성공(200)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                responseFields(markedUserIdsResponseFields)
+                            )
+                        )
+                }
+            }
+
+            context("유저가 저장한 퀴즈가 존재하지 않는 경우") {
+                every { quizService.getMarkedUserIdsById(any()) } throws QuizNotFoundException()
+                withMockUser()
+
+                it("상태 코드 404를 반환한다.") {
+                    webClient
+                        .get()
+                        .uri("/quiz/{id}/marked-user-ids", ID)
+                        .exchange()
+                        .expectStatus()
+                        .isNotFound
+                        .expectBody(ErrorResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "퀴즈를 저장한 유저 식별자 리스트 조회 실패(404)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                responseFields(errorResponseFields)
+                            )
+                        )
+                }
+            }
+        }
+
+        describe("getLikedUserIdsById()는") {
+            context("유저가 평가한 퀴즈가 존재하는 경우") {
+                every { quizService.getLikedUserIdsById(any()) } returns Mono.just(createLikedUserIdsResponse())
+                withMockUser()
+
+                it("상태 코드 200과 likedUserIdsResponse를 반환한다.") {
+                    webClient
+                        .get()
+                        .uri("/quiz/{id}/liked-user-ids", ID)
+                        .exchange()
+                        .expectStatus()
+                        .isOk
+                        .expectBody(LikedUserIdsResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "퀴즈를 평가한 유저 식별자 리스트 조회 성공(200)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                responseFields(likedUserIdsResponseFields)
+                            )
+                        )
+                }
+            }
+
+            context("유저가 평가한 퀴즈가 존재하지 않는 경우") {
+                every { quizService.getLikedUserIdsById(any()) } throws QuizNotFoundException()
+                withMockUser()
+
+                it("상태 코드 404를 반환한다.") {
+                    webClient
+                        .get()
+                        .uri("/quiz/{id}/liked-user-ids", ID)
+                        .exchange()
+                        .expectStatus()
+                        .isNotFound
+                        .expectBody(ErrorResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "퀴즈를 평가한 유저 식별자 리스트 조회 실패(404)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                responseFields(errorResponseFields)
                             )
                         )
                 }
