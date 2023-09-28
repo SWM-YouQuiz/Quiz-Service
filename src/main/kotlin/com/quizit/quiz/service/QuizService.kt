@@ -10,6 +10,8 @@ import com.quizit.quiz.dto.request.CheckAnswerRequest
 import com.quizit.quiz.dto.request.CreateQuizRequest
 import com.quizit.quiz.dto.request.UpdateQuizByIdRequest
 import com.quizit.quiz.dto.response.CheckAnswerResponse
+import com.quizit.quiz.dto.response.LikedUserIdsResponse
+import com.quizit.quiz.dto.response.MarkedUserIdsResponse
 import com.quizit.quiz.dto.response.QuizResponse
 import com.quizit.quiz.exception.PermissionDeniedException
 import com.quizit.quiz.exception.QuizNotFoundException
@@ -56,6 +58,16 @@ class QuizService(
         userClient.getUserById(userId)
             .flatMapMany { quizRepository.findAllByIdIn(it.markedQuizIds.toList()) }
             .map { QuizResponse(it) }
+
+    fun getMarkedUserIdsById(id: String): Mono<MarkedUserIdsResponse> =
+        quizCacheRepository.findById(id)
+            .switchIfEmpty(Mono.error(QuizNotFoundException()))
+            .map { MarkedUserIdsResponse(it) }
+
+    fun getLikedUserIdsById(id: String): Mono<LikedUserIdsResponse> =
+        quizCacheRepository.findById(id)
+            .switchIfEmpty(Mono.error(QuizNotFoundException()))
+            .map { LikedUserIdsResponse(it) }
 
     fun createQuiz(userId: String, request: CreateQuizRequest): Mono<QuizResponse> =
         with(request) {
