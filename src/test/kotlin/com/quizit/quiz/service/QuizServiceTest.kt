@@ -2,6 +2,8 @@ package com.quizit.quiz.service
 
 import com.quizit.quiz.adapter.client.UserClient
 import com.quizit.quiz.adapter.producer.QuizProducer
+import com.quizit.quiz.dto.response.LikedUserIdsResponse
+import com.quizit.quiz.dto.response.MarkedUserIdsResponse
 import com.quizit.quiz.dto.response.QuizResponse
 import com.quizit.quiz.fixture.*
 import com.quizit.quiz.repository.QuizCacheRepository
@@ -60,6 +62,8 @@ class QuizServiceTest : BehaviorSpec() {
                     every { quizCacheRepository.findById(any<String>()) } returns Mono.just(it)
                 }
             val quizResponse = QuizResponse(quiz)
+            val markedUserIdsResponse = MarkedUserIdsResponse(quiz)
+            val likedUserIdsResponse = LikedUserIdsResponse(quiz)
 
             When("유저가 특정 퀴즈를 조회하면") {
                 val result = StepVerifier.create(quizService.getQuizById(ID))
@@ -90,6 +94,26 @@ class QuizServiceTest : BehaviorSpec() {
                 Then("해당 챕터에 속하는 퀴즈들이 주어진다.") {
                     result.expectSubscription()
                         .expectNext(quizResponse)
+                        .verifyComplete()
+                }
+            }
+
+            When("유저가 퀴즈를 저장한 유저들을 조회하는 경우") {
+                val result = StepVerifier.create(quizService.getMarkedUserIdsById(ID))
+
+                Then("해당 퀴즈를 저장한 유저 식별자 리스트가 주어진다.") {
+                    result.expectSubscription()
+                        .expectNext(markedUserIdsResponse)
+                        .verifyComplete()
+                }
+            }
+
+            When("유저가 퀴즈를 평가한 유저들을 조회하는 경우") {
+                val result = StepVerifier.create(quizService.getLikedUserIdsById(ID))
+
+                Then("해당 퀴즈를 평가한 유저 식별자 리스트가 주어진다.") {
+                    result.expectSubscription()
+                        .expectNext(likedUserIdsResponse)
                         .verifyComplete()
                 }
             }
