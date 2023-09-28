@@ -16,6 +16,8 @@ class QuizRouter {
             "/quiz".nest {
                 GET("/search", queryParams("question"), handler::getQuizzesByQuestionContains)
                 GET("/{id}", handler::getQuizById)
+                GET("/{id}/marked-user-ids", handler::getMarkedUserIdsById)
+                GET("/{id}/liked-user-ids", handler::getLikedUserIdsById)
                 GET(
                     "/chapter/{id}",
                     queryParams("page", "size", "range"),

@@ -54,6 +54,14 @@ class QuizHandler(
         ServerResponse.ok()
             .body(quizService.getMarkedQuizzes(request.pathVariable("id")))
 
+    fun getMarkedUserIdsById(request: ServerRequest): Mono<ServerResponse> =
+        ServerResponse.ok()
+            .body(quizService.getMarkedUserIdsById(request.pathVariable("id")))
+
+    fun getLikedUserIdsById(request: ServerRequest): Mono<ServerResponse> =
+        ServerResponse.ok()
+            .body(quizService.getLikedUserIdsById(request.pathVariable("id")))
+
     fun createQuiz(request: ServerRequest): Mono<ServerResponse> =
         with(request) {
             Mono.zip(authentication(), bodyToMono<CreateQuizRequest>())
