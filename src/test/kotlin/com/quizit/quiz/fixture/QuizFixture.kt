@@ -5,6 +5,8 @@ import com.quizit.quiz.dto.request.CheckAnswerRequest
 import com.quizit.quiz.dto.request.CreateQuizRequest
 import com.quizit.quiz.dto.request.UpdateQuizByIdRequest
 import com.quizit.quiz.dto.response.CheckAnswerResponse
+import com.quizit.quiz.dto.response.LikedUserIdsResponse
+import com.quizit.quiz.dto.response.MarkedUserIdsResponse
 import com.quizit.quiz.dto.response.QuizResponse
 import java.time.LocalDateTime
 
@@ -90,6 +92,20 @@ fun createQuizResponse(
         likedUserIds = likedUserIds,
         unlikedUserIds = unlikedUserIds,
         createdDate = createdDate
+    )
+
+fun createMarkedUserIdsResponse(
+    markedUserIds: HashSet<String> = MARKED_USER_IDS
+): MarkedUserIdsResponse =
+    MarkedUserIdsResponse(markedUserIds = markedUserIds)
+
+fun createLikedUserIdsResponse(
+    likedUserIds: HashSet<String> = LIKED_USER_IDS,
+    unlikedUserIds: HashSet<String> = UNLIKED_USER_IDS
+): LikedUserIdsResponse =
+    LikedUserIdsResponse(
+        likedUserIds = likedUserIds,
+        unlikedUserIds = unlikedUserIds
     )
 
 fun createQuiz(
