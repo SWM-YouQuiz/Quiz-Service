@@ -1,22 +1,22 @@
 package com.quizit.quiz.adapter.producer
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.quizit.quiz.dto.event.CheckAnswerEvent
 import com.quizit.quiz.dto.event.MarkQuizEvent
+import com.quizit.quiz.global.config.producerLogging
 import org.springframework.kafka.core.reactive.ReactiveKafkaProducerTemplate
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
+import reactor.kafka.sender.SenderResult
 
 @Component
 class QuizProducer(
     private val kafkaTemplate: ReactiveKafkaProducerTemplate<String, Any>,
-    private val objectMapper: ObjectMapper
 ) {
-    fun checkAnswer(event: CheckAnswerEvent): Mono<Void> =
-        kafkaTemplate.send("check-answer", objectMapper.writeValueAsString(event))
-            .then()
+    fun checkAnswer(event: CheckAnswerEvent): Mono<SenderResult<Void>> =
+        kafkaTemplate.send("check-answer", event)
+            .doOnNext { producerLogging(event) }
 
-    fun markQuiz(event: MarkQuizEvent): Mono<Void> =
-        kafkaTemplate.send("mark-quiz", objectMapper.writeValueAsString(event))
-            .then()
+    fun markQuiz(event: MarkQuizEvent): Mono<SenderResult<Void>> =
+        kafkaTemplate.send("mark-quiz", event)
+            .doOnNext { producerLogging(event) }
 }
