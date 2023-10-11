@@ -1,6 +1,4 @@
 spring:
-  webflux:
-    base-path: /api/quiz
   data:
     mongodb:
       uri: ${QUIZ_DB_URL}
@@ -19,3 +17,8 @@ url:
     auth: auth-service
     user: user-service
     quiz: quiz-service
+logging:
+  level:
+    web: debug
+    org.springframework:
+      data.mongodb: debug

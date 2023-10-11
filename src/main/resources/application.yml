@@ -1,3 +1,6 @@
+spring:
+  webflux:
+    base-path: /api/quiz
 management:
   endpoint:
     health:
@@ -8,9 +11,3 @@ management:
       enabled: true
     readinessstate:
       enabled: true
-logging:
-  level:
-    web: debug
-    org:
-      springframework:
-        data.mongodb: debug
