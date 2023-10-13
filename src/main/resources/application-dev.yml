@@ -1,6 +1,4 @@
 spring:
-  webflux:
-    base-path: /api/quiz
   data:
     mongodb:
       uri: ${QUIZ_DB_URL}
@@ -9,22 +7,6 @@ spring:
       port: ${REDIS_PORT}
   kafka:
     bootstrap-servers: ${KAFKA_URL}
-management:
-  endpoint:
-    health:
-      probes:
-        enabled: true
-  health:
-    livenessstate:
-      enabled: true
-    readinessstate:
-      enabled: true
-logging:
-  level:
-    web: debug
-    org:
-      springframework:
-        data.mongodb: debug
 jwt:
   secretKey: ${JWT_SECRET}
   accessTokenExpire: ${JWT_ACCESS_EXPIRE}
@@ -35,3 +17,8 @@ url:
     auth: auth-service
     user: user-service
     quiz: quiz-service
+logging:
+  level:
+    web: debug
+    org.springframework:
+      data.mongodb: debug

@@ -25,9 +25,11 @@ class SecurityConfiguration {
         with(http) {
             csrf { it.disable() }
             formLogin { it.disable() }
+            httpBasic { it.disable() }
             logout { it.disable() }
-            httpBasic { it.authenticationEntryPoint(HttpStatusServerEntryPoint(HttpStatus.UNAUTHORIZED)) }
+            requestCache { it.disable() }
             securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
+            exceptionHandling { it.authenticationEntryPoint(HttpStatusServerEntryPoint(HttpStatus.UNAUTHORIZED)) }
             authorizeExchange {
                 it.pathMatchers("/quiz/admin/**")
                     .hasAuthority(Role.ADMIN.name)

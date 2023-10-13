@@ -1,8 +1,6 @@
 server:
   port: 8083
 spring:
-  webflux:
-    base-path: /api/quiz
   data:
     mongodb:
       uri: mongodb://localhost:27017/quiz
@@ -11,22 +9,6 @@ spring:
       port: 6379
   kafka:
     bootstrap-servers: localhost:9092
-management:
-  endpoint:
-    health:
-      probes:
-        enabled: true
-  health:
-    livenessstate:
-      enabled: true
-    readinessstate:
-      enabled: true
-logging:
-  level:
-    web: debug
-    org:
-      springframework:
-        data.mongodb: debug
 jwt:
   secretKey: dsaijodajadsjdsalkjadslkjadsljlajkdslkjadslkjadsjlklsad
   accessTokenExpire: 30
@@ -37,3 +19,8 @@ url:
     auth: http://localhost:8081
     user: http://localhost:8082
     quiz: http://localhost:8083
+logging:
+  level:
+    web: debug
+    org.springframework:
+      data.mongodb: debug

@@ -23,7 +23,7 @@ class GlobalExceptionHandler(
                 ErrorResponse(code = 500, message = "Internal Server Error")
             }
 
-            logger.error { "${ex.message} at ${ex.stackTrace[0]}" }
+            logger.error { "$ex at ${ex.stackTrace[0]}" }
 
             statusCode = HttpStatusCode.valueOf(errorResponse.code)
             headers.contentType = MediaType.APPLICATION_JSON
