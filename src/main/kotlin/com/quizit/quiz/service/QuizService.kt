@@ -16,7 +16,6 @@ import com.quizit.quiz.exception.QuizNotFoundException
 import com.quizit.quiz.global.config.isAdmin
 import com.quizit.quiz.global.util.component1
 import com.quizit.quiz.global.util.component2
-import com.quizit.quiz.repository.QuizCacheRepository
 import com.quizit.quiz.repository.QuizRepository
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
@@ -27,12 +26,11 @@ import reactor.core.scheduler.Schedulers
 @Service
 class QuizService(
     private val quizRepository: QuizRepository,
-    private val quizCacheRepository: QuizCacheRepository,
     private val userClient: UserClient,
     private val quizProducer: QuizProducer
 ) {
     fun getQuizById(id: String): Mono<QuizResponse> =
-        quizCacheRepository.findById(id)
+        quizRepository.findById(id)
             .switchIfEmpty(Mono.error(QuizNotFoundException()))
             .map { QuizResponse(it) }
 
@@ -74,53 +72,36 @@ class QuizService(
                     likedUserIds = hashSetOf(),
                     unlikedUserIds = hashSetOf()
                 )
-            ).flatMap {
-                quizCacheRepository.save(it)
-                    .thenReturn(it)
-            }.map { QuizResponse(it) }
+            ).map { QuizResponse(it) }
         }
 
     fun updateQuizById(
         id: String, authentication: DefaultJwtAuthentication, request: UpdateQuizByIdRequest
     ): Mono<QuizResponse> =
-        quizCacheRepository.findById(id)
+        quizRepository.findById(id)
             .switchIfEmpty(Mono.error(QuizNotFoundException()))
             .filter { (authentication.id == it.writerId) || authentication.isAdmin() }
             .switchIfEmpty(Mono.error(PermissionDeniedException()))
             .map { request.run { it.update(question, answer, solution, chapterId, options) } }
-            .flatMap {
-                Mono.zip(
-                    quizRepository.save(it)
-                        .subscribeOn(Schedulers.parallel()),
-                    quizCacheRepository.save(it)
-                        .subscribeOn(Schedulers.parallel())
-                )
-            }
-            .map { (quiz) -> QuizResponse(quiz) }
+            .flatMap { quizRepository.save(it) }
+            .map { QuizResponse(it) }
 
     fun deleteQuizById(id: String, authentication: DefaultJwtAuthentication): Mono<Void> =
-        quizCacheRepository.findById(id)
+        quizRepository.findById(id)
             .switchIfEmpty(Mono.error(QuizNotFoundException()))
             .filter { (authentication.id == it.writerId) || authentication.isAdmin() }
             .switchIfEmpty(Mono.error(PermissionDeniedException()))
-            .flatMap {
-                Mono.`when`(
-                    quizRepository.deleteById(id)
-                        .subscribeOn(Schedulers.parallel()),
-                    quizCacheRepository.deleteById(id)
-                        .subscribeOn(Schedulers.parallel())
-                )
-            }
+            .flatMap { quizRepository.deleteById(id) }
 
     fun checkAnswer(id: String, userId: String, request: CheckAnswerRequest): Mono<CheckAnswerResponse> =
-        quizCacheRepository.findById(id)
+        quizRepository.findById(id)
             .switchIfEmpty(Mono.error(QuizNotFoundException()))
             .cache()
             .run {
-                subscribeOn(Schedulers.parallel())
+                subscribeOn(Schedulers.boundedElastic())
                     .zipWith(
                         userClient.getUserById(userId)
-                            .subscribeOn(Schedulers.parallel())
+                            .subscribeOn(Schedulers.boundedElastic())
                     )
                     .filter { (_, userResponse) -> (id !in userResponse.correctQuizIds) && (id !in userResponse.incorrectQuizIds) }
                     .flatMap { (quiz) ->
@@ -140,14 +121,7 @@ class QuizService(
                             )
                         }.thenReturn(quiz)
                     }
-                    .flatMap {
-                        Mono.zip(
-                            quizRepository.save(it)
-                                .subscribeOn(Schedulers.parallel()),
-                            quizCacheRepository.save(it)
-                                .subscribeOn(Schedulers.parallel())
-                        )
-                    }
+                    .flatMap { quizRepository.save(it) }
                     .then(map {
                         CheckAnswerResponse(
                             answer = it.answer,
@@ -157,7 +131,7 @@ class QuizService(
             }
 
     fun markQuiz(id: String, userId: String): Mono<QuizResponse> =
-        quizCacheRepository.findById(id)
+        quizRepository.findById(id)
             .switchIfEmpty(Mono.error(QuizNotFoundException()))
             .flatMap {
                 it.run {
@@ -176,18 +150,11 @@ class QuizService(
                     )
                 }.thenReturn(it)
             }
-            .flatMap {
-                Mono.zip(
-                    quizRepository.save(it)
-                        .subscribeOn(Schedulers.parallel()),
-                    quizCacheRepository.save(it)
-                        .subscribeOn(Schedulers.parallel())
-                )
-            }
-            .map { (quiz) -> QuizResponse(quiz) }
+            .flatMap { quizRepository.save(it) }
+            .map { QuizResponse(it) }
 
     fun evaluateQuiz(id: String, userId: String, isLike: Boolean): Mono<QuizResponse> =
-        quizCacheRepository.findById(id)
+        quizRepository.findById(id)
             .switchIfEmpty(Mono.error(QuizNotFoundException()))
             .map {
                 it.apply {
@@ -208,13 +175,6 @@ class QuizService(
                     }
                 }
             }
-            .flatMap {
-                Mono.zip(
-                    quizRepository.save(it)
-                        .subscribeOn(Schedulers.parallel()),
-                    quizCacheRepository.save(it)
-                        .subscribeOn(Schedulers.parallel())
-                )
-            }
-            .map { (quiz) -> QuizResponse(quiz) }
+            .flatMap { quizRepository.save(it) }
+            .map { QuizResponse(it) }
 }
