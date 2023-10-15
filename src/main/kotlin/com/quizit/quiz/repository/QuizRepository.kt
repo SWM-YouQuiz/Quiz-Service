@@ -25,24 +25,29 @@ interface QuizRepository : ReactiveMongoRepository<Quiz, String> {
 
     @Aggregation(
         pipeline = [
-            "{ \$match: { '_id': ?0 } }",
-            "{ \$lookup: { from: 'course', localField: '_id', foreignField: 'curriculumId', as: 'courses' } }",
+            "{ \$set: { 'curriculumId': ?0 } }",
+            "{ \$lookup: { from: 'course', localField: 'curriculumId', foreignField: 'curriculumId', as: 'courses' } }",
             "{ \$unwind: '\$courses' }",
             "{ \$lookup: { from: 'chapter', localField: 'courses._id', foreignField: 'courseId', as: 'chapters' } }",
             "{ \$unwind: '\$chapters' }",
             "{ \$lookup: { from: 'quiz', localField: 'chapters._id', foreignField: 'chapterId', as: 'quizzes' } }",
             "{ \$unwind: '\$quizzes' }",
+            "{ \$group: { _id: '\$_id', document: { \$first: '$\$ROOT' } } }",
+            "{ \$replaceRoot: { newRoot: '\$document' } }"
         ]
     )
     fun findAllByCurriculumId(curriculumId: String): Flux<Quiz>
 
     @Aggregation(
         pipeline = [
-            "{ \$match: { '_id': ?0 } }",
-            "{ \$lookup: { from: 'chapter', localField: '_id', foreignField: 'courseId', as: 'chapters' } }",
+            "{ \$set: { 'courseId': ?0 } }",
+            "{ \$lookup: { from: 'chapter', localField: 'courseId', foreignField: 'courseId', as: 'chapters' } }",
             "{ \$unwind: '\$chapters' }",
+            "{ \$set: { 'chapters._id': { \$toString: '\$chapters._id' } } }",
             "{ \$lookup: { from: 'quiz', localField: 'chapters._id', foreignField: 'chapterId', as: 'quizzes' } }",
             "{ \$unwind: '\$quizzes' }",
+            "{ \$group: { _id: '\$_id', document: { \$first: '$\$ROOT' } } }",
+            "{ \$replaceRoot: { newRoot: '\$document' } }"
         ]
     )
     fun findAllByCourseId(courseId: String): Flux<Quiz>
