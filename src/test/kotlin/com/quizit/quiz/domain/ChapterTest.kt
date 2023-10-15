@@ -12,12 +12,13 @@ class ChapterTest : BehaviorSpec() {
                     description = DESCRIPTION
                     document = DOCUMENT
                     courseId = ID
+                    image = IMAGE
                     index = INDEX
                 } // Code Coverage
 
             When("어드민이 챕터를 수정하면") {
                 val updatedChapter = createChapter(description = "updated_description")
-                    .apply { update(description, document, courseId, index) }
+                    .apply { update(description, document, courseId, image, index) }
 
                 Then("챕터가 수정된다.") {
                     updatedChapter shouldNotBeEqualToComparingFields chapter
