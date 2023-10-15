@@ -4,7 +4,6 @@ import com.quizit.quiz.adapter.client.UserClient
 import com.quizit.quiz.adapter.producer.QuizProducer
 import com.quizit.quiz.dto.response.QuizResponse
 import com.quizit.quiz.fixture.*
-import com.quizit.quiz.repository.QuizCacheRepository
 import com.quizit.quiz.repository.QuizRepository
 import io.kotest.core.spec.IsolationMode
 import io.kotest.core.spec.style.BehaviorSpec
@@ -21,15 +20,7 @@ import reactor.test.StepVerifier
 class QuizServiceTest : BehaviorSpec() {
     private val quizRepository = mockk<QuizRepository>()
 
-    private val quizCacheRepository = mockk<QuizCacheRepository>()
-        .apply {
-            every { save(any()) } returns Mono.just(true)
-        }
-
     private val userClient = mockk<UserClient>()
-        .apply {
-            every { getUserById(any()) } returns Mono.just(createUserResponse())
-        }
 
     private val quizProducer = mockk<QuizProducer>()
         .apply {
@@ -39,7 +30,6 @@ class QuizServiceTest : BehaviorSpec() {
 
     private val quizService = QuizService(
         quizRepository = quizRepository,
-        quizCacheRepository = quizCacheRepository,
         userClient = userClient,
         quizProducer = quizProducer
     )
@@ -55,9 +45,8 @@ class QuizServiceTest : BehaviorSpec() {
                     every {
                         quizRepository.findAllByChapterIdAndAnswerRateBetween(any(), any(), any(), any())
                     } returns Flux.just(it)
+                    every { quizRepository.findById(any<String>()) } returns Mono.just(it)
                     every { quizRepository.deleteById(any<String>()) } returns Mono.empty()
-                    every { quizCacheRepository.deleteById(any()) } returns Mono.empty()
-                    every { quizCacheRepository.findById(any<String>()) } returns Mono.just(it)
                 }
             val quizResponse = QuizResponse(quiz)
 
@@ -124,7 +113,9 @@ class QuizServiceTest : BehaviorSpec() {
             val quiz = createQuiz()
                 .also {
                     every { quizRepository.findAllByIdIn(any()) } returns Flux.just(it)
+                    every { userClient.getUserById(any()) } returns Mono.just(createUserResponse())
                 }
+
             val quizResponse = QuizResponse(quiz)
 
             When("유저가 본인이 저장한 퀴즈 보관함에 들어가면") {
@@ -159,8 +150,9 @@ class QuizServiceTest : BehaviorSpec() {
         Given("유저가 퀴즈를 푼 경우") {
             createQuiz()
                 .also {
+                    every { quizRepository.findById(any<String>()) } returns Mono.just(it)
                     every { quizRepository.save(any()) } returns Mono.just(it)
-                    every { quizCacheRepository.findById(any()) } returns Mono.just(it)
+                    every { userClient.getUserById(any()) } returns Mono.just(createUserResponse())
                 }
 
             When("옳은 답을 제출하면") {
@@ -185,8 +177,9 @@ class QuizServiceTest : BehaviorSpec() {
         Given("유저가 이미 푼 퀴즈가 존재하는 경우") {
             createQuiz(id = "quiz")
                 .also {
+                    every { quizRepository.findById(any<String>()) } returns Mono.just(it)
                     every { quizRepository.save(any()) } returns Mono.just(it)
-                    every { quizCacheRepository.findById(any()) } returns Mono.just(it)
+                    every { userClient.getUserById(any()) } returns Mono.just(createUserResponse())
                 }
 
             When("해당 퀴즈를 풀고 정답을 제출하면") {
@@ -229,8 +222,8 @@ class QuizServiceTest : BehaviorSpec() {
         Given("유저가 퀴즈를 저장하는 경우") {
             val quiz = createQuiz()
                 .also {
+                    every { quizRepository.findById(any<String>()) } returns Mono.just(it)
                     every { quizRepository.save(any()) } returns Mono.just(it)
-                    every { quizCacheRepository.findById(any()) } returns Mono.just(it)
                 }
 
             When("유저가 해당 퀴즈를 처음 저장한다면") {
@@ -257,8 +250,8 @@ class QuizServiceTest : BehaviorSpec() {
         Given("유저가 퀴즈를 좋아요로 평가하는 경우") {
             val quiz = createQuiz()
                 .also {
+                    every { quizRepository.findById(any<String>()) } returns Mono.just(it)
                     every { quizRepository.save(any()) } returns Mono.just(it)
-                    every { quizCacheRepository.findById(any()) } returns Mono.just(it)
                 }
 
             When("유저가 해당 퀴즈를 처음 좋아요로 평가한다면") {
@@ -285,8 +278,8 @@ class QuizServiceTest : BehaviorSpec() {
         Given("유저가 퀴즈를 싫어요로 평가하는 경우") {
             val quiz = createQuiz()
                 .also {
+                    every { quizRepository.findById(any<String>()) } returns Mono.just(it)
                     every { quizRepository.save(any()) } returns Mono.just(it)
-                    every { quizCacheRepository.findById(any()) } returns Mono.just(it)
                 }
 
             When("유저가 해당 퀴즈를 처음 싫어요로 평가한다면") {

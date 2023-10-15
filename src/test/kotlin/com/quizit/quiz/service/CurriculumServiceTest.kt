@@ -1,11 +1,10 @@
 package com.quizit.quiz.service
 
+import com.quizit.quiz.adapter.client.UserClient
 import com.quizit.quiz.dto.response.CurriculumResponse
-import com.quizit.quiz.fixture.ID
-import com.quizit.quiz.fixture.createCreateCurriculumRequest
-import com.quizit.quiz.fixture.createCurriculum
-import com.quizit.quiz.fixture.createUpdateCurriculumByIdRequest
+import com.quizit.quiz.fixture.*
 import com.quizit.quiz.repository.CurriculumRepository
+import com.quizit.quiz.repository.QuizRepository
 import io.kotest.core.spec.IsolationMode
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.equals.shouldNotBeEqual
@@ -19,7 +18,15 @@ import reactor.test.StepVerifier
 class CurriculumServiceTest : BehaviorSpec() {
     private val curriculumRepository = mockk<CurriculumRepository>()
 
-    private val curriculumService = CurriculumService(curriculumRepository)
+    private val quizRepository = mockk<QuizRepository>()
+
+    private val userClient = mockk<UserClient>()
+
+    private val curriculumService = CurriculumService(
+        curriculumRepository = curriculumRepository,
+        quizRepository = quizRepository,
+        userClient = userClient
+    )
 
     override fun isolationMode(): IsolationMode = IsolationMode.InstancePerTest
 
@@ -30,6 +37,8 @@ class CurriculumServiceTest : BehaviorSpec() {
                     every { curriculumRepository.findAll() } returns Flux.just(it)
                     every { curriculumRepository.findById(any<String>()) } returns Mono.just(it)
                     every { curriculumRepository.deleteById(any<String>()) } returns Mono.empty()
+                    every { quizRepository.findAllByCurriculumId(any()) } returns Flux.just(createQuiz())
+                    every { userClient.getUserById(any()) } returns Mono.just(createUserResponse())
                 }
             val curriculumResponse = CurriculumResponse(curriculum)
 
@@ -38,6 +47,7 @@ class CurriculumServiceTest : BehaviorSpec() {
                     StepVerifier.create(curriculumService.getCurriculums()),
                     StepVerifier.create(curriculumService.getCurriculumById(ID))
                 )
+                val result = StepVerifier.create(curriculumService.getProgressById(ID, ID))
 
                 Then("커리큘럼이 주어진다.") {
                     results.map {
@@ -45,6 +55,12 @@ class CurriculumServiceTest : BehaviorSpec() {
                             .expectNext(curriculumResponse)
                             .verifyComplete()
                     }
+                }
+
+                Then("커리큘럼의 진척도가 조회된다.") {
+                    result.expectSubscription()
+                        .expectNext(createGetProgressByIdResponse())
+                        .verifyComplete()
                 }
             }
 
