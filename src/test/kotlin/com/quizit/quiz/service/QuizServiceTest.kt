@@ -40,8 +40,10 @@ class QuizServiceTest : BehaviorSpec() {
         Given("챕터와 각각의 챕터에 속하는 퀴즈들이 존재하는 경우") {
             val quiz = createQuiz()
                 .also {
+                    every { quizRepository.findAllByCourseId(any()) } returns Flux.just(it)
                     every { quizRepository.findAllByIdIn(any()) } returns Flux.just(it)
                     every { quizRepository.findAllByQuestionContains(any()) } returns Flux.just(it)
+                    every { quizRepository.findAllByChapterId(any()) } returns Flux.just(it)
                     every {
                         quizRepository.findAllByChapterIdAndAnswerRateBetween(any(), any(), any(), any())
                     } returns Flux.just(it)
@@ -60,6 +62,16 @@ class QuizServiceTest : BehaviorSpec() {
                 }
             }
 
+            When("특정 코스에 속한 퀴즈들을 조회하면") {
+                val result = StepVerifier.create(quizService.getQuizzesByCourseId(ID))
+
+                Then("해당 코스에 속하는 퀴즈들이 조회된다.") {
+                    result.expectSubscription()
+                        .expectNext(quizResponse)
+                        .verifyComplete()
+                }
+            }
+
             When("유저가 특정 퀴즈를 문제 지문을 통해 검색하면") {
                 val result = StepVerifier.create(quizService.getQuizzesByQuestionContains(QUESTION))
 
@@ -71,15 +83,19 @@ class QuizServiceTest : BehaviorSpec() {
             }
 
             When("유저가 챕터를 들어가면") {
-                val result =
+                val results = listOf(
+                    StepVerifier.create(quizService.getQuizzesByChapterId(ID)),
                     StepVerifier.create(
                         quizService.getQuizzesByChapterIdAndAnswerRateRange(ID, setOf(0.0, 100.0), PAGEABLE)
                     )
+                )
 
                 Then("해당 챕터에 속하는 퀴즈들이 주어진다.") {
-                    result.expectSubscription()
-                        .expectNext(quizResponse)
-                        .verifyComplete()
+                    results.map {
+                        it.expectSubscription()
+                            .expectNext(quizResponse)
+                            .verifyComplete()
+                    }
                 }
             }
 

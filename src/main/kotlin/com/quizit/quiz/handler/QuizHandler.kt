@@ -24,6 +24,10 @@ class QuizHandler(
         ServerResponse.ok()
             .body(quizService.getQuizById(request.pathVariable("id")))
 
+    fun getQuizzesByChapterId(request: ServerRequest): Mono<ServerResponse> =
+        ServerResponse.ok()
+            .body(quizService.getQuizzesByChapterId(request.pathVariable("id")))
+    
     fun getQuizzesByChapterIdAndAnswerRateRange(request: ServerRequest): Mono<ServerResponse> =
         with(request) {
             ServerResponse.ok()
@@ -41,6 +45,10 @@ class QuizHandler(
                     )
                 )
         }
+
+    fun getQuizzesByCourseId(request: ServerRequest): Mono<ServerResponse> =
+        ServerResponse.ok()
+            .body(quizService.getQuizzesByCourseId(request.pathVariable("id")))
 
     fun getQuizzesByWriterId(request: ServerRequest): Mono<ServerResponse> =
         ServerResponse.ok()

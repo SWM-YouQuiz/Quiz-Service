@@ -120,6 +120,32 @@ class QuizControllerTest : BaseControllerTest() {
             }
         }
 
+        describe("getQuizzesByChapterId()는") {
+            context("챕터와 각각의 챕터에 속하는 퀴즈들이 존재하는 경우") {
+                every { quizService.getQuizzesByChapterId(any()) } returns Flux.just(createQuizResponse())
+                withMockUser()
+
+                it("상태 코드 200과 quizResponse들을 반환한다.") {
+                    webClient
+                        .get()
+                        .uri("/quiz/chapter/{id}", ID)
+                        .exchange()
+                        .expectStatus()
+                        .isOk
+                        .expectBody(List::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "챕터 식별자를 통한 퀴즈 전체 조회 성공(200)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                pathParameters("id" paramDesc "식별자"),
+                                responseFields(quizResponsesFields)
+                            )
+                        )
+                }
+            }
+        }
+
         describe("getQuizzesByChapterIdAndAnswerRateRange()는") {
             context("챕터와 각각의 챕터에 속하는 퀴즈들이 존재하는 경우") {
                 every {
@@ -137,7 +163,7 @@ class QuizControllerTest : BaseControllerTest() {
                         .expectBody(List::class.java)
                         .consumeWith(
                             WebTestClientRestDocumentationWrapper.document(
-                                "챕터 식별자를 통한 퀴즈 전체 조회 성공(200)",
+                                "챕터 식별자를 통한 퀴즈 필터링 조회 성공(200)",
                                 Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
                                 Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
                                 pathParameters("id" paramDesc "식별자"),
@@ -146,6 +172,32 @@ class QuizControllerTest : BaseControllerTest() {
                                     "size" paramDesc "페이지 크기",
                                     "range" paramDesc "정답률 범위"
                                 ),
+                                responseFields(quizResponsesFields)
+                            )
+                        )
+                }
+            }
+        }
+
+        describe("getQuizzesByCourseId()는") {
+            context("코스와 각각의 코스에 속하는 퀴즈들이 존재하는 경우") {
+                every { quizService.getQuizzesByCourseId(any()) } returns Flux.just(createQuizResponse())
+                withMockUser()
+
+                it("상태 코드 200과 quizResponse들을 반환한다.") {
+                    webClient
+                        .get()
+                        .uri("/quiz/course/{id}", ID)
+                        .exchange()
+                        .expectStatus()
+                        .isOk
+                        .expectBody(List::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "코스 식별자를 통한 퀴즈 전체 조회 성공(200)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                pathParameters("id" paramDesc "코스 식별자"),
                                 responseFields(quizResponsesFields)
                             )
                         )
