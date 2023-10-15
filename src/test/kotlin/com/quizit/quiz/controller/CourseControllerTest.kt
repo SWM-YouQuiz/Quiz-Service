@@ -3,11 +3,9 @@ package com.quizit.quiz.controller
 import com.epages.restdocs.apispec.WebTestClientRestDocumentationWrapper
 import com.ninjasquad.springmockk.MockkBean
 import com.quizit.quiz.dto.response.CourseResponse
+import com.quizit.quiz.dto.response.GetProgressByIdResponse
 import com.quizit.quiz.exception.CourseNotFoundException
-import com.quizit.quiz.fixture.ID
-import com.quizit.quiz.fixture.createCourseResponse
-import com.quizit.quiz.fixture.createCreateCourseRequest
-import com.quizit.quiz.fixture.createUpdateCourseByIdRequest
+import com.quizit.quiz.fixture.*
 import com.quizit.quiz.global.dto.ErrorResponse
 import com.quizit.quiz.handler.CourseHandler
 import com.quizit.quiz.router.CourseRouter
@@ -47,6 +45,11 @@ class CourseControllerTest : BaseControllerTest() {
     )
 
     private val courseResponsesFields = courseResponseFields.map { "[].${it.path}" desc it.description as String }
+
+    private val getProgressByIdResponseFields = listOf(
+        "total" desc "총 퀴즈 수",
+        "solved" desc "푼 퀴즈 수"
+    )
 
     init {
         describe("getCourseById()는") {
@@ -116,6 +119,31 @@ class CourseControllerTest : BaseControllerTest() {
                                 Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
                                 Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
                                 responseFields(courseResponsesFields)
+                            )
+                        )
+                }
+            }
+        }
+
+        describe("getProgressById()는") {
+            context("코스가 존재하는 경우") {
+                every { courseService.getProgressById(ID, ID) } returns Mono.just(createGetProgressByIdResponse())
+                withMockUser()
+
+                it("상태 코드 200과 getProgressByIdResponse를 반환한다.") {
+                    webClient
+                        .get()
+                        .uri("/course/{id}/progress", ID)
+                        .exchange()
+                        .expectStatus()
+                        .isOk
+                        .expectBody(GetProgressByIdResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "식별자를 통한 코스 진척도 조회 성공(200)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                responseFields(getProgressByIdResponseFields)
                             )
                         )
                 }

@@ -2,6 +2,7 @@ package com.quizit.quiz.handler
 
 import com.quizit.quiz.dto.request.CreateCourseRequest
 import com.quizit.quiz.dto.request.UpdateCourseByIdRequest
+import com.quizit.quiz.global.config.authentication
 import com.quizit.quiz.service.CourseService
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.ServerRequest
@@ -21,6 +22,15 @@ class CourseHandler(
     fun getCoursesByCurriculumId(request: ServerRequest): Mono<ServerResponse> =
         ServerResponse.ok()
             .body(courseService.getCoursesByCurriculumId(request.pathVariable("id")))
+
+    fun getProgressById(request: ServerRequest): Mono<ServerResponse> =
+        with(request) {
+            authentication()
+                .flatMap {
+                    ServerResponse.ok()
+                        .body(courseService.getProgressById(pathVariable("id"), it.id))
+                }
+        }
 
     fun createCourse(request: ServerRequest): Mono<ServerResponse> =
         request.bodyToMono<CreateCourseRequest>()

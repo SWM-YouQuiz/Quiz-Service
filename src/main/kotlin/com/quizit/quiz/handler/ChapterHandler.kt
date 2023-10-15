@@ -2,6 +2,7 @@ package com.quizit.quiz.handler
 
 import com.quizit.quiz.dto.request.CreateChapterRequest
 import com.quizit.quiz.dto.request.UpdateChapterByIdRequest
+import com.quizit.quiz.global.config.authentication
 import com.quizit.quiz.service.ChapterService
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.ServerRequest
@@ -21,6 +22,15 @@ class ChapterHandler(
     fun getChaptersByCourseId(request: ServerRequest): Mono<ServerResponse> =
         ServerResponse.ok()
             .body(chapterService.getChaptersByCourseId(request.pathVariable("id")))
+
+    fun getProgressById(request: ServerRequest): Mono<ServerResponse> =
+        with(request) {
+            authentication()
+                .flatMap {
+                    ServerResponse.ok()
+                        .body(chapterService.getProgressById(pathVariable("id"), it.id))
+                }
+        }
 
     fun createChapter(request: ServerRequest): Mono<ServerResponse> =
         request.bodyToMono<CreateChapterRequest>()

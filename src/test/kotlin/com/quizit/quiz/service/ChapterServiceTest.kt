@@ -1,11 +1,10 @@
 package com.quizit.quiz.service
 
+import com.quizit.quiz.adapter.client.UserClient
 import com.quizit.quiz.dto.response.ChapterResponse
-import com.quizit.quiz.fixture.ID
-import com.quizit.quiz.fixture.createChapter
-import com.quizit.quiz.fixture.createCreateChapterRequest
-import com.quizit.quiz.fixture.createUpdateChapterByIdRequest
+import com.quizit.quiz.fixture.*
 import com.quizit.quiz.repository.ChapterRepository
+import com.quizit.quiz.repository.QuizRepository
 import io.kotest.core.spec.IsolationMode
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.equals.shouldNotBeEqual
@@ -19,7 +18,15 @@ import reactor.test.StepVerifier
 class ChapterServiceTest : BehaviorSpec() {
     private val chapterRepository = mockk<ChapterRepository>()
 
-    private val chapterService = ChapterService(chapterRepository)
+    private val quizRepository = mockk<QuizRepository>()
+
+    private val userClient = mockk<UserClient>()
+
+    private val chapterService = ChapterService(
+        chapterRepository = chapterRepository,
+        quizRepository = quizRepository,
+        userClient = userClient
+    )
 
     override fun isolationMode(): IsolationMode = IsolationMode.InstancePerTest
 
@@ -30,6 +37,8 @@ class ChapterServiceTest : BehaviorSpec() {
                     every { chapterRepository.findAllByCourseId(any()) } returns Flux.just(it)
                     every { chapterRepository.findById(any<String>()) } returns Mono.just(it)
                     every { chapterRepository.deleteById(any<String>()) } returns Mono.empty()
+                    every { quizRepository.findAllByChapterId(any()) } returns Flux.just(createQuiz())
+                    every { userClient.getUserById(any()) } returns Mono.just(createUserResponse())
                 }
             val chapterResponse = ChapterResponse(chapter)
 
@@ -38,6 +47,7 @@ class ChapterServiceTest : BehaviorSpec() {
                     StepVerifier.create(chapterService.getChaptersByCourseId(ID)),
                     StepVerifier.create(chapterService.getChapterById(ID))
                 )
+                val result = StepVerifier.create(chapterService.getProgressById(ID, ID))
 
                 Then("챕터가 주어진다.") {
                     results.map {
@@ -45,6 +55,12 @@ class ChapterServiceTest : BehaviorSpec() {
                             .expectNext(chapterResponse)
                             .verifyComplete()
                     }
+                }
+
+                Then("챕터의 진척도가 주어진다.") {
+                    result.expectSubscription()
+                        .expectNext(createGetProgressByIdResponse())
+                        .verifyComplete()
                 }
             }
 

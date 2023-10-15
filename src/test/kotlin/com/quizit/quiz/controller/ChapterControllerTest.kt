@@ -3,11 +3,9 @@ package com.quizit.quiz.controller
 import com.epages.restdocs.apispec.WebTestClientRestDocumentationWrapper
 import com.ninjasquad.springmockk.MockkBean
 import com.quizit.quiz.dto.response.ChapterResponse
+import com.quizit.quiz.dto.response.GetProgressByIdResponse
 import com.quizit.quiz.exception.ChapterNotFoundException
-import com.quizit.quiz.fixture.ID
-import com.quizit.quiz.fixture.createChapterResponse
-import com.quizit.quiz.fixture.createCreateChapterRequest
-import com.quizit.quiz.fixture.createUpdateChapterByIdRequest
+import com.quizit.quiz.fixture.*
 import com.quizit.quiz.global.dto.ErrorResponse
 import com.quizit.quiz.handler.ChapterHandler
 import com.quizit.quiz.router.ChapterRouter
@@ -47,6 +45,11 @@ class ChapterControllerTest : BaseControllerTest() {
     )
 
     private val chapterResponsesFields = chapterResponseFields.map { "[].${it.path}" desc it.description as String }
+
+    private val getProgressByIdResponseFields = listOf(
+        "total" desc "총 퀴즈 수",
+        "solved" desc "푼 퀴즈 수"
+    )
 
     init {
         describe("getChapterById()는") {
@@ -119,6 +122,31 @@ class ChapterControllerTest : BaseControllerTest() {
                                 Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
                                 pathParameters("id" paramDesc "식별자"),
                                 responseFields(chapterResponsesFields)
+                            )
+                        )
+                }
+            }
+        }
+
+        describe("getProgressById()는") {
+            context("챕터가 존재하는 경우") {
+                every { chapterService.getProgressById(ID, ID) } returns Mono.just(createGetProgressByIdResponse())
+                withMockUser()
+
+                it("상태 코드 200과 getProgressByIdResponse를 반환한다.") {
+                    webClient
+                        .get()
+                        .uri("/chapter/{id}/progress", ID)
+                        .exchange()
+                        .expectStatus()
+                        .isOk
+                        .expectBody(GetProgressByIdResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "식별자를 통한 챕터 진척도 조회 성공(200)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                responseFields(getProgressByIdResponseFields)
                             )
                         )
                 }
