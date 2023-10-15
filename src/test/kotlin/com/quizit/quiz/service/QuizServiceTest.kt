@@ -43,6 +43,7 @@ class QuizServiceTest : BehaviorSpec() {
                     every { quizRepository.findAllByCourseId(any()) } returns Flux.just(it)
                     every { quizRepository.findAllByIdIn(any()) } returns Flux.just(it)
                     every { quizRepository.findAllByQuestionContains(any()) } returns Flux.just(it)
+                    every { quizRepository.findAllByChapterId(any()) } returns Flux.just(it)
                     every {
                         quizRepository.findAllByChapterIdAndAnswerRateBetween(any(), any(), any(), any())
                     } returns Flux.just(it)
@@ -82,15 +83,19 @@ class QuizServiceTest : BehaviorSpec() {
             }
 
             When("유저가 챕터를 들어가면") {
-                val result =
+                val results = listOf(
+                    StepVerifier.create(quizService.getQuizzesByChapterId(ID)),
                     StepVerifier.create(
                         quizService.getQuizzesByChapterIdAndAnswerRateRange(ID, setOf(0.0, 100.0), PAGEABLE)
                     )
+                )
 
                 Then("해당 챕터에 속하는 퀴즈들이 주어진다.") {
-                    result.expectSubscription()
-                        .expectNext(quizResponse)
-                        .verifyComplete()
+                    results.map {
+                        it.expectSubscription()
+                            .expectNext(quizResponse)
+                            .verifyComplete()
+                    }
                 }
             }
 
