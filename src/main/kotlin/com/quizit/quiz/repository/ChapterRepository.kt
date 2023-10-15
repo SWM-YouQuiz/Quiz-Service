@@ -5,5 +5,5 @@ import org.springframework.data.mongodb.repository.ReactiveMongoRepository
 import reactor.core.publisher.Flux
 
 interface ChapterRepository : ReactiveMongoRepository<Chapter, String> {
-    fun findAllByCourseId(courseId: String): Flux<Chapter>
+    fun findAllByCourseIdOrderByIndex(courseId: String): Flux<Chapter>
 }
