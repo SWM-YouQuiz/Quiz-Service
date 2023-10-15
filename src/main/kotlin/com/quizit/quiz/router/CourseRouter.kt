@@ -13,6 +13,7 @@ class CourseRouter {
             "/course".nest {
                 GET("/{id}", handler::getCourseById)
                 GET("/curriculum/{id}", handler::getCoursesByCurriculumId)
+                GET("/{id}/progress", handler::getProgressById)
             }
             "/admin/course".nest {
                 POST("", handler::createCourse)

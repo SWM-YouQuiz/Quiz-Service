@@ -15,6 +15,7 @@ class ChapterRouter {
             "/chapter".nest {
                 GET("/{id}", handler::getChapterById)
                 GET("/course/{id}", handler::getChaptersByCourseId)
+                GET("/{id}/progress", handler::getProgressById)
             }
             "/admin/chapter".nest {
                 POST("", handler::createChapter)

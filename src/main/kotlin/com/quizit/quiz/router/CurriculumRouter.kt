@@ -15,6 +15,7 @@ class CurriculumRouter {
             "/curriculum".nest {
                 GET("", handler::getCurriculums)
                 GET("/{id}", handler::getCurriculumById)
+                GET("/{id}/progress", handler::getProgressById)
             }
             "/admin/curriculum".nest {
                 POST("", handler::createCurriculum)

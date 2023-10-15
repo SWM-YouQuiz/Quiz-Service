@@ -2,6 +2,7 @@ package com.quizit.quiz.handler
 
 import com.quizit.quiz.dto.request.CreateCurriculumRequest
 import com.quizit.quiz.dto.request.UpdateCurriculumByIdRequest
+import com.quizit.quiz.global.config.authentication
 import com.quizit.quiz.service.CurriculumService
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.ServerRequest
@@ -21,6 +22,15 @@ class CurriculumHandler(
     fun getCurriculums(request: ServerRequest): Mono<ServerResponse> =
         ServerResponse.ok()
             .body(curriculumService.getCurriculums())
+
+    fun getProgressById(request: ServerRequest): Mono<ServerResponse> =
+        with(request) {
+            authentication()
+                .flatMap {
+                    ServerResponse.ok()
+                        .body(curriculumService.getProgressById(pathVariable("id"), it.id))
+                }
+        }
 
     fun createCurriculum(request: ServerRequest): Mono<ServerResponse> =
         request.bodyToMono<CreateCurriculumRequest>()
