@@ -6,7 +6,9 @@ data class ChapterResponse(
     val id: String,
     val description: String,
     val document: String,
-    val courseId: String
+    val courseId: String,
+    val image: String,
+    val index: Int
 ) {
     companion object {
         operator fun invoke(chapter: Chapter): ChapterResponse =
@@ -15,7 +17,9 @@ data class ChapterResponse(
                     id = id!!,
                     description = description,
                     document = document,
-                    courseId = courseId
+                    courseId = courseId,
+                    image = image,
+                    index = index
                 )
             }
     }

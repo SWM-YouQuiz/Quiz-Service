@@ -28,20 +28,26 @@ class ChapterControllerTest : BaseControllerTest() {
     private val createChapterRequestFields = listOf(
         "description" desc "설명",
         "document" desc "공식 문서",
-        "courseId" desc "코스 식별자"
+        "courseId" desc "코스 식별자",
+        "image" desc "이미지",
+        "index" desc "순서"
     )
 
     private val updateChapterByIdRequestFields = listOf(
         "description" desc "설명",
         "document" desc "공식 문서",
         "courseId" desc "코스 식별자",
+        "image" desc "이미지",
+        "index" desc "순서"
     )
 
     private val chapterResponseFields = listOf(
         "id" desc "식별자",
         "description" desc "설명",
         "document" desc "공식 문서",
-        "courseId" desc "코스 식별자"
+        "courseId" desc "코스 식별자",
+        "image" desc "이미지",
+        "index" desc "순서"
     )
 
     private val chapterResponsesFields = chapterResponseFields.map { "[].${it.path}" desc it.description as String }
@@ -101,7 +107,7 @@ class ChapterControllerTest : BaseControllerTest() {
                 }
             }
         }
-
+        
         describe("getChaptersByCourseId()는") {
             context("코스와 각각의 코스에 속하는 챕터들이 존재하는 경우") {
                 every { chapterService.getChaptersByCourseId(any()) } returns Flux.just(createChapterResponse())
