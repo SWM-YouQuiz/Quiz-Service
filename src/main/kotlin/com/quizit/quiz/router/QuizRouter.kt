@@ -21,6 +21,7 @@ class QuizRouter {
                     queryParams("page", "size", "range"),
                     handler::getQuizzesByChapterIdAndAnswerRateRange
                 )
+                GET("/course/{id}", handler::getQuizzesByCourseId)
                 GET("/writer/{id}", handler::getQuizzesByWriterId)
                 GET("/{id}/mark", handler::markQuiz)
                 GET("/{id}/evaluate", queryParams("isLike"), handler::evaluateQuiz)
