@@ -5,6 +5,7 @@ import com.quizit.quiz.dto.request.CheckAnswerRequest
 import com.quizit.quiz.dto.request.CreateQuizRequest
 import com.quizit.quiz.dto.request.UpdateQuizByIdRequest
 import com.quizit.quiz.dto.response.CheckAnswerResponse
+import com.quizit.quiz.dto.response.GetProgressByIdResponse
 import com.quizit.quiz.dto.response.QuizResponse
 import java.time.LocalDateTime
 
@@ -18,6 +19,17 @@ const val INCORRECT_COUNT = 10L
 val MARKED_USER_IDS = hashSetOf("1")
 val LIKED_USER_IDS = hashSetOf("1")
 val UNLIKED_USER_IDS = hashSetOf("1")
+const val TOTAL = 1L
+const val SOLVED = 0L
+
+fun createGetProgressByIdResponse(
+    total: Long = TOTAL,
+    solved: Long = SOLVED
+): GetProgressByIdResponse =
+    GetProgressByIdResponse(
+        total = total,
+        solved = solved
+    )
 
 fun createCreateQuizRequest(
     question: String = QUESTION,
