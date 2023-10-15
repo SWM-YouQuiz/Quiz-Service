@@ -40,6 +40,7 @@ class QuizServiceTest : BehaviorSpec() {
         Given("챕터와 각각의 챕터에 속하는 퀴즈들이 존재하는 경우") {
             val quiz = createQuiz()
                 .also {
+                    every { quizRepository.findAllByCourseId(any()) } returns Flux.just(it)
                     every { quizRepository.findAllByIdIn(any()) } returns Flux.just(it)
                     every { quizRepository.findAllByQuestionContains(any()) } returns Flux.just(it)
                     every {
@@ -54,6 +55,16 @@ class QuizServiceTest : BehaviorSpec() {
                 val result = StepVerifier.create(quizService.getQuizById(ID))
 
                 Then("해당 퀴즈가 조회된다.") {
+                    result.expectSubscription()
+                        .expectNext(quizResponse)
+                        .verifyComplete()
+                }
+            }
+
+            When("특정 코스에 속한 퀴즈들을 조회하면") {
+                val result = StepVerifier.create(quizService.getQuizzesByCourseId(ID))
+
+                Then("해당 코스에 속하는 퀴즈들이 조회된다.") {
                     result.expectSubscription()
                         .expectNext(quizResponse)
                         .verifyComplete()
