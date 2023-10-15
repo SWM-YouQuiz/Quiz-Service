@@ -28,7 +28,7 @@ class ChapterService(
             .map { ChapterResponse(it) }
 
     fun getChaptersByCourseId(courseId: String): Flux<ChapterResponse> =
-        chapterRepository.findAllByCourseId(courseId)
+        chapterRepository.findAllByCourseIdOrderByIndex(courseId)
             .map { ChapterResponse(it) }
 
     fun getProgressById(id: String, userId: String): Mono<GetProgressByIdResponse> =
@@ -58,7 +58,8 @@ class ChapterService(
                 Chapter(
                     description = description,
                     document = document,
-                    courseId = courseId
+                    courseId = courseId,
+                    index = index
                 )
             ).map { ChapterResponse(it) }
         }
@@ -66,7 +67,7 @@ class ChapterService(
     fun updateChapterById(id: String, request: UpdateChapterByIdRequest): Mono<ChapterResponse> =
         chapterRepository.findById(id)
             .switchIfEmpty(Mono.error(ChapterNotFoundException()))
-            .map { request.run { it.update(description, document, courseId) } }
+            .map { request.run { it.update(description, document, courseId, index) } }
             .flatMap { chapterRepository.save(it) }
             .map { ChapterResponse(it) }
 
