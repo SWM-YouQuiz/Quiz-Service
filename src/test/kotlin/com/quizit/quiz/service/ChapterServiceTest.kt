@@ -34,7 +34,7 @@ class ChapterServiceTest : BehaviorSpec() {
         Given("챕터들이 존재하는 경우") {
             val chapter = createChapter()
                 .also {
-                    every { chapterRepository.findAllByCourseId(any()) } returns Flux.just(it)
+                    every { chapterRepository.findAllByCourseIdOrderByIndex(any()) } returns Flux.just(it)
                     every { chapterRepository.findById(any<String>()) } returns Mono.just(it)
                     every { chapterRepository.deleteById(any<String>()) } returns Mono.empty()
                     every { quizRepository.findAllByChapterId(any()) } returns Flux.just(createQuiz())
