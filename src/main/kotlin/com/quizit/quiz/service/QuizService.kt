@@ -42,6 +42,10 @@ class QuizService(
                 .map { QuizResponse(it) }
         }
 
+    fun getQuizzesByCourseId(courseId: String): Flux<QuizResponse> =
+        quizRepository.findAllByCourseId(courseId)
+            .map { QuizResponse(it) }
+
     fun getQuizzesByWriterId(writerId: String): Flux<QuizResponse> =
         quizRepository.findAllByWriterId(writerId)
             .map { QuizResponse(it) }
