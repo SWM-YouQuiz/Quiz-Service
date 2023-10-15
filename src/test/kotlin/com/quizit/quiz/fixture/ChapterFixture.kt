@@ -13,12 +13,14 @@ fun createCreateChapterRequest(
     description: String = DESCRIPTION,
     document: String = DOCUMENT,
     courseId: String = ID,
+    image: String = IMAGE,
     index: Int = INDEX
 ): CreateChapterRequest =
     CreateChapterRequest(
         description = description,
         document = document,
         courseId = courseId,
+        image = image,
         index = index
     )
 
@@ -26,12 +28,14 @@ fun createUpdateChapterByIdRequest(
     description: String = DESCRIPTION,
     document: String = DOCUMENT,
     courseId: String = ID,
+    image: String = IMAGE,
     index: Int = INDEX
 ): UpdateChapterByIdRequest =
     UpdateChapterByIdRequest(
         description = description,
         document = document,
         courseId = courseId,
+        image = image,
         index = index
     )
 
@@ -40,6 +44,7 @@ fun createChapterResponse(
     description: String = DESCRIPTION,
     document: String = DOCUMENT,
     courseId: String = ID,
+    image: String = IMAGE,
     index: Int = INDEX
 ): ChapterResponse =
     ChapterResponse(
@@ -47,6 +52,7 @@ fun createChapterResponse(
         description = description,
         document = document,
         courseId = courseId,
+        image = image,
         index = index
     )
 
@@ -55,6 +61,7 @@ fun createChapter(
     description: String = DESCRIPTION,
     document: String = DOCUMENT,
     courseId: String = ID,
+    image: String = IMAGE,
     index: Int = INDEX
 ): Chapter =
     Chapter(
@@ -62,5 +69,6 @@ fun createChapter(
         description = description,
         document = document,
         courseId = courseId,
+        image = image,
         index = index
     )

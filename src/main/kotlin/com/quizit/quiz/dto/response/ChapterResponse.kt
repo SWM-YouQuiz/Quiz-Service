@@ -7,6 +7,7 @@ data class ChapterResponse(
     val description: String,
     val document: String,
     val courseId: String,
+    val image: String,
     val index: Int
 ) {
     companion object {
@@ -17,6 +18,7 @@ data class ChapterResponse(
                     description = description,
                     document = document,
                     courseId = courseId,
+                    image = image,
                     index = index
                 )
             }

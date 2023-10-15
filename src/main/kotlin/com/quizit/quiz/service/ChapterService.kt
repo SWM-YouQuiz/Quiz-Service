@@ -59,6 +59,7 @@ class ChapterService(
                     description = description,
                     document = document,
                     courseId = courseId,
+                    image = image,
                     index = index
                 )
             ).map { ChapterResponse(it) }
@@ -67,7 +68,7 @@ class ChapterService(
     fun updateChapterById(id: String, request: UpdateChapterByIdRequest): Mono<ChapterResponse> =
         chapterRepository.findById(id)
             .switchIfEmpty(Mono.error(ChapterNotFoundException()))
-            .map { request.run { it.update(description, document, courseId, index) } }
+            .map { request.run { it.update(description, document, courseId, image, index) } }
             .flatMap { chapterRepository.save(it) }
             .map { ChapterResponse(it) }
 

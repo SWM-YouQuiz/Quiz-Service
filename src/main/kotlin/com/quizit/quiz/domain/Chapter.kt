@@ -10,13 +10,15 @@ class Chapter(
     var description: String,
     var document: String,
     var courseId: String,
+    var image: String,
     var index: Int
 ) {
-    fun update(description: String, document: String, courseId: String, index: Int): Chapter =
+    fun update(description: String, document: String, courseId: String, image: String, index: Int): Chapter =
         also {
             it.description = description
             it.document = document
             it.courseId = courseId
+            it.image = image
             it.index = index
         }
 }
