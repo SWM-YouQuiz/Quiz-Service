@@ -34,6 +34,10 @@ class QuizService(
             .switchIfEmpty(Mono.error(QuizNotFoundException()))
             .map { QuizResponse(it) }
 
+    fun getQuizzesByChapterId(chapterId: String): Flux<QuizResponse> =
+        quizRepository.findAllByChapterId(chapterId)
+            .map { QuizResponse(it) }
+
     fun getQuizzesByChapterIdAndAnswerRateRange(
         chapterId: String, answerRateRange: Set<Double>, pageable: Pageable
     ): Flux<QuizResponse> =
