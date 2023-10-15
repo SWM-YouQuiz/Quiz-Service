@@ -153,6 +153,32 @@ class QuizControllerTest : BaseControllerTest() {
             }
         }
 
+        describe("getQuizzesByCourseId()는") {
+            context("코스와 각각의 코스에 속하는 퀴즈들이 존재하는 경우") {
+                every { quizService.getQuizzesByCourseId(any()) } returns Flux.just(createQuizResponse())
+                withMockUser()
+
+                it("상태 코드 200과 quizResponse들을 반환한다.") {
+                    webClient
+                        .get()
+                        .uri("/quiz/course/{id}", ID)
+                        .exchange()
+                        .expectStatus()
+                        .isOk
+                        .expectBody(List::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "코스 식별자를 통한 퀴즈 전체 조회 성공(200)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                pathParameters("id" paramDesc "코스 식별자"),
+                                responseFields(quizResponsesFields)
+                            )
+                        )
+                }
+            }
+        }
+
         describe("getQuizzesByWriterId()는") {
             context("유저가 작성한 퀴즈가 존재하는 경우") {
                 every { quizService.getQuizzesByWriterId(any()) } returns Flux.just(createQuizResponse())
