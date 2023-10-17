@@ -32,7 +32,7 @@ interface QuizRepository : ReactiveMongoRepository<Quiz, String> {
             "{ \$unwind: '\$chapters' }",
             "{ \$lookup: { from: 'quiz', localField: 'chapters._id', foreignField: 'chapterId', as: 'quizzes' } }",
             "{ \$unwind: '\$quizzes' }",
-            "{ \$group: { _id: '\$_id', document: { \$first: '$\$ROOT' } } }",
+            "{ \$group: { _id: '\$quizzes._id', document: { \$first: '\$quizzes' } } }",
             "{ \$replaceRoot: { newRoot: '\$document' } }"
         ]
     )
@@ -46,7 +46,7 @@ interface QuizRepository : ReactiveMongoRepository<Quiz, String> {
             "{ \$set: { 'chapters._id': { \$toString: '\$chapters._id' } } }",
             "{ \$lookup: { from: 'quiz', localField: 'chapters._id', foreignField: 'chapterId', as: 'quizzes' } }",
             "{ \$unwind: '\$quizzes' }",
-            "{ \$group: { _id: '\$_id', document: { \$first: '$\$ROOT' } } }",
+            "{ \$group: { _id: '\$quizzes._id', document: { \$first: '\$quizzes' } } }",
             "{ \$replaceRoot: { newRoot: '\$document' } }"
         ]
     )
