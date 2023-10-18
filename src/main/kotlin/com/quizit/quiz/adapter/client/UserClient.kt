@@ -1,10 +1,8 @@
 package com.quizit.quiz.adapter.client
 
-import com.github.jwt.authentication.DefaultJwtAuthentication
 import com.quizit.quiz.dto.response.UserResponse
 import com.quizit.quiz.exception.UserNotFoundException
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.context.ReactiveSecurityContextHolder
 import org.springframework.stereotype.Component
@@ -22,10 +20,7 @@ class UserClient(
         ReactiveSecurityContextHolder.getContext()
             .flatMap {
                 webClient.get()
-                    .uri("$url/api/user/user/{id}", userId)
-                    .header(
-                        HttpHeaders.AUTHORIZATION, "Bearer ${(it.authentication as DefaultJwtAuthentication).token}"
-                    )
+                    .uri("$url/user/{id}", userId)
                     .retrieve()
                     .onStatus(HttpStatus.NOT_FOUND::equals) { Mono.error(UserNotFoundException()) }
                     .bodyToMono<UserResponse>()
