@@ -29,8 +29,10 @@ interface QuizRepository : ReactiveMongoRepository<Quiz, String> {
             "{ \$replaceRoot: { newRoot: { 'curriculumId': ?0 } } }",
             "{ \$lookup: { from: 'course', localField: 'curriculumId', foreignField: 'curriculumId', as: 'courses' } }",
             "{ \$unwind: '\$courses' }",
+            "{ \$set: { 'courses._id': { \$toString: '\$courses._id' } } }",
             "{ \$lookup: { from: 'chapter', localField: 'courses._id', foreignField: 'courseId', as: 'chapters' } }",
             "{ \$unwind: '\$chapters' }",
+            "{ \$set: { 'chapters._id': { \$toString: '\$chapters._id' } } }",
             "{ \$lookup: { from: 'quiz', localField: 'chapters._id', foreignField: 'chapterId', as: 'quizzes' } }",
             "{ \$unwind: '\$quizzes' }",
             "{ \$replaceRoot: { newRoot: '\$quizzes' } }"
