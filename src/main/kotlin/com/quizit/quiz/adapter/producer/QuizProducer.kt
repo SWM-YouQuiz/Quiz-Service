@@ -1,6 +1,7 @@
 package com.quizit.quiz.adapter.producer
 
 import com.quizit.quiz.dto.event.CheckAnswerEvent
+import com.quizit.quiz.dto.event.DeleteQuizEvent
 import com.quizit.quiz.dto.event.MarkQuizEvent
 import com.quizit.quiz.global.config.producerLogging
 import org.springframework.kafka.core.reactive.ReactiveKafkaProducerTemplate
@@ -12,8 +13,8 @@ import reactor.kafka.sender.SenderResult
 class QuizProducer(
     private val kafkaTemplate: ReactiveKafkaProducerTemplate<String, Any>,
 ) {
-    fun checkAnswer(event: CheckAnswerEvent): Mono<SenderResult<Void>> =
-        kafkaTemplate.send("check-answer", event)
+    fun deleteQuiz(event: DeleteQuizEvent): Mono<SenderResult<Void>> =
+        kafkaTemplate.send("delete-quiz", event)
             .doOnNext { producerLogging(event) }
 
     fun markQuiz(event: MarkQuizEvent): Mono<SenderResult<Void>> =
