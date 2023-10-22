@@ -206,7 +206,7 @@ class ChapterControllerTest : ControllerTest() {
 
         describe("deleteChapterById()는") {
             context("어드민이 챕터를 삭제하는 경우") {
-                every { chapterService.deleteChapterById(any()) } returns null
+                every { chapterService.deleteChapterById(any()) } returns empty()
                 withMockAdmin()
 
                 it("상태 코드 200을 반환한다.") {

@@ -198,7 +198,7 @@ class CourseControllerTest : ControllerTest() {
 
         describe("deleteCourseById()는") {
             context("어드민이 코스를 삭제하는 경우") {
-                every { courseService.deleteCourseById(any()) } returns null
+                every { courseService.deleteCourseById(any()) } returns empty()
                 withMockAdmin()
 
                 it("상태 코드 200을 반환한다.") {

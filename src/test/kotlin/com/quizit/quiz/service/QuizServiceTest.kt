@@ -5,6 +5,7 @@ import com.quizit.quiz.adapter.producer.QuizProducer
 import com.quizit.quiz.dto.response.QuizResponse
 import com.quizit.quiz.fixture.*
 import com.quizit.quiz.repository.QuizRepository
+import com.quizit.quiz.util.empty
 import com.quizit.quiz.util.getResult
 import com.quizit.quiz.util.returns
 import io.kotest.core.spec.IsolationMode
@@ -48,7 +49,7 @@ class QuizServiceTest : BehaviorSpec() {
                         quizRepository.findAllByChapterIdAndAnswerRateBetween(any(), any(), any(), any())
                     } returns listOf(it)
                     every { quizRepository.findById(any<String>()) } returns it
-                    every { quizRepository.deleteById(any<String>()) } returns null
+                    every { quizRepository.deleteById(any<String>()) } returns empty()
                 }
             val quizResponse = QuizResponse(quiz)
 

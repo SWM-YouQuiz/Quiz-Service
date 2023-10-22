@@ -337,7 +337,7 @@ class QuizControllerTest : ControllerTest() {
 
         describe("deleteQuizById()는") {
             context("유저가 퀴즈를 삭제하는 경우") {
-                every { quizService.deleteQuizById(any(), any()) } returns null
+                every { quizService.deleteQuizById(any(), any()) } returns empty()
                 withMockUser()
 
                 it("상태 코드 200을 반환한다.") {

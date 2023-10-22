@@ -15,6 +15,8 @@ infix fun <T> MockKStubScope<Mono<T>, *>.returns(value: T?): MockKAdditionalAnsw
 infix fun <T> MockKStubScope<Flux<T>, *>.returns(values: List<T>): MockKAdditionalAnswerScope<Flux<T>, *> =
     this returns Flux.fromIterable(values)
 
+fun <T> empty(): Mono<T> = Mono.empty()
+
 fun withMockUser() {
     SecurityContextHolder.getContext().authentication = createJwtAuthentication()
 }

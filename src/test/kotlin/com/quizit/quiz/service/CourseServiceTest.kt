@@ -5,6 +5,7 @@ import com.quizit.quiz.dto.response.CourseResponse
 import com.quizit.quiz.fixture.*
 import com.quizit.quiz.repository.CourseRepository
 import com.quizit.quiz.repository.QuizRepository
+import com.quizit.quiz.util.empty
 import com.quizit.quiz.util.getResult
 import com.quizit.quiz.util.returns
 import io.kotest.core.spec.IsolationMode
@@ -35,7 +36,7 @@ class CourseServiceTest : BehaviorSpec() {
                 .also {
                     every { courseRepository.findAllByCurriculumId(any()) } returns listOf(it)
                     every { courseRepository.findById(any<String>()) } returns it
-                    every { courseRepository.deleteById(any<String>()) } returns null
+                    every { courseRepository.deleteById(any<String>()) } returns empty()
                     every { quizRepository.findAllByCourseId(any()) } returns listOf(createQuiz())
                     every { userClient.getUserById(any()) } returns createUserResponse()
                 }

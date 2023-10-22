@@ -5,6 +5,7 @@ import com.quizit.quiz.dto.response.ChapterResponse
 import com.quizit.quiz.fixture.*
 import com.quizit.quiz.repository.ChapterRepository
 import com.quizit.quiz.repository.QuizRepository
+import com.quizit.quiz.util.empty
 import com.quizit.quiz.util.getResult
 import com.quizit.quiz.util.returns
 import io.kotest.core.spec.IsolationMode
@@ -35,7 +36,7 @@ class ChapterServiceTest : BehaviorSpec() {
                 .also {
                     every { chapterRepository.findAllByCourseIdOrderByIndex(any()) } returns listOf(it)
                     every { chapterRepository.findById(any<String>()) } returns it
-                    every { chapterRepository.deleteById(any<String>()) } returns null
+                    every { chapterRepository.deleteById(any<String>()) } returns empty()
                     every { quizRepository.findAllByChapterId(any()) } returns listOf(createQuiz())
                     every { userClient.getUserById(any()) } returns createUserResponse()
                 }
