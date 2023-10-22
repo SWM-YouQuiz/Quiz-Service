@@ -1,13 +1,13 @@
 package com.quizit.quiz.router
 
+import com.quizit.quiz.global.annotation.Router
 import com.quizit.quiz.handler.ChapterHandler
 import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
 import org.springframework.web.reactive.function.server.RouterFunction
 import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.router
 
-@Configuration
+@Router
 class ChapterRouter {
     @Bean
     fun chapterRoutes(handler: ChapterHandler): RouterFunction<ServerResponse> =

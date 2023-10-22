@@ -1,11 +1,11 @@
 package com.quizit.quiz.router
 
+import com.quizit.quiz.global.annotation.Router
 import com.quizit.quiz.handler.CourseHandler
 import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
 import org.springframework.web.reactive.function.server.router
 
-@Configuration
+@Router
 class CourseRouter {
     @Bean
     fun courseRoutes(handler: CourseHandler) =
