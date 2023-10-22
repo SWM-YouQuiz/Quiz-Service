@@ -11,20 +11,18 @@ import org.springframework.web.reactive.function.client.WebClient
 @Configuration
 class WebClientConfiguration {
     @Bean
-    fun webClient(): WebClient = WebClient.builder()
-        .filter { request, next ->
-            ReactiveSecurityContextHolder.getContext()
-                .map {
-                    it.authentication
-                        ?.run {
-                            ClientRequest.from(request)
-                                .header(
-                                    HttpHeaders.AUTHORIZATION, "Bearer ${(this as DefaultJwtAuthentication).token}"
-                                )
-                                .build()
-                        } ?: request
-                }
-                .flatMap { next.exchange(it) }
-        }
-        .build()
+    fun webClient(): WebClient =
+        WebClient.builder()
+            .filter { request, next ->
+                ReactiveSecurityContextHolder.getContext()
+                    .map { it.authentication }
+                    .map {
+                        ClientRequest.from(request)
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer ${(it as DefaultJwtAuthentication).token}")
+                            .build()
+                    }
+                    .defaultIfEmpty(request)
+                    .flatMap { next.exchange(it) }
+            }
+            .build()
 }
