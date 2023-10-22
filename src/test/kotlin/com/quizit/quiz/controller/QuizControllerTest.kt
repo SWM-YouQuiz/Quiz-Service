@@ -1,6 +1,5 @@
 package com.quizit.quiz.controller
 
-import com.epages.restdocs.apispec.WebTestClientRestDocumentationWrapper
 import com.ninjasquad.springmockk.MockkBean
 import com.quizit.quiz.dto.response.CheckAnswerResponse
 import com.quizit.quiz.dto.response.QuizResponse
@@ -14,16 +13,16 @@ import com.quizit.quiz.service.QuizService
 import com.quizit.quiz.util.*
 import io.mockk.every
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
-import org.springframework.restdocs.operation.preprocess.Preprocessors
 import org.springframework.restdocs.payload.PayloadDocumentation.requestFields
 import org.springframework.restdocs.payload.PayloadDocumentation.responseFields
 import org.springframework.restdocs.request.RequestDocumentation.pathParameters
 import org.springframework.restdocs.request.RequestDocumentation.queryParameters
+import org.springframework.test.web.reactive.server.expectBody
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 @WebFluxTest(QuizRouter::class, QuizHandler::class)
-class QuizControllerTest : BaseControllerTest() {
+class QuizControllerTest : ControllerTest() {
     @MockkBean
     private lateinit var quizService: QuizService
 
@@ -62,8 +61,6 @@ class QuizControllerTest : BaseControllerTest() {
         "createdDate" desc "생성 날짜",
     )
 
-    private val quizResponsesFields = quizResponseFields.map { "[].${it.path}" desc it.description as String }
-
     private val checkAnswerResponseFields = listOf(
         "answer" desc "정답",
         "solution" desc "해설"
@@ -72,7 +69,7 @@ class QuizControllerTest : BaseControllerTest() {
     init {
         describe("getQuizById()는") {
             context("퀴즈가 존재하는 경우") {
-                every { quizService.getQuizById(any()) } returns Mono.just(createQuizResponse())
+                every { quizService.getQuizById(any()) } returns createQuizResponse()
                 withMockUser()
 
                 it("상태 코드 200과 quizResponse를 반환한다.") {
@@ -82,15 +79,11 @@ class QuizControllerTest : BaseControllerTest() {
                         .exchange()
                         .expectStatus()
                         .isOk
-                        .expectBody(QuizResponse::class.java)
-                        .consumeWith(
-                            WebTestClientRestDocumentationWrapper.document(
-                                "식별자를 통한 퀴즈 단일 조회 성공(200)",
-                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                pathParameters("id" paramDesc "식별자"),
-                                responseFields(quizResponseFields)
-                            )
+                        .expectBody<QuizResponse>()
+                        .document(
+                            "식별자를 통한 퀴즈 단일 조회 성공(200)",
+                            pathParameters("id" paramDesc "식별자"),
+                            responseFields(quizResponseFields)
                         )
                 }
             }
@@ -106,15 +99,11 @@ class QuizControllerTest : BaseControllerTest() {
                         .exchange()
                         .expectStatus()
                         .isNotFound
-                        .expectBody(ErrorResponse::class.java)
-                        .consumeWith(
-                            WebTestClientRestDocumentationWrapper.document(
-                                "식별자를 통한 퀴즈 단일 조회 실패(404)",
-                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                pathParameters("id" paramDesc "식별자"),
-                                responseFields(errorResponseFields)
-                            )
+                        .expectBody<ErrorResponse>()
+                        .document(
+                            "식별자를 통한 퀴즈 단일 조회 실패(404)",
+                            pathParameters("id" paramDesc "식별자"),
+                            responseFields(errorResponseFields)
                         )
                 }
             }
@@ -132,15 +121,11 @@ class QuizControllerTest : BaseControllerTest() {
                         .exchange()
                         .expectStatus()
                         .isOk
-                        .expectBody(List::class.java)
-                        .consumeWith(
-                            WebTestClientRestDocumentationWrapper.document(
-                                "챕터 식별자를 통한 퀴즈 전체 조회 성공(200)",
-                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                pathParameters("id" paramDesc "식별자"),
-                                responseFields(quizResponsesFields)
-                            )
+                        .expectBody<List<QuizResponse>>()
+                        .document(
+                            "챕터 식별자를 통한 퀴즈 전체 조회 성공(200)",
+                            pathParameters("id" paramDesc "식별자"),
+                            responseFields(quizResponseFields.toListFields())
                         )
                 }
             }
@@ -150,7 +135,7 @@ class QuizControllerTest : BaseControllerTest() {
             context("챕터와 각각의 챕터에 속하는 퀴즈들이 존재하는 경우") {
                 every {
                     quizService.getQuizzesByChapterIdAndAnswerRateRange(any(), any(), any())
-                } returns Flux.just(createQuizResponse())
+                } returns listOf(createQuizResponse())
                 withMockUser()
 
                 it("상태 코드 200과 quizResponse들을 반환한다.") {
@@ -160,20 +145,16 @@ class QuizControllerTest : BaseControllerTest() {
                         .exchange()
                         .expectStatus()
                         .isOk
-                        .expectBody(List::class.java)
-                        .consumeWith(
-                            WebTestClientRestDocumentationWrapper.document(
-                                "챕터 식별자를 통한 퀴즈 필터링 조회 성공(200)",
-                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                pathParameters("id" paramDesc "식별자"),
-                                queryParameters(
-                                    "page" paramDesc "페이지 번호",
-                                    "size" paramDesc "페이지 크기",
-                                    "range" paramDesc "정답률 범위"
-                                ),
-                                responseFields(quizResponsesFields)
-                            )
+                        .expectBody<List<QuizResponse>>()
+                        .document(
+                            "챕터 식별자를 통한 퀴즈 필터링 조회 성공(200)",
+                            pathParameters("id" paramDesc "식별자"),
+                            queryParameters(
+                                "page" paramDesc "페이지 번호",
+                                "size" paramDesc "페이지 크기",
+                                "range" paramDesc "정답률 범위"
+                            ),
+                            responseFields(quizResponseFields.toListFields())
                         )
                 }
             }
@@ -181,7 +162,7 @@ class QuizControllerTest : BaseControllerTest() {
 
         describe("getQuizzesByCourseId()는") {
             context("코스와 각각의 코스에 속하는 퀴즈들이 존재하는 경우") {
-                every { quizService.getQuizzesByCourseId(any()) } returns Flux.just(createQuizResponse())
+                every { quizService.getQuizzesByCourseId(any()) } returns listOf(createQuizResponse())
                 withMockUser()
 
                 it("상태 코드 200과 quizResponse들을 반환한다.") {
@@ -191,15 +172,11 @@ class QuizControllerTest : BaseControllerTest() {
                         .exchange()
                         .expectStatus()
                         .isOk
-                        .expectBody(List::class.java)
-                        .consumeWith(
-                            WebTestClientRestDocumentationWrapper.document(
-                                "코스 식별자를 통한 퀴즈 전체 조회 성공(200)",
-                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                pathParameters("id" paramDesc "코스 식별자"),
-                                responseFields(quizResponsesFields)
-                            )
+                        .expectBody<List<QuizResponse>>()
+                        .document(
+                            "코스 식별자를 통한 퀴즈 전체 조회 성공(200)",
+                            pathParameters("id" paramDesc "코스 식별자"),
+                            responseFields(quizResponseFields.toListFields())
                         )
                 }
             }
@@ -207,7 +184,7 @@ class QuizControllerTest : BaseControllerTest() {
 
         describe("getQuizzesByWriterId()는") {
             context("유저가 작성한 퀴즈가 존재하는 경우") {
-                every { quizService.getQuizzesByWriterId(any()) } returns Flux.just(createQuizResponse())
+                every { quizService.getQuizzesByWriterId(any()) } returns listOf(createQuizResponse())
                 withMockUser()
 
                 it("상태 코드 200과 quizResponse들을 반환한다.") {
@@ -217,15 +194,11 @@ class QuizControllerTest : BaseControllerTest() {
                         .exchange()
                         .expectStatus()
                         .isOk
-                        .expectBody(List::class.java)
-                        .consumeWith(
-                            WebTestClientRestDocumentationWrapper.document(
-                                "유저가 작성한 퀴즈 전체 조회 성공(200)",
-                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                pathParameters("id" paramDesc "유저 식별자"),
-                                responseFields(quizResponsesFields)
-                            )
+                        .expectBody<List<QuizResponse>>()
+                        .document(
+                            "유저가 작성한 퀴즈 전체 조회 성공(200)",
+                            pathParameters("id" paramDesc "유저 식별자"),
+                            responseFields(quizResponseFields.toListFields())
                         )
                 }
             }
@@ -233,7 +206,7 @@ class QuizControllerTest : BaseControllerTest() {
 
         describe("getQuizzesByQuestionContains()는") {
             context("주어진 키워드를 문제 지문에 포함하는 퀴즈가 존재하는 경우") {
-                every { quizService.getQuizzesByQuestionContains(any()) } returns Flux.just(createQuizResponse())
+                every { quizService.getQuizzesByQuestionContains(any()) } returns listOf(createQuizResponse())
                 withMockUser()
 
                 it("상태 코드 200과 quizResponse들을 반환한다.") {
@@ -243,15 +216,11 @@ class QuizControllerTest : BaseControllerTest() {
                         .exchange()
                         .expectStatus()
                         .isOk
-                        .expectBody(List::class.java)
-                        .consumeWith(
-                            WebTestClientRestDocumentationWrapper.document(
-                                "키워드를 문제 지문에 포함하는 퀴즈 전체 조회 성공(200)",
-                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                queryParameters("question" paramDesc "지문"),
-                                responseFields(quizResponsesFields)
-                            )
+                        .expectBody<List<QuizResponse>>()
+                        .document(
+                            "키워드를 문제 지문에 포함하는 퀴즈 전체 조회 성공(200)",
+                            queryParameters("question" paramDesc "지문"),
+                            responseFields(quizResponseFields.toListFields())
                         )
                 }
             }
@@ -259,7 +228,7 @@ class QuizControllerTest : BaseControllerTest() {
 
         describe("getMarkedQuizzes()는") {
             context("유저가 저장한 퀴즈가 존재하는 경우") {
-                every { quizService.getMarkedQuizzes(any()) } returns Flux.just(createQuizResponse())
+                every { quizService.getMarkedQuizzes(any()) } returns listOf(createQuizResponse())
                 withMockUser()
 
                 it("상태 코드 200과 quizResponse들을 반환한다.") {
@@ -269,14 +238,10 @@ class QuizControllerTest : BaseControllerTest() {
                         .exchange()
                         .expectStatus()
                         .isOk
-                        .expectBody(List::class.java)
-                        .consumeWith(
-                            WebTestClientRestDocumentationWrapper.document(
-                                "유저가 저장한 퀴즈 전체 조회 성공(200)",
-                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                responseFields(quizResponsesFields)
-                            )
+                        .expectBody<List<QuizResponse>>()
+                        .document(
+                            "유저가 저장한 퀴즈 전체 조회 성공(200)",
+                            responseFields(quizResponseFields.toListFields())
                         )
                 }
             }
@@ -284,7 +249,7 @@ class QuizControllerTest : BaseControllerTest() {
 
         describe("createQuiz()는") {
             context("유저가 퀴즈를 작성해서 제출하는 경우") {
-                every { quizService.createQuiz(any(), any()) } returns Mono.just(createQuizResponse())
+                every { quizService.createQuiz(any(), any()) } returns createQuizResponse()
                 withMockUser()
 
                 it("상태 코드 200과 quizResponse를 반환한다.") {
@@ -295,15 +260,11 @@ class QuizControllerTest : BaseControllerTest() {
                         .exchange()
                         .expectStatus()
                         .isOk
-                        .expectBody(QuizResponse::class.java)
-                        .consumeWith(
-                            WebTestClientRestDocumentationWrapper.document(
-                                "퀴즈 생성 성공(200)",
-                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                requestFields(createQuizRequestFields),
-                                responseFields(quizResponseFields)
-                            )
+                        .expectBody<QuizResponse>()
+                        .document(
+                            "퀴즈 생성 성공(200)",
+                            requestFields(createQuizRequestFields),
+                            responseFields(quizResponseFields)
                         )
                 }
             }
@@ -311,7 +272,7 @@ class QuizControllerTest : BaseControllerTest() {
 
         describe("updateQuizById()는") {
             context("유저가 퀴즈를 수정해서 제출하는 경우") {
-                every { quizService.updateQuizById(any(), any(), any()) } returns Mono.just(createQuizResponse())
+                every { quizService.updateQuizById(any(), any(), any()) } returns createQuizResponse()
                 withMockUser()
 
                 it("상태 코드 200과 quizResponse를 반환한다.") {
@@ -322,15 +283,11 @@ class QuizControllerTest : BaseControllerTest() {
                         .exchange()
                         .expectStatus()
                         .isOk
-                        .expectBody(QuizResponse::class.java)
-                        .consumeWith(
-                            WebTestClientRestDocumentationWrapper.document(
-                                "퀴즈 수정 성공(200)",
-                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                requestFields(updateQuizByIdRequestFields),
-                                responseFields(quizResponseFields)
-                            )
+                        .expectBody<QuizResponse>()
+                        .document(
+                            "퀴즈 수정 성공(200)",
+                            requestFields(updateQuizByIdRequestFields),
+                            responseFields(quizResponseFields)
                         )
                 }
             }
@@ -347,15 +304,11 @@ class QuizControllerTest : BaseControllerTest() {
                         .exchange()
                         .expectStatus()
                         .isNotFound
-                        .expectBody(ErrorResponse::class.java)
-                        .consumeWith(
-                            WebTestClientRestDocumentationWrapper.document(
-                                "퀴즈 수정 실패(404)",
-                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                requestFields(updateQuizByIdRequestFields),
-                                responseFields(errorResponseFields)
-                            )
+                        .expectBody<ErrorResponse>()
+                        .document(
+                            "퀴즈 수정 실패(404)",
+                            requestFields(updateQuizByIdRequestFields),
+                            responseFields(errorResponseFields)
                         )
                 }
             }
@@ -372,15 +325,11 @@ class QuizControllerTest : BaseControllerTest() {
                         .exchange()
                         .expectStatus()
                         .isForbidden
-                        .expectBody(ErrorResponse::class.java)
-                        .consumeWith(
-                            WebTestClientRestDocumentationWrapper.document(
-                                "퀴즈 수정 실패(403)",
-                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                requestFields(updateQuizByIdRequestFields),
-                                responseFields(errorResponseFields)
-                            )
+                        .expectBody<ErrorResponse>()
+                        .document(
+                            "퀴즈 수정 실패(403)",
+                            requestFields(updateQuizByIdRequestFields),
+                            responseFields(errorResponseFields)
                         )
                 }
             }
@@ -388,7 +337,7 @@ class QuizControllerTest : BaseControllerTest() {
 
         describe("deleteQuizById()는") {
             context("유저가 퀴즈를 삭제하는 경우") {
-                every { quizService.deleteQuizById(any(), any()) } returns Mono.empty()
+                every { quizService.deleteQuizById(any(), any()) } returns null
                 withMockUser()
 
                 it("상태 코드 200을 반환한다.") {
@@ -399,13 +348,9 @@ class QuizControllerTest : BaseControllerTest() {
                         .expectStatus()
                         .isOk
                         .expectBody()
-                        .consumeWith(
-                            WebTestClientRestDocumentationWrapper.document(
-                                "퀴즈 삭제 성공(200)",
-                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                pathParameters("id" paramDesc "식별자"),
-                            )
+                        .document(
+                            "퀴즈 삭제 성공(200)",
+                            pathParameters("id" paramDesc "식별자"),
                         )
                 }
             }
@@ -421,15 +366,11 @@ class QuizControllerTest : BaseControllerTest() {
                         .exchange()
                         .expectStatus()
                         .isNotFound
-                        .expectBody(ErrorResponse::class.java)
-                        .consumeWith(
-                            WebTestClientRestDocumentationWrapper.document(
-                                "퀴즈 삭제 실패(404)",
-                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                pathParameters("id" paramDesc "식별자"),
-                                responseFields(errorResponseFields)
-                            )
+                        .expectBody<ErrorResponse>()
+                        .document(
+                            "퀴즈 삭제 실패(404)",
+                            pathParameters("id" paramDesc "식별자"),
+                            responseFields(errorResponseFields)
                         )
                 }
             }
@@ -445,15 +386,11 @@ class QuizControllerTest : BaseControllerTest() {
                         .exchange()
                         .expectStatus()
                         .isForbidden
-                        .expectBody(ErrorResponse::class.java)
-                        .consumeWith(
-                            WebTestClientRestDocumentationWrapper.document(
-                                "퀴즈 삭제 실패(403)",
-                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                pathParameters("id" paramDesc "식별자"),
-                                responseFields(errorResponseFields)
-                            )
+                        .expectBody<ErrorResponse>()
+                        .document(
+                            "퀴즈 삭제 실패(403)",
+                            pathParameters("id" paramDesc "식별자"),
+                            responseFields(errorResponseFields)
                         )
                 }
             }
@@ -461,7 +398,7 @@ class QuizControllerTest : BaseControllerTest() {
 
         describe("checkQuiz()는") {
             context("유저가 퀴즈 답을 제출한 경우") {
-                every { quizService.checkAnswer(any(), any(), any()) } returns Mono.just(createCheckAnswerResponse())
+                every { quizService.checkAnswer(any(), any(), any()) } returns createCheckAnswerResponse()
                 withMockUser()
 
                 it("상태 코드 200과 정답 여부가 담긴 checkAnswerResponse를 반환한다.") {
@@ -472,15 +409,11 @@ class QuizControllerTest : BaseControllerTest() {
                         .exchange()
                         .expectStatus()
                         .isOk
-                        .expectBody(CheckAnswerResponse::class.java)
-                        .consumeWith(
-                            WebTestClientRestDocumentationWrapper.document(
-                                "정답 확인 성공(200)",
-                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                requestFields(checkAnswerRequestFields),
-                                responseFields(checkAnswerResponseFields)
-                            )
+                        .expectBody<CheckAnswerResponse>()
+                        .document(
+                            "정답 확인 성공(200)",
+                            requestFields(checkAnswerRequestFields),
+                            responseFields(checkAnswerResponseFields)
                         )
                 }
             }
@@ -497,15 +430,11 @@ class QuizControllerTest : BaseControllerTest() {
                         .exchange()
                         .expectStatus()
                         .isNotFound
-                        .expectBody(ErrorResponse::class.java)
-                        .consumeWith(
-                            WebTestClientRestDocumentationWrapper.document(
-                                "정답 확인 실패(404)",
-                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                requestFields(checkAnswerRequestFields),
-                                responseFields(errorResponseFields)
-                            )
+                        .expectBody<ErrorResponse>()
+                        .document(
+                            "정답 확인 실패(404)",
+                            requestFields(checkAnswerRequestFields),
+                            responseFields(errorResponseFields)
                         )
                 }
             }
@@ -513,7 +442,7 @@ class QuizControllerTest : BaseControllerTest() {
 
         describe("markQuiz()는") {
             context("주어진 퀴즈 식별자에 대한 퀴즈가 존재하는 경우") {
-                every { quizService.markQuiz(any(), any()) } returns Mono.just(createQuizResponse())
+                every { quizService.markQuiz(any(), any()) } returns createQuizResponse()
                 withMockUser()
 
                 it("상태 코드 200을 반환한다.") {
@@ -523,15 +452,11 @@ class QuizControllerTest : BaseControllerTest() {
                         .exchange()
                         .expectStatus()
                         .isOk
-                        .expectBody(QuizResponse::class.java)
-                        .consumeWith(
-                            WebTestClientRestDocumentationWrapper.document(
-                                "퀴즈 저장 성공(200)",
-                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                pathParameters("id" paramDesc "식별자"),
-                                responseFields(quizResponseFields)
-                            )
+                        .expectBody<QuizResponse>()
+                        .document(
+                            "퀴즈 저장 성공(200)",
+                            pathParameters("id" paramDesc "식별자"),
+                            responseFields(quizResponseFields)
                         )
                 }
             }
@@ -547,15 +472,11 @@ class QuizControllerTest : BaseControllerTest() {
                         .exchange()
                         .expectStatus()
                         .isNotFound
-                        .expectBody(ErrorResponse::class.java)
-                        .consumeWith(
-                            WebTestClientRestDocumentationWrapper.document(
-                                "퀴즈 저장 실패(404)",
-                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                pathParameters("id" paramDesc "식별자"),
-                                responseFields(errorResponseFields)
-                            )
+                        .expectBody<ErrorResponse>()
+                        .document(
+                            "퀴즈 저장 실패(404)",
+                            pathParameters("id" paramDesc "식별자"),
+                            responseFields(errorResponseFields)
                         )
                 }
             }
@@ -573,16 +494,12 @@ class QuizControllerTest : BaseControllerTest() {
                         .exchange()
                         .expectStatus()
                         .isOk
-                        .expectBody(QuizResponse::class.java)
-                        .consumeWith(
-                            WebTestClientRestDocumentationWrapper.document(
-                                "퀴즈 평가 성공(200)",
-                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                pathParameters("id" paramDesc "식별자"),
-                                queryParameters("isLike" paramDesc "좋아요 여부"),
-                                responseFields(quizResponseFields)
-                            )
+                        .expectBody<QuizResponse>()
+                        .document(
+                            "퀴즈 평가 성공(200)",
+                            pathParameters("id" paramDesc "식별자"),
+                            queryParameters("isLike" paramDesc "좋아요 여부"),
+                            responseFields(quizResponseFields)
                         )
                 }
             }
@@ -598,16 +515,12 @@ class QuizControllerTest : BaseControllerTest() {
                         .exchange()
                         .expectStatus()
                         .isNotFound
-                        .expectBody(ErrorResponse::class.java)
-                        .consumeWith(
-                            WebTestClientRestDocumentationWrapper.document(
-                                "퀴즈 평가 실패(404)",
-                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                pathParameters("id" paramDesc "식별자"),
-                                queryParameters("isLike" paramDesc "좋아요 여부"),
-                                responseFields(errorResponseFields)
-                            )
+                        .expectBody<ErrorResponse>()
+                        .document(
+                            "퀴즈 평가 실패(404)",
+                            pathParameters("id" paramDesc "식별자"),
+                            queryParameters("isLike" paramDesc "좋아요 여부"),
+                            responseFields(errorResponseFields)
                         )
                 }
             }

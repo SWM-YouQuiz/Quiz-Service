@@ -5,15 +5,14 @@ import com.quizit.quiz.dto.response.CurriculumResponse
 import com.quizit.quiz.fixture.*
 import com.quizit.quiz.repository.CurriculumRepository
 import com.quizit.quiz.repository.QuizRepository
+import com.quizit.quiz.util.getResult
+import com.quizit.quiz.util.returns
 import io.kotest.core.spec.IsolationMode
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.equals.shouldNotBeEqual
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import reactor.core.publisher.Flux
-import reactor.core.publisher.Mono
-import reactor.test.StepVerifier
 
 class CurriculumServiceTest : BehaviorSpec() {
     private val curriculumRepository = mockk<CurriculumRepository>()
@@ -28,26 +27,29 @@ class CurriculumServiceTest : BehaviorSpec() {
         userClient = userClient
     )
 
-    override fun isolationMode(): IsolationMode = IsolationMode.InstancePerTest
+    override fun isolationMode(): IsolationMode = IsolationMode.InstancePerLeaf
 
     init {
         Given("커리큘럼들이 존재하는 경우") {
             val curriculum = createCurriculum()
                 .also {
-                    every { curriculumRepository.findAll() } returns Flux.just(it)
-                    every { curriculumRepository.findById(any<String>()) } returns Mono.just(it)
-                    every { curriculumRepository.deleteById(any<String>()) } returns Mono.empty()
-                    every { quizRepository.findAllByCurriculumId(any()) } returns Flux.just(createQuiz())
-                    every { userClient.getUserById(any()) } returns Mono.just(createUserResponse())
+                    every { curriculumRepository.findAll() } returns listOf(it)
+                    every { curriculumRepository.findById(any<String>()) } returns it
+                    every { curriculumRepository.deleteById(any<String>()) } returns null
+                    every { quizRepository.findAllByCurriculumId(any()) } returns listOf(createQuiz())
+                    every { userClient.getUserById(any()) } returns createUserResponse()
                 }
             val curriculumResponse = CurriculumResponse(curriculum)
 
             When("유저가 메인 화면에 들어가면") {
                 val results = listOf(
-                    StepVerifier.create(curriculumService.getCurriculums()),
-                    StepVerifier.create(curriculumService.getCurriculumById(ID))
+                    curriculumService.getCurriculums()
+                        .getResult(),
+                    curriculumService.getCurriculumById(ID)
+                        .getResult()
                 )
-                val result = StepVerifier.create(curriculumService.getProgressById(ID, ID))
+                val result = curriculumService.getProgressById(ID, ID)
+                    .getResult()
 
                 Then("커리큘럼이 주어진다.") {
                     results.map {
@@ -67,10 +69,10 @@ class CurriculumServiceTest : BehaviorSpec() {
             When("어드민이 특정 커리큘럼을 수정하면") {
                 val updateCurriculumByIdRequest = createUpdateCurriculumByIdRequest(title = "updated_title")
                     .also {
-                        every { curriculumRepository.save(any()) } returns Mono.just(createCurriculum(title = it.title))
+                        every { curriculumRepository.save(any()) } returns createCurriculum(title = it.title)
                     }
-                val result =
-                    StepVerifier.create(curriculumService.updateCurriculumById(ID, updateCurriculumByIdRequest))
+                val result = curriculumService.updateCurriculumById(ID, updateCurriculumByIdRequest)
+                    .getResult()
 
                 Then("해당 커리큘럼이 수정된다.") {
                     result.expectSubscription()
@@ -92,12 +94,13 @@ class CurriculumServiceTest : BehaviorSpec() {
         Given("어드민이 커리큘럼을 작성 중인 경우") {
             val curriculum = createCurriculum()
                 .also {
-                    every { curriculumRepository.save(any()) } returns Mono.just(it)
+                    every { curriculumRepository.save(any()) } returns it
                 }
             val curriculumResponse = CurriculumResponse(curriculum)
 
             When("어드민이 커리큘럼을 제출하면") {
-                val result = StepVerifier.create(curriculumService.createCurriculum(createCreateCurriculumRequest()))
+                val result = curriculumService.createCurriculum(createCreateCurriculumRequest())
+                    .getResult()
 
                 Then("커리큘럼이 생성된다.") {
                     result.expectSubscription()

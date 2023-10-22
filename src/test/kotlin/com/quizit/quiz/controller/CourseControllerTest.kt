@@ -1,6 +1,5 @@
 package com.quizit.quiz.controller
 
-import com.epages.restdocs.apispec.WebTestClientRestDocumentationWrapper
 import com.ninjasquad.springmockk.MockkBean
 import com.quizit.quiz.dto.response.CourseResponse
 import com.quizit.quiz.dto.response.GetProgressByIdResponse
@@ -13,15 +12,13 @@ import com.quizit.quiz.service.CourseService
 import com.quizit.quiz.util.*
 import io.mockk.every
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
-import org.springframework.restdocs.operation.preprocess.Preprocessors
 import org.springframework.restdocs.payload.PayloadDocumentation.requestFields
 import org.springframework.restdocs.payload.PayloadDocumentation.responseFields
 import org.springframework.restdocs.request.RequestDocumentation.pathParameters
-import reactor.core.publisher.Flux
-import reactor.core.publisher.Mono
+import org.springframework.test.web.reactive.server.expectBody
 
 @WebFluxTest(CourseRouter::class, CourseHandler::class)
-class CourseControllerTest : BaseControllerTest() {
+class CourseControllerTest : ControllerTest() {
     @MockkBean
     private lateinit var courseService: CourseService
 
@@ -44,8 +41,6 @@ class CourseControllerTest : BaseControllerTest() {
         "curriculumId" desc "커리큘럼 식별자"
     )
 
-    private val courseResponsesFields = courseResponseFields.map { "[].${it.path}" desc it.description as String }
-
     private val getProgressByIdResponseFields = listOf(
         "total" desc "총 퀴즈 수",
         "solved" desc "푼 퀴즈 수"
@@ -54,7 +49,7 @@ class CourseControllerTest : BaseControllerTest() {
     init {
         describe("getCourseById()는") {
             context("코스가 존재하는 경우") {
-                every { courseService.getCourseById(any()) } returns Mono.just(createCourseResponse())
+                every { courseService.getCourseById(any()) } returns createCourseResponse()
                 withMockUser()
 
                 it("상태 코드 200과 courseResponse를 반환한다.") {
@@ -64,14 +59,10 @@ class CourseControllerTest : BaseControllerTest() {
                         .exchange()
                         .expectStatus()
                         .isOk
-                        .expectBody(CourseResponse::class.java)
-                        .consumeWith(
-                            WebTestClientRestDocumentationWrapper.document(
-                                "식별자를 통한 코스 단일 조회 성공(200)",
-                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                responseFields(courseResponseFields)
-                            )
+                        .expectBody<CourseResponse>()
+                        .document(
+                            "식별자를 통한 코스 단일 조회 성공(200)",
+                            responseFields(courseResponseFields)
                         )
                 }
             }
@@ -87,14 +78,10 @@ class CourseControllerTest : BaseControllerTest() {
                         .exchange()
                         .expectStatus()
                         .isNotFound
-                        .expectBody(ErrorResponse::class.java)
-                        .consumeWith(
-                            WebTestClientRestDocumentationWrapper.document(
-                                "식별자를 통한 코스 단일 조회 실패(404)",
-                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                responseFields(errorResponseFields)
-                            )
+                        .expectBody<ErrorResponse>()
+                        .document(
+                            "식별자를 통한 코스 단일 조회 실패(404)",
+                            responseFields(errorResponseFields)
                         )
                 }
             }
@@ -102,7 +89,7 @@ class CourseControllerTest : BaseControllerTest() {
 
         describe("getCoursesByCurriculumId()는") {
             context("커리큘럼과 각각의 커리큘럼에 속하는 코스들이 존재하는 경우") {
-                every { courseService.getCoursesByCurriculumId(any()) } returns Flux.just(createCourseResponse())
+                every { courseService.getCoursesByCurriculumId(any()) } returns listOf(createCourseResponse())
                 withMockUser()
 
                 it("상태 코드 200과 courseResponse들을 반환한다.") {
@@ -112,14 +99,10 @@ class CourseControllerTest : BaseControllerTest() {
                         .exchange()
                         .expectStatus()
                         .isOk
-                        .expectBody(List::class.java)
-                        .consumeWith(
-                            WebTestClientRestDocumentationWrapper.document(
-                                "커리큘럼 식별자를 통한 코스 전체 조회 성공(200)",
-                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                responseFields(courseResponsesFields)
-                            )
+                        .expectBody<List<CourseResponse>>()
+                        .document(
+                            "커리큘럼 식별자를 통한 코스 전체 조회 성공(200)",
+                            responseFields(courseResponseFields.toListFields())
                         )
                 }
             }
@@ -127,7 +110,7 @@ class CourseControllerTest : BaseControllerTest() {
 
         describe("getProgressById()는") {
             context("코스가 존재하는 경우") {
-                every { courseService.getProgressById(ID, ID) } returns Mono.just(createGetProgressByIdResponse())
+                every { courseService.getProgressById(ID, ID) } returns createGetProgressByIdResponse()
                 withMockUser()
 
                 it("상태 코드 200과 getProgressByIdResponse를 반환한다.") {
@@ -137,14 +120,10 @@ class CourseControllerTest : BaseControllerTest() {
                         .exchange()
                         .expectStatus()
                         .isOk
-                        .expectBody(GetProgressByIdResponse::class.java)
-                        .consumeWith(
-                            WebTestClientRestDocumentationWrapper.document(
-                                "식별자를 통한 코스 진척도 조회 성공(200)",
-                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                responseFields(getProgressByIdResponseFields)
-                            )
+                        .expectBody<GetProgressByIdResponse>()
+                        .document(
+                            "식별자를 통한 코스 진척도 조회 성공(200)",
+                            responseFields(getProgressByIdResponseFields)
                         )
                 }
             }
@@ -152,7 +131,7 @@ class CourseControllerTest : BaseControllerTest() {
 
         describe("createCourse()는") {
             context("어드민이 코스를 작성해서 제출하는 경우") {
-                every { courseService.createCourse(any()) } returns Mono.just(createCourseResponse())
+                every { courseService.createCourse(any()) } returns createCourseResponse()
                 withMockAdmin()
 
                 it("상태 코드 200과 courseResponse를 반환한다.") {
@@ -163,15 +142,11 @@ class CourseControllerTest : BaseControllerTest() {
                         .exchange()
                         .expectStatus()
                         .isOk
-                        .expectBody(CourseResponse::class.java)
-                        .consumeWith(
-                            WebTestClientRestDocumentationWrapper.document(
-                                "코스 생성 성공(200)",
-                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                requestFields(createCourseRequestFields),
-                                responseFields(courseResponseFields)
-                            )
+                        .expectBody<CourseResponse>()
+                        .document(
+                            "코스 생성 성공(200)",
+                            requestFields(createCourseRequestFields),
+                            responseFields(courseResponseFields)
                         )
                 }
             }
@@ -179,7 +154,7 @@ class CourseControllerTest : BaseControllerTest() {
 
         describe("updateCourseById()는") {
             context("어드민이 코스를 수정해서 제출하는 경우") {
-                every { courseService.updateCourseById(any(), any()) } returns Mono.just(createCourseResponse())
+                every { courseService.updateCourseById(any(), any()) } returns createCourseResponse()
                 withMockAdmin()
 
                 it("상태 코드 200과 courseResponse를 반환한다.") {
@@ -190,15 +165,11 @@ class CourseControllerTest : BaseControllerTest() {
                         .exchange()
                         .expectStatus()
                         .isOk
-                        .expectBody(CourseResponse::class.java)
-                        .consumeWith(
-                            WebTestClientRestDocumentationWrapper.document(
-                                "코스 수정 성공(200)",
-                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                requestFields(updateCourseByIdRequestFields),
-                                responseFields(courseResponseFields)
-                            )
+                        .expectBody<CourseResponse>()
+                        .document(
+                            "코스 수정 성공(200)",
+                            requestFields(updateCourseByIdRequestFields),
+                            responseFields(courseResponseFields)
                         )
                 }
             }
@@ -215,15 +186,11 @@ class CourseControllerTest : BaseControllerTest() {
                         .exchange()
                         .expectStatus()
                         .isNotFound
-                        .expectBody(ErrorResponse::class.java)
-                        .consumeWith(
-                            WebTestClientRestDocumentationWrapper.document(
-                                "코스 수정 실패(404)",
-                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                requestFields(updateCourseByIdRequestFields),
-                                responseFields(errorResponseFields)
-                            )
+                        .expectBody<ErrorResponse>()
+                        .document(
+                            "코스 수정 실패(404)",
+                            requestFields(updateCourseByIdRequestFields),
+                            responseFields(errorResponseFields)
                         )
                 }
             }
@@ -231,7 +198,7 @@ class CourseControllerTest : BaseControllerTest() {
 
         describe("deleteCourseById()는") {
             context("어드민이 코스를 삭제하는 경우") {
-                every { courseService.deleteCourseById(any()) } returns Mono.empty()
+                every { courseService.deleteCourseById(any()) } returns null
                 withMockAdmin()
 
                 it("상태 코드 200을 반환한다.") {
@@ -242,13 +209,9 @@ class CourseControllerTest : BaseControllerTest() {
                         .expectStatus()
                         .isOk
                         .expectBody()
-                        .consumeWith(
-                            WebTestClientRestDocumentationWrapper.document(
-                                "코스 삭제 성공(200)",
-                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                pathParameters("id" paramDesc "식별자"),
-                            )
+                        .document(
+                            "코스 삭제 성공(200)",
+                            pathParameters("id" paramDesc "식별자"),
                         )
                 }
             }
@@ -264,15 +227,11 @@ class CourseControllerTest : BaseControllerTest() {
                         .exchange()
                         .expectStatus()
                         .isNotFound
-                        .expectBody(ErrorResponse::class.java)
-                        .consumeWith(
-                            WebTestClientRestDocumentationWrapper.document(
-                                "코스 삭제 실패(404)",
-                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                pathParameters("id" paramDesc "식별자"),
-                                responseFields(errorResponseFields)
-                            )
+                        .expectBody<ErrorResponse>()
+                        .document(
+                            "코스 삭제 실패(404)",
+                            pathParameters("id" paramDesc "식별자"),
+                            responseFields(errorResponseFields)
                         )
                 }
             }
