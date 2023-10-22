@@ -5,9 +5,9 @@ import com.quizit.quiz.domain.enum.Role
 import com.quizit.quiz.dto.response.UserResponse
 import java.time.LocalDateTime
 
-const val USERNAME = "earlgrey02@github.com"
-const val NICKNAME = "earlgrey02"
-const val IMAGE = "http://localhost:8080/image.jpg"
+const val USERNAME = "username"
+const val NICKNAME = "nickname"
+const val IMAGE = "image"
 const val LEVEL = 2
 val ROLE = Role.USER
 const val ALLOW_PUSH = true
