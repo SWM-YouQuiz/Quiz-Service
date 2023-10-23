@@ -14,9 +14,9 @@ import com.quizit.quiz.dto.response.CheckAnswerResponse
 import com.quizit.quiz.dto.response.QuizResponse
 import com.quizit.quiz.exception.PermissionDeniedException
 import com.quizit.quiz.exception.QuizNotFoundException
-import com.quizit.quiz.global.config.isAdmin
 import com.quizit.quiz.global.util.component1
 import com.quizit.quiz.global.util.component2
+import com.quizit.quiz.global.util.isAdmin
 import com.quizit.quiz.repository.QuizRepository
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service

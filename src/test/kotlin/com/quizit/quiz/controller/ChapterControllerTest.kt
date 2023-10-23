@@ -1,6 +1,5 @@
 package com.quizit.quiz.controller
 
-import com.epages.restdocs.apispec.WebTestClientRestDocumentationWrapper
 import com.ninjasquad.springmockk.MockkBean
 import com.quizit.quiz.dto.response.ChapterResponse
 import com.quizit.quiz.dto.response.GetProgressByIdResponse
@@ -13,15 +12,13 @@ import com.quizit.quiz.service.ChapterService
 import com.quizit.quiz.util.*
 import io.mockk.every
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
-import org.springframework.restdocs.operation.preprocess.Preprocessors
 import org.springframework.restdocs.payload.PayloadDocumentation.requestFields
 import org.springframework.restdocs.payload.PayloadDocumentation.responseFields
 import org.springframework.restdocs.request.RequestDocumentation.pathParameters
-import reactor.core.publisher.Flux
-import reactor.core.publisher.Mono
+import org.springframework.test.web.reactive.server.expectBody
 
 @WebFluxTest(ChapterRouter::class, ChapterHandler::class)
-class ChapterControllerTest : BaseControllerTest() {
+class ChapterControllerTest : ControllerTest() {
     @MockkBean
     private lateinit var chapterService: ChapterService
 
@@ -50,8 +47,6 @@ class ChapterControllerTest : BaseControllerTest() {
         "index" desc "순서"
     )
 
-    private val chapterResponsesFields = chapterResponseFields.map { "[].${it.path}" desc it.description as String }
-
     private val getProgressByIdResponseFields = listOf(
         "total" desc "총 퀴즈 수",
         "solved" desc "푼 퀴즈 수"
@@ -60,25 +55,20 @@ class ChapterControllerTest : BaseControllerTest() {
     init {
         describe("getChapterById()는") {
             context("챕터가 존재하는 경우") {
-                every { chapterService.getChapterById(any()) } returns Mono.just(createChapterResponse())
+                every { chapterService.getChapterById(any()) } returns createChapterResponse()
                 withMockUser()
 
                 it("상태 코드 200과 chapterResponse를 반환한다.") {
-                    webClient
-                        .get()
+                    webClient.get()
                         .uri("/chapter/{id}", ID)
                         .exchange()
                         .expectStatus()
                         .isOk
-                        .expectBody(ChapterResponse::class.java)
-                        .consumeWith(
-                            WebTestClientRestDocumentationWrapper.document(
-                                "식별자를 통한 챕터 단일 조회 성공(200)",
-                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                pathParameters("id" paramDesc "식별자"),
-                                responseFields(chapterResponseFields)
-                            )
+                        .expectBody<ChapterResponse>()
+                        .document(
+                            "식별자를 통한 챕터 단일 조회 성공(200)",
+                            pathParameters("id" paramDesc "식별자"),
+                            responseFields(chapterResponseFields)
                         )
                 }
             }
@@ -94,23 +84,19 @@ class ChapterControllerTest : BaseControllerTest() {
                         .exchange()
                         .expectStatus()
                         .isNotFound
-                        .expectBody(ErrorResponse::class.java)
-                        .consumeWith(
-                            WebTestClientRestDocumentationWrapper.document(
-                                "식별자를 통한 챕터 단일 조회 실패(404)",
-                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                pathParameters("id" paramDesc "식별자"),
-                                responseFields(errorResponseFields)
-                            )
+                        .expectBody<ErrorResponse>()
+                        .document(
+                            "식별자를 통한 챕터 단일 조회 실패(404)",
+                            pathParameters("id" paramDesc "식별자"),
+                            responseFields(errorResponseFields)
                         )
                 }
             }
         }
-        
+
         describe("getChaptersByCourseId()는") {
             context("코스와 각각의 코스에 속하는 챕터들이 존재하는 경우") {
-                every { chapterService.getChaptersByCourseId(any()) } returns Flux.just(createChapterResponse())
+                every { chapterService.getChaptersByCourseId(any()) } returns listOf(createChapterResponse())
                 withMockUser()
 
                 it("상태 코드 200과 chapterResponse들을 반환한다.") {
@@ -120,15 +106,11 @@ class ChapterControllerTest : BaseControllerTest() {
                         .exchange()
                         .expectStatus()
                         .isOk
-                        .expectBody(List::class.java)
-                        .consumeWith(
-                            WebTestClientRestDocumentationWrapper.document(
-                                "코스 식별자를 통한 챕터 전체 조회 성공(200)",
-                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                pathParameters("id" paramDesc "식별자"),
-                                responseFields(chapterResponsesFields)
-                            )
+                        .expectBody<List<ChapterResponse>>()
+                        .document(
+                            "코스 식별자를 통한 챕터 전체 조회 성공(200)",
+                            pathParameters("id" paramDesc "식별자"),
+                            responseFields(chapterResponseFields.toListFields())
                         )
                 }
             }
@@ -136,7 +118,7 @@ class ChapterControllerTest : BaseControllerTest() {
 
         describe("getProgressById()는") {
             context("챕터가 존재하는 경우") {
-                every { chapterService.getProgressById(ID, ID) } returns Mono.just(createGetProgressByIdResponse())
+                every { chapterService.getProgressById(any(), any()) } returns createGetProgressByIdResponse()
                 withMockUser()
 
                 it("상태 코드 200과 getProgressByIdResponse를 반환한다.") {
@@ -146,14 +128,10 @@ class ChapterControllerTest : BaseControllerTest() {
                         .exchange()
                         .expectStatus()
                         .isOk
-                        .expectBody(GetProgressByIdResponse::class.java)
-                        .consumeWith(
-                            WebTestClientRestDocumentationWrapper.document(
-                                "식별자를 통한 챕터 진척도 조회 성공(200)",
-                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                responseFields(getProgressByIdResponseFields)
-                            )
+                        .expectBody<GetProgressByIdResponse>()
+                        .document(
+                            "식별자를 통한 챕터 진척도 조회 성공(200)",
+                            responseFields(getProgressByIdResponseFields)
                         )
                 }
             }
@@ -161,7 +139,7 @@ class ChapterControllerTest : BaseControllerTest() {
 
         describe("createChapter()는") {
             context("어드민이 챕터를 작성해서 제출하는 경우") {
-                every { chapterService.createChapter(any()) } returns Mono.just(createChapterResponse())
+                every { chapterService.createChapter(any()) } returns createChapterResponse()
                 withMockAdmin()
 
                 it("상태 코드 200과 chapterResponse를 반환한다.") {
@@ -172,15 +150,11 @@ class ChapterControllerTest : BaseControllerTest() {
                         .exchange()
                         .expectStatus()
                         .isOk
-                        .expectBody(ChapterResponse::class.java)
-                        .consumeWith(
-                            WebTestClientRestDocumentationWrapper.document(
-                                "챕터 생성 성공(200)",
-                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                requestFields(createChapterRequestFields),
-                                responseFields(chapterResponseFields)
-                            )
+                        .expectBody<ChapterResponse>()
+                        .document(
+                            "챕터 생성 성공(200)",
+                            requestFields(createChapterRequestFields),
+                            responseFields(chapterResponseFields)
                         )
                 }
             }
@@ -188,7 +162,7 @@ class ChapterControllerTest : BaseControllerTest() {
 
         describe("updateChapterById()는") {
             context("어드민이 챕터를 수정해서 제출하는 경우") {
-                every { chapterService.updateChapterById(any(), any()) } returns Mono.just(createChapterResponse())
+                every { chapterService.updateChapterById(any(), any()) } returns createChapterResponse()
                 withMockAdmin()
 
                 it("상태 코드 200과 chapterResponse를 반환한다.") {
@@ -199,15 +173,11 @@ class ChapterControllerTest : BaseControllerTest() {
                         .exchange()
                         .expectStatus()
                         .isOk
-                        .expectBody(ChapterResponse::class.java)
-                        .consumeWith(
-                            WebTestClientRestDocumentationWrapper.document(
-                                "챕터 수정 성공(200)",
-                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                requestFields(updateChapterByIdRequestFields),
-                                responseFields(chapterResponseFields)
-                            )
+                        .expectBody<ChapterResponse>()
+                        .document(
+                            "챕터 수정 성공(200)",
+                            requestFields(updateChapterByIdRequestFields),
+                            responseFields(chapterResponseFields)
                         )
                 }
             }
@@ -224,15 +194,11 @@ class ChapterControllerTest : BaseControllerTest() {
                         .exchange()
                         .expectStatus()
                         .isNotFound
-                        .expectBody(ErrorResponse::class.java)
-                        .consumeWith(
-                            WebTestClientRestDocumentationWrapper.document(
-                                "챕터 수정 실패(404)",
-                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                requestFields(updateChapterByIdRequestFields),
-                                responseFields(errorResponseFields)
-                            )
+                        .expectBody<ErrorResponse>()
+                        .document(
+                            "챕터 수정 실패(404)",
+                            requestFields(updateChapterByIdRequestFields),
+                            responseFields(errorResponseFields)
                         )
                 }
             }
@@ -240,7 +206,7 @@ class ChapterControllerTest : BaseControllerTest() {
 
         describe("deleteChapterById()는") {
             context("어드민이 챕터를 삭제하는 경우") {
-                every { chapterService.deleteChapterById(any()) } returns Mono.empty()
+                every { chapterService.deleteChapterById(any()) } returns empty()
                 withMockAdmin()
 
                 it("상태 코드 200을 반환한다.") {
@@ -251,13 +217,9 @@ class ChapterControllerTest : BaseControllerTest() {
                         .expectStatus()
                         .isOk
                         .expectBody()
-                        .consumeWith(
-                            WebTestClientRestDocumentationWrapper.document(
-                                "챕터 삭제 성공(200)",
-                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                pathParameters("id" paramDesc "식별자"),
-                            )
+                        .document(
+                            "챕터 삭제 성공(200)",
+                            pathParameters("id" paramDesc "식별자")
                         )
                 }
             }
@@ -273,15 +235,11 @@ class ChapterControllerTest : BaseControllerTest() {
                         .exchange()
                         .expectStatus()
                         .isNotFound
-                        .expectBody(ErrorResponse::class.java)
-                        .consumeWith(
-                            WebTestClientRestDocumentationWrapper.document(
-                                "챕터 삭제 실패(404)",
-                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                pathParameters("id" paramDesc "식별자"),
-                                responseFields(errorResponseFields)
-                            )
+                        .expectBody<ErrorResponse>()
+                        .document(
+                            "챕터 삭제 실패(404)",
+                            pathParameters("id" paramDesc "식별자"),
+                            responseFields(errorResponseFields)
                         )
                 }
             }

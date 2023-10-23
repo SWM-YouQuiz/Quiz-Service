@@ -2,16 +2,16 @@ package com.quizit.quiz.handler
 
 import com.quizit.quiz.dto.request.CreateCourseRequest
 import com.quizit.quiz.dto.request.UpdateCourseByIdRequest
-import com.quizit.quiz.global.config.authentication
+import com.quizit.quiz.global.annotation.Handler
+import com.quizit.quiz.global.util.authentication
 import com.quizit.quiz.service.CourseService
-import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.body
 import org.springframework.web.reactive.function.server.bodyToMono
 import reactor.core.publisher.Mono
 
-@Component
+@Handler
 class CourseHandler(
     private val courseService: CourseService
 ) {

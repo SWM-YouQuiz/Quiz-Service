@@ -31,6 +31,7 @@ configurations {
 dependencies {
     implementation("org.springframework.kafka:spring-kafka")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("org.springframework.boot:spring-boot-starter-aop")
     implementation("org.springframework.boot:spring-boot-starter-log4j2")
     implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive")
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
@@ -96,10 +97,11 @@ tasks {
                 excludes = listOf(
                     "**.*Application*",
                     "**.*Configuration*",
-                    "**.*Request*",
-                    "**.*Response*",
                     "**.*Exception*",
                     "**.*Util*",
+                    "**.*Aspect*",
+                    "**.*Request*",
+                    "**.*Response*",
                     "**.*Client*",
                     "**.*Producer*",
                     "**.*Consumer*",
