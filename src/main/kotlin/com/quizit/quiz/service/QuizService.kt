@@ -5,6 +5,7 @@ import com.quizit.quiz.adapter.client.UserClient
 import com.quizit.quiz.adapter.producer.QuizProducer
 import com.quizit.quiz.domain.Quiz
 import com.quizit.quiz.dto.event.CheckAnswerEvent
+import com.quizit.quiz.dto.event.DeleteQuizEvent
 import com.quizit.quiz.dto.event.MarkQuizEvent
 import com.quizit.quiz.dto.request.CheckAnswerRequest
 import com.quizit.quiz.dto.request.CreateQuizRequest
@@ -100,6 +101,10 @@ class QuizService(
             .filter { (authentication.id == it.writerId) || authentication.isAdmin() }
             .switchIfEmpty(Mono.error(PermissionDeniedException()))
             .flatMap { quizRepository.deleteById(id) }
+            .then(Mono.defer {
+                quizProducer.deleteQuiz(DeleteQuizEvent(id))
+                    .then()
+            })
 
     fun checkAnswer(id: String, userId: String, request: CheckAnswerRequest): Mono<CheckAnswerResponse> =
         quizRepository.findById(id)
