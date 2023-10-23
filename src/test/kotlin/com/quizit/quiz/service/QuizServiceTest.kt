@@ -16,7 +16,6 @@ import io.kotest.matchers.ints.shouldBeLessThan
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import reactor.core.publisher.Mono
 
 class QuizServiceTest : BehaviorSpec() {
     private val quizRepository = mockk<QuizRepository>()
@@ -25,8 +24,8 @@ class QuizServiceTest : BehaviorSpec() {
 
     private val quizProducer = mockk<QuizProducer>()
         .apply {
-            every { checkAnswer(any()) } returns Mono.empty()
-            every { markQuiz(any()) } returns Mono.empty()
+            every { checkAnswer(any()) } returns empty()
+            every { markQuiz(any()) } returns empty()
         }
 
     private val quizService = QuizService(

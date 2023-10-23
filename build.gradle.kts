@@ -33,7 +33,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-aop")
     implementation("org.springframework.boot:spring-boot-starter-log4j2")
-    implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive")
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
@@ -56,7 +55,6 @@ dependencies {
     testImplementation("com.ninja-squad:springmockk:3.0.1")
     testImplementation("com.epages:restdocs-api-spec-webtestclient:0.17.1")
     testImplementation("com.epages:restdocs-api-spec:0.17.1")
-    testImplementation("it.ozimov:embedded-redis:0.7.2")
 }
 
 tasks {
