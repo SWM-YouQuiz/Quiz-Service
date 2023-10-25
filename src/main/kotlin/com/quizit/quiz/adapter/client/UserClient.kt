@@ -5,7 +5,6 @@ import com.quizit.quiz.exception.UserNotFoundException
 import com.quizit.quiz.global.annotation.Client
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
-import org.springframework.security.core.context.ReactiveSecurityContextHolder
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Mono
@@ -17,16 +16,13 @@ class UserClient(
     private val url: String
 ) {
     fun getUserById(userId: String): Mono<UserResponse> =
-        ReactiveSecurityContextHolder.getContext()
-            .flatMap {
-                webClient.get()
-                    .uri("$url/user/{id}", userId)
-                    .exchangeToMono {
-                        when (it.statusCode()) {
-                            HttpStatus.NOT_FOUND -> Mono.error(UserNotFoundException())
-                            HttpStatus.OK -> it.bodyToMono<UserResponse>()
-                            else -> it.createError()
-                        }
-                    }
+        webClient.get()
+            .uri("$url/user/{id}", userId)
+            .exchangeToMono {
+                when (it.statusCode()) {
+                    HttpStatus.NOT_FOUND -> Mono.error(UserNotFoundException())
+                    HttpStatus.OK -> it.bodyToMono<UserResponse>()
+                    else -> it.createError()
+                }
             }
 }
