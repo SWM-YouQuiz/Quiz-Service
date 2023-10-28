@@ -22,7 +22,6 @@ import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import reactor.core.scheduler.Schedulers
 
 @Service
 class QuizService(
@@ -101,38 +100,29 @@ class QuizService(
             .filter { (authentication.id == it.writerId) || authentication.isAdmin() }
             .switchIfEmpty(Mono.error(PermissionDeniedException()))
             .flatMap { quizRepository.deleteById(id) }
-            .then(Mono.defer {
-                quizProducer.deleteQuiz(DeleteQuizEvent(id))
-                    .then()
-            })
+            .then(Mono.defer { quizProducer.deleteQuiz(DeleteQuizEvent(id)) })
 
     fun checkAnswer(id: String, userId: String, request: CheckAnswerRequest): Mono<CheckAnswerResponse> =
         quizRepository.findById(id)
             .switchIfEmpty(Mono.error(QuizNotFoundException()))
             .cache()
             .run {
-                subscribeOn(Schedulers.boundedElastic())
-                    .zipWith(
-                        userClient.getUserById(userId)
-                            .subscribeOn(Schedulers.boundedElastic())
-                    )
+                zipWith(userClient.getUserById(userId))
                     .filter { (_, userResponse) -> (id !in userResponse.correctQuizIds) && (id !in userResponse.incorrectQuizIds) }
                     .flatMap { (quiz) ->
-                        quiz.run {
-                            quizProducer.checkAnswer(
-                                CheckAnswerEvent(
-                                    userId = userId,
-                                    quizId = id,
-                                    isAnswer = (request.answer == answer)
-                                ).apply {
-                                    if (isAnswer) {
-                                        correctAnswer()
-                                    } else {
-                                        incorrectAnswer()
-                                    }
+                        quizProducer.checkAnswer(
+                            CheckAnswerEvent(
+                                userId = userId,
+                                quizId = id,
+                                isAnswer = (request.answer == quiz.answer)
+                            ).apply {
+                                if (isAnswer) {
+                                    quiz.correctAnswer()
+                                } else {
+                                    quiz.incorrectAnswer()
                                 }
-                            )
-                        }.thenReturn(quiz)
+                            }
+                        ).thenReturn(quiz)
                     }
                     .flatMap { quizRepository.save(it) }
                     .then(map {
@@ -147,21 +137,19 @@ class QuizService(
         quizRepository.findById(id)
             .switchIfEmpty(Mono.error(QuizNotFoundException()))
             .flatMap {
-                it.run {
-                    quizProducer.markQuiz(
-                        MarkQuizEvent(
-                            userId = userId,
-                            quizId = id,
-                            isMarked = (userId !in markedUserIds)
-                        ).apply {
-                            if (isMarked) {
-                                mark(userId)
-                            } else {
-                                unmark(userId)
-                            }
+                quizProducer.markQuiz(
+                    MarkQuizEvent(
+                        userId = userId,
+                        quizId = id,
+                        isMarked = (userId !in it.markedUserIds)
+                    ).apply {
+                        if (isMarked) {
+                            it.mark(userId)
+                        } else {
+                            it.unmark(userId)
                         }
-                    )
-                }.thenReturn(it)
+                    }
+                ).thenReturn(it)
             }
             .flatMap { quizRepository.save(it) }
             .map { QuizResponse(it) }

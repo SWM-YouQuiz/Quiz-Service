@@ -14,7 +14,6 @@ import com.quizit.quiz.repository.QuizRepository
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import reactor.core.scheduler.Schedulers
 
 @Service
 class CourseService(
@@ -35,13 +34,10 @@ class CourseService(
         quizRepository.findAllByCourseId(id)
             .map { it.id!! }
             .cache()
-            .subscribeOn(Schedulers.boundedElastic())
             .run {
-                userClient.getUserById(userId)
-                    .subscribeOn(Schedulers.boundedElastic())
+                zipWith(userClient.getUserById(userId)
                     .map { it.correctQuizIds + it.incorrectQuizIds }
-                    .flatMapMany { quizzes -> map { quiz -> quiz in quizzes } }
-                    .filter { it }
+                ).filter { (quizId, quizIds) -> quizId in quizIds }
                     .count()
                     .zipWith(count())
                     .map { (solved, total) ->
