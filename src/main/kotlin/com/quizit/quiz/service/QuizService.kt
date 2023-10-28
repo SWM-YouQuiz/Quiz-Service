@@ -157,22 +157,20 @@ class QuizService(
     fun evaluateQuiz(id: String, userId: String, isLike: Boolean): Mono<QuizResponse> =
         quizRepository.findById(id)
             .switchIfEmpty(Mono.error(QuizNotFoundException()))
-            .map {
-                it.apply {
-                    if (isLike) {
-                        if (userId in likedUserIds) {
-                            likedUserIds.remove(userId)
-                        } else {
-                            unlikedUserIds.remove(userId)
-                            like(userId)
-                        }
+            .doOnNext {
+                if (isLike) {
+                    if (userId in it.likedUserIds) {
+                        it.likedUserIds.remove(userId)
                     } else {
-                        if (userId in unlikedUserIds) {
-                            unlikedUserIds.remove(userId)
-                        } else {
-                            likedUserIds.remove(userId)
-                            unlike(userId)
-                        }
+                        it.unlikedUserIds.remove(userId)
+                        it.like(userId)
+                    }
+                } else {
+                    if (userId in it.unlikedUserIds) {
+                        it.unlikedUserIds.remove(userId)
+                    } else {
+                        it.likedUserIds.remove(userId)
+                        it.unlike(userId)
                     }
                 }
             }

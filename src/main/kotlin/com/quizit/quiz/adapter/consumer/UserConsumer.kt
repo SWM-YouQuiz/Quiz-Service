@@ -20,11 +20,9 @@ class UserConsumer(
             .doOnNext { message ->
                 with(message.value()) {
                     quizRepository.findAll()
-                        .map {
-                            it.apply {
-                                markedUserIds.remove(userId)
-                                likedUserIds.remove(userId)
-                            }
+                        .doOnNext {
+                            it.markedUserIds.remove(userId)
+                            it.likedUserIds.remove(userId)
                         }
                         .let { quizRepository.saveAll(it) }
                         .subscribe()
