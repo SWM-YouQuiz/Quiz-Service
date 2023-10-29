@@ -32,13 +32,14 @@ class CurriculumService(
     fun getProgressById(id: String, userId: String): Mono<GetProgressByIdResponse> =
         quizRepository.findAllByCurriculumId(id)
             .map { it.id!! }
-            .cache()
+            .collectList()
             .run {
-                zipWith(userClient.getUserById(userId)
-                    .map { it.correctQuizIds + it.incorrectQuizIds }
-                ).filter { (quizId, quizIds) -> quizId in quizIds }
-                    .count()
-                    .zipWith(count())
+                zipWith(userClient.getUserById(userId))
+                    .map { (quizIds, user) ->
+                        Pair(
+                            (user.correctQuizIds + user.incorrectQuizIds).count { it in quizIds }, quizIds.count()
+                        )
+                    }
                     .map { (solved, total) ->
                         GetProgressByIdResponse(
                             total = total,

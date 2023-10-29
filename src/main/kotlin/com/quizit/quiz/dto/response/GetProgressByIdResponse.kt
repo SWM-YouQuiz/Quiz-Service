@@ -1,6 +1,6 @@
 package com.quizit.quiz.dto.response
 
 data class GetProgressByIdResponse(
-    val total: Long,
-    val solved: Long
+    val total: Int,
+    val solved: Int
 )

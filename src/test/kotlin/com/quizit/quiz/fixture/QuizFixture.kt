@@ -19,12 +19,12 @@ const val INCORRECT_COUNT = 10L
 val MARKED_USER_IDS = hashSetOf("1")
 val LIKED_USER_IDS = hashSetOf("1")
 val UNLIKED_USER_IDS = hashSetOf("1")
-const val TOTAL = 1L
-const val SOLVED = 0L
+const val TOTAL = 1
+const val SOLVED = 0
 
 fun createGetProgressByIdResponse(
-    total: Long = TOTAL,
-    solved: Long = SOLVED
+    total: Int = TOTAL,
+    solved: Int = SOLVED
 ): GetProgressByIdResponse =
     GetProgressByIdResponse(
         total = total,
