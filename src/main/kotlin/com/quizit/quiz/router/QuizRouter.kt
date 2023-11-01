@@ -1,6 +1,7 @@
 package com.quizit.quiz.router
 
 import com.quizit.quiz.global.annotation.Router
+import com.quizit.quiz.global.util.logFilter
 import com.quizit.quiz.global.util.queryParams
 import com.quizit.quiz.handler.QuizHandler
 import org.springframework.context.annotation.Bean
@@ -33,5 +34,6 @@ class QuizRouter {
                 PUT("/{id}", handler::updateQuizById)
                 DELETE("/{id}", handler::deleteQuizById)
             }
+            filter(::logFilter)
         }
 }
