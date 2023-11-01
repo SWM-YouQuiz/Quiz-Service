@@ -104,7 +104,8 @@ tasks {
                     "**.*Client*",
                     "**.*Producer*",
                     "**.*Consumer*",
-                    "**.*Event*"
+                    "**.*Event*",
+                    "**.*Mdc*"
                 )
             }
         }
