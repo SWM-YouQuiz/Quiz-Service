@@ -6,6 +6,12 @@ management:
     health:
       probes:
         enabled: true
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
+          - prometheus
   health:
     livenessstate:
       enabled: true
