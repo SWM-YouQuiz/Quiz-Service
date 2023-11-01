@@ -1,6 +1,7 @@
 package com.quizit.quiz.global.config
 
 import com.github.jwt.authentication.DefaultJwtAuthentication
+import com.quizit.quiz.global.util.getLogger
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpHeaders
@@ -10,6 +11,8 @@ import org.springframework.web.reactive.function.client.WebClient
 
 @Configuration
 class WebClientConfiguration {
+    private val logger = getLogger()
+
     @Bean
     fun webClient(): WebClient =
         WebClient.builder()
@@ -22,7 +25,11 @@ class WebClientConfiguration {
                             .build()
                     }
                     .defaultIfEmpty(request)
-                    .flatMap { next.exchange(it) }
+                    .flatMap {
+                        logger.info { "HTTP ${request.method()} ${request.url().path}" }
+                        next.exchange(it)
+                            .doOnNext { logger.info { "HTTP ${it.statusCode()}" } }
+                    }
             }
             .build()
 }
