@@ -19,6 +19,5 @@ url:
     quiz: quiz-service/api/quiz
 logging:
   level:
-    web: debug
     org.springframework:
       data.mongodb: debug
