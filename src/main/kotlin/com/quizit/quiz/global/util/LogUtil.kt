@@ -24,11 +24,7 @@ fun logFilter(request: ServerRequest, handler: (ServerRequest) -> Mono<ServerRes
                     ServerRequest.from(request)
                         .body(it)
                         .build()
-                )
-            }
-            .map {
-                logger.info { "HTTP ${it.statusCode()}" }
-                it
+                ).doOnNext { logger.info { "HTTP ${it.statusCode()}" } }
             }
     }
 
