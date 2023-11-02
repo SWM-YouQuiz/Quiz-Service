@@ -1,6 +1,7 @@
 package com.quizit.quiz.router
 
 import com.quizit.quiz.global.annotation.Router
+import com.quizit.quiz.global.util.logFilter
 import com.quizit.quiz.handler.CurriculumHandler
 import org.springframework.context.annotation.Bean
 import org.springframework.web.reactive.function.server.RouterFunction
@@ -22,5 +23,6 @@ class CurriculumRouter {
                 PUT("/{id}", handler::updateCurriculumById)
                 DELETE("/{id}", handler::deleteCurriculumById)
             }
+            filter(::logFilter)
         }
 }

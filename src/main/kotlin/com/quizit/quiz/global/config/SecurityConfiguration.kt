@@ -31,7 +31,7 @@ class SecurityConfiguration {
             authorizeExchange {
                 it.pathMatchers("/quiz/admin/**")
                     .hasAuthority(Role.ADMIN.name)
-                    .pathMatchers("/actuator/health/**")
+                    .pathMatchers("/actuator/**")
                     .permitAll()
                     .anyExchange()
                     .authenticated()

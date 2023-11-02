@@ -1,6 +1,7 @@
 package com.quizit.quiz.router
 
 import com.quizit.quiz.global.annotation.Router
+import com.quizit.quiz.global.util.logFilter
 import com.quizit.quiz.handler.ChapterHandler
 import org.springframework.context.annotation.Bean
 import org.springframework.web.reactive.function.server.RouterFunction
@@ -22,5 +23,6 @@ class ChapterRouter {
                 PUT("/{id}", handler::updateChapterById)
                 DELETE("/{id}", handler::deleteChapterById)
             }
+            filter(::logFilter)
         }
 }

@@ -44,6 +44,7 @@ dependencies {
     implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
     implementation("io.projectreactor.kafka:reactor-kafka")
     implementation("io.github.microutils:kotlin-logging:3.0.5")
+    runtimeOnly("io.micrometer:micrometer-registry-prometheus")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.restdocs:spring-restdocs-webtestclient")
     testImplementation("org.springframework.security:spring-security-test")
@@ -103,7 +104,8 @@ tasks {
                     "**.*Client*",
                     "**.*Producer*",
                     "**.*Consumer*",
-                    "**.*Event*"
+                    "**.*Event*",
+                    "**.*Mdc*"
                 )
             }
         }
